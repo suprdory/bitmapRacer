@@ -60,15 +60,15 @@ class Car {
         this.to = 0; //heading torque;
         this.momI = 10000; // moment of inertia
         this.theta = 0; // heading angle
-        this.thetaDot = 0.1;//heading angle deriv
+        this.thetaDot = 0.0;//heading angle deriv
 
         // specs
         this.steeringRate = 0.05;
         this.steeringMax = 45 * Math.PI / 180;
         this.torqueRate = 0.5;
         this.torqueMax = 100;
-        this.brakeMax = 1;
-        this.brakeRate = .5;
+        this.brakeMax = 0.5;
+        this.brakeRate = .1;
 
         this.rotMat = calcRotMat(this.theta);
 
@@ -112,7 +112,7 @@ class Car {
         ctx.stroke();
         //acceleration vector
         ctx.beginPath();
-        ctx.strokeStyle = "blue";
+        ctx.strokeStyle = "magenta";
         ctx.lineWidth = baseLW;
         ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.x + this.ax * acc_scl, this.y + this.ay * acc_scl);
@@ -175,33 +175,37 @@ class Car {
             // absolute
             wh.uxA = wh.ux + this.ux;
             wh.uyA = wh.uy + this.uy;
-            
+
             // parallel/per
             wh.uApar = -wh.uyA * Math.cos(this.theta + wh.theta) - wh.uxA * Math.sin(this.theta + wh.theta);
             wh.uAperp = -wh.uyA * Math.sin(this.theta + wh.theta) + wh.uxA * Math.cos(this.theta + wh.theta);
 
             //thrust
-            wh.Fx = wh.torque * Math.sin(this.theta + wh.theta);
-            wh.Fy = wh.torque * Math.cos(this.theta + wh.theta);
+            wh.FTx = wh.torque * Math.sin(this.theta + wh.theta);
+            wh.FTy = wh.torque * Math.cos(this.theta + wh.theta);
+            // if (i == 0) {
+            //     console.log(wh.FTy);
+            // }
 
             // braking
             wh.FBx = Math.sin(this.theta + wh.theta) * wh.uApar * wh.brake;
             wh.FBy = Math.cos(this.theta + wh.theta) * wh.uApar * wh.brake;
 
             // lateral friction
-            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta)*mu_lat;
-            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta)*mu_lat;
+            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta) * mu_lat;
+            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta) * mu_lat;
 
             // torque due to thrust
             this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
-            
+
             // torque due to lateral friction
-            this.to = -this.to + wh.FLx * wh.d * Math.sin(wh.theta + wh.phi);
-            this.to = this.to + wh.FLy * wh.d * Math.cos(wh.theta + wh.phi);
-            
+            this.to = this.to + wh.FLx * wh.d * Math.cos(this.theta + wh.phi);
+            this.to = this.to + -wh.FLy * wh.d * Math.sin(this.theta + wh.phi);
+
+
             // resultant wheel force
-            Fx = Fx + wh.Fx + wh.FBx + wh.FLx;
-            Fy = Fx + wh.Fy + wh.FBy + wh.FLy;
+            Fx = Fx + wh.FTx + wh.FBx + wh.FLx;
+            Fy = Fy + wh.FTy + wh.FBy + wh.FLy;
 
         }
 
@@ -213,7 +217,7 @@ class Car {
         this.x = this.x + this.ux * dt;
         this.y = this.y + this.uy * dt;
 
-        this.thetaDot = this.thetaDot + this.to/this.momI * dt;
+        this.thetaDot = this.thetaDot + this.to / this.momI * dt;
         this.theta = this.theta + this.thetaDot * dt;
         this.rotMat = calcRotMat(this.theta);
 
@@ -228,8 +232,8 @@ class Wheel {
         this.uy = 0;
         this.uxA = 0; // abs velocity
         this.uyA = 0;
-        this.Fx = 0;// thrust force components
-        this.Fy = 0;
+        this.FTx = 0;// thrust force components
+        this.FTy = 0;
         this.FBx = 0;// brake force components
         this.FBy = 0;
         this.FLx = 0;// perpendicular force components
@@ -244,7 +248,7 @@ class Wheel {
         this.grip = 1;
         this.color = "white";
         this.torque = 0;
-        this.brake=0;
+        this.brake = 0;
         let xl = -this.width / 2;
         let xr = this.width / 2;
         let yf = this.length / 2;
@@ -296,7 +300,7 @@ class Wheel {
         ctx.strokeStyle = "green";
         ctx.lineWidth = baseLW;
         ctx.moveTo(x[0][0], x[0][1]);
-        ctx.lineTo(x[0][0] + this.Fx * force_scl, x[0][1] + this.Fy * force_scl);
+        ctx.lineTo(x[0][0] + this.FTx * force_scl, x[0][1] + this.FTy * force_scl);
         ctx.stroke();
 
 
@@ -362,9 +366,12 @@ function anim() {
     if (n < nMax) {
         requestAnimationFrame(anim);
     }
-
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     // clear screen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //scaled stuff
+    ctx.setTransform(scl, 0, 0, scl, 0, 0);
+
     car.draw(ctx);
     car.control(inputState);
     car.mechanic();
@@ -378,10 +385,11 @@ const dt = 0.1
 const vel_scl = 1;
 const acc_scl = 1;
 const force_scl = 1;
-const mu_lat=1;
-// const forceBrake=false;
-const forceBrake = true;
+const mu_lat = 1;
+const forceBrake = false;
+// const forceBrake = true;
 
+let scl=1/2;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
