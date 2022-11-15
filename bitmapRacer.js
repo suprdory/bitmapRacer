@@ -53,7 +53,8 @@ class Car {
         this.x = x; // x pos
         this.y = y; // y pos
         this.ux = 0; // x vel
-        this.uy = 0;  // y vel
+        this.uy = 30;  // y vel
+        this.U = 0; //speed
         this.ax = 0; // x accel
         this.ay = 0; // y accel
         this.m = 1; // mass
@@ -63,8 +64,9 @@ class Car {
         this.thetaDot = 0.0;//heading angle deriv
 
         // specs
-        this.steeringRate = 0.05;
+        this.steeringRate = 0.1;
         this.steeringMax = 45 * Math.PI / 180;
+        this.steeringCentreRate = 0.01;
         this.torqueRate = 0.5;
         this.torqueMax = 100;
         this.brakeMax = 0.5;
@@ -122,32 +124,38 @@ class Car {
     }
     control(inputState) {
         if (inputState.left) {
-            this.wheels[0].theta = Math.min(this.steeringMax, this.wheels[0].theta + this.steeringRate);
+            this.wheels[0].theta = Math.min(this.steeringMax, this.wheels[0].theta + this.steeringRate * dt);
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
-            this.wheels[1].theta = Math.min(this.steeringMax, this.wheels[1].theta + this.steeringRate);
+            this.wheels[1].theta = Math.min(this.steeringMax, this.wheels[1].theta + this.steeringRate * dt);
             this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
-        if (inputState.right) {
-            this.wheels[0].theta = Math.max(-this.steeringMax, this.wheels[0].theta - this.steeringRate);
+        else if (inputState.right) {
+            this.wheels[0].theta = Math.max(-this.steeringMax, this.wheels[0].theta - this.steeringRate * dt);
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
-            this.wheels[1].theta = Math.max(-this.steeringMax, this.wheels[1].theta - this.steeringRate);
+            this.wheels[1].theta = Math.max(-this.steeringMax, this.wheels[1].theta - this.steeringRate * dt);
+            this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
+        }
+        else {
+            this.wheels[0].theta = this.wheels[0].theta - this.wheels[0].theta * this.U * this.steeringCentreRate * dt;
+            this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
+            this.wheels[1].theta = this.wheels[1].theta - this.wheels[1].theta * this.U * this.steeringCentreRate * dt;
             this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         if (inputState.up) {
             // front wheel accel
-            this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate);
-            this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate);
+            this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate * dt);
+            this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate * dt);
         }
         else {
             this.wheels[0].torque = 0;
             this.wheels[1].torque = 0;
         }
-        if (inputState.down || forceBrake) {
+        if (inputState.down) {
             // 4 wheel braking
-            this.wheels[0].brake = Math.min(this.brakeMax, this.wheels[0].brake + this.brakeRate);
-            this.wheels[1].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate);
-            this.wheels[2].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate);
-            this.wheels[3].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate);
+            this.wheels[0].brake = Math.min(this.brakeMax, this.wheels[0].brake + this.brakeRate * dt);
+            this.wheels[1].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate * dt);
+            this.wheels[2].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate * dt);
+            this.wheels[3].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate * dt);
         }
         else {
             this.wheels[0].brake = 0;
@@ -168,32 +176,37 @@ class Car {
         for (let i = 0; i < 4; i++) {
             let wh = this.wheels[i];
 
-            // velocity
-            //relative to car
+            // velocity - relative to car
             wh.ux = +this.thetaDot * wh.d * Math.cos(this.theta + wh.phi);
             wh.uy = -this.thetaDot * wh.d * Math.sin(this.theta + wh.phi);
-            // absolute
+            // velocity - absolute
             wh.uxA = wh.ux + this.ux;
             wh.uyA = wh.uy + this.uy;
 
-            // parallel/per
+            // velocity parallel/perpendicular to wheel
             wh.uApar = -wh.uyA * Math.cos(this.theta + wh.theta) - wh.uxA * Math.sin(this.theta + wh.theta);
             wh.uAperp = -wh.uyA * Math.sin(this.theta + wh.theta) + wh.uxA * Math.cos(this.theta + wh.theta);
 
             //thrust
             wh.FTx = wh.torque * Math.sin(this.theta + wh.theta);
             wh.FTy = wh.torque * Math.cos(this.theta + wh.theta);
-            // if (i == 0) {
-            //     console.log(wh.FTy);
-            // }
 
             // braking
             wh.FBx = Math.sin(this.theta + wh.theta) * wh.uApar * wh.brake;
             wh.FBy = Math.cos(this.theta + wh.theta) * wh.uApar * wh.brake;
 
             // lateral friction
-            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta) * mu_lat;
-            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta) * mu_lat;
+
+            if (Math.abs(wh.uAperp<5)){
+                wh.skidFac=1;
+                // console.log("tract")
+            }
+            else{
+                wh.skidFac = .01;
+                // console.log("skid")
+            } 
+            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta) * mu_lat*wh.skidFac;
+            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta) * mu_lat*wh.skidFac;
 
             // torque due to thrust
             this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
@@ -214,6 +227,7 @@ class Car {
         this.ay = Fy / this.m;
         this.ux = this.ux + this.ax * dt;
         this.uy = this.uy + this.ay * dt;
+        this.U = (this.ux ** 2 + this.uy ** 2) ** .5
         this.x = this.x + this.ux * dt;
         this.y = this.y + this.uy * dt;
 
@@ -331,6 +345,12 @@ class InputState {
         this.right = false;
         this.up = false;
         this.down = false;
+        if (forceBrake) {
+            this.down = true;
+        }
+        if (forceLeft) {
+            this.left = true;
+        }
     }
     set(event) {
         // console.log(event)
@@ -359,6 +379,12 @@ class InputState {
             this.right = false;
         }
         // console.log(this.left, this.right, this.up, this.down);
+        if (forceBrake) {
+            this.down = true;
+        }
+        if (forceLeft) {
+            this.left = true;
+        }
     }
 }
 
@@ -381,15 +407,18 @@ function anim() {
 
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
-const dt = 0.1
+const dt = 0.2
 const vel_scl = 1;
 const acc_scl = 1;
 const force_scl = 1;
 const mu_lat = 1;
 const forceBrake = false;
+const forceLeft=false;
+// const forceLeft = true;
+
 // const forceBrake = true;
 
-let scl=1/2;
+let scl = 1 / 2;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
