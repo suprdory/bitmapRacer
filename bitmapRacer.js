@@ -1,15 +1,3 @@
-const canvas = document.getElementById("cw");
-const ctx = canvas.getContext("2d");
-const PI2 = Math.PI * 2;
-pixRat = window.devicePixelRatio * 1.0;
-
-canvas.height = window.innerHeight * pixRat;
-canvas.width = window.innerWidth * pixRat;
-canvas.style.width = window.innerWidth + "px";
-canvas.style.height = window.innerHeight + "px";
-let baseLW = 2;
-X = canvas.width;
-Y = canvas.height;
 
 let MatrixProd = (A, B) =>
     A.map((row, i) =>
@@ -52,16 +40,18 @@ class Car {
         // mech + kin
         this.x = x; // x pos
         this.y = y; // y pos
-        this.ux = 0; // x vel
-        this.uy = 30;  // y vel
-        this.U = 0; //speed
+
         this.ax = 0; // x accel
         this.ay = 0; // y accel
         this.m = 1; // mass
         this.to = 0; //heading torque;
         this.momI = 10000; // moment of inertia
+        this.U = 10; //speed
         this.theta = 0; // heading angle
         this.thetaDot = 0.0;//heading angle deriv
+        this.ux = this.U * Math.sin(this.theta); // x vel
+        this.uy = this.U * Math.cos(this.theta); // y vel
+        
 
         // specs
         this.steeringRate = 0.1;
@@ -197,16 +187,16 @@ class Car {
 
             // lateral friction
 
-            if (Math.abs(wh.uAperp<5)){
-                wh.skidFac=1;
+            if (Math.abs(wh.uAperp < 5)) {
+                wh.skidFac = 1;
                 // console.log("tract")
             }
-            else{
-                wh.skidFac = .01;
+            else {
+                wh.skidFac = .02;
                 // console.log("skid")
-            } 
-            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta) * mu_lat*wh.skidFac;
-            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta) * mu_lat*wh.skidFac;
+            }
+            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta) * mu_lat * wh.skidFac;
+            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta) * mu_lat * wh.skidFac;
 
             // torque due to thrust
             this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
@@ -392,37 +382,117 @@ function anim() {
     if (n < nMax) {
         requestAnimationFrame(anim);
     }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (n == 2) {
+        getImageData(img);
+    }
+
     // clear screen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     //scaled stuff
-    ctx.setTransform(scl, 0, 0, scl, 0, 0);
 
+    ctx.setTransform(scl, 0, 0, scl, 0, 0);
+    ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.width / scl);
     car.draw(ctx);
     car.control(inputState);
     car.mechanic();
     n++;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    drawDebug();
 }
+
+function drawDebug() {
+    xw0 = Math.round((car.wheels[0].x + car.x)/img_scl);
+    yw0 = Math.round((car.wheels[0].y + car.y)/img_scl);
+    ctx.fillStyle = "white"
+    ctx.textAlign = "left"
+    nX=img.width;
+    nY=img.height;
+    s=
+    r=
+    g=
+    b=
+    // let rgba=imageData[];
+    ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
+    ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 120)
+    ctx.fillText(nX + " " + nY, 100, 140)
+}
+
+const canvas = document.getElementById("cw");
+const ctx = canvas.getContext("2d");
+const PI2 = Math.PI * 2;
+pixRat = window.devicePixelRatio * 1.0;
+canvas.height = window.innerHeight * pixRat;
+canvas.width = window.innerWidth * pixRat;
+canvas.style.width = window.innerWidth + "px";
+canvas.style.height = window.innerHeight + "px";
+let baseLW = 2;
+X = canvas.width;
+Y = canvas.height;
 
 
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
+
 const dt = 0.2
 const vel_scl = 1;
 const acc_scl = 1;
 const force_scl = 1;
 const mu_lat = 1;
 const forceBrake = false;
-const forceLeft=false;
+const forceLeft = false;
 // const forceLeft = true;
-
 // const forceBrake = true;
 
-let scl = 1 / 2;
+let scl = 1 ;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
 let car = new Car(x = 300, y = 400, w = 120, l = 200);
 // car.draw(ctx);
+
+
+// image set up
+const img = new Image();   // Create new img element
+img.src = 'tiny.png'; // Set source path
+img_scl = 100;
+
+
+
+// var canvasi = document.createElement("canvas");
+// var ctxi = canvas.getContext("2d");
+// var imageData;
+// ctx.clearRect(0, 0, canvas.width, canvas.height);
+// getImageData(img);
+
+
+// var canvas = document.createElement("canvas");
+// var ctx = canvas.getContext("2d");
+var imageData;
+document.getElementById('myFile').onchange = function (evt) {
+    var tgt = evt.target || window.event.srcElement, files = tgt.files;
+
+    // FileReader support
+    if (FileReader && files && files.length) {
+        var fr = new FileReader();
+        fr.onload = () => showImage(fr);
+        fr.readAsDataURL(files[0]);
+    }
+}
+
+function showImage(fileReader) {
+    var img = document.getElementById("myImage");
+    img.onload = () => getImageData(img);
+    img.src = fileReader.result;
+
+}
+
+function getImageData(img) {
+    ctx.drawImage(img, 0, 0);
+    imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+    console.log("image data:", imageData);
+}
+
+
+
 anim();
 
