@@ -46,7 +46,7 @@ class Car {
         this.m = 1; // mass
         this.to = 0; //heading torque;
         this.momI = 10000; // moment of inertia
-        this.U = 10; //speed
+        this.U = 0; //speed
         this.theta = 0; // heading angle
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
@@ -189,14 +189,17 @@ class Car {
 
             if (Math.abs(wh.uAperp < 5)) {
                 wh.skidFac = 1;
+                wh.FLx = -(wh.uAperp) * Math.cos(this.theta + wh.theta) * mu_lat * wh.skidFac;
+                wh.FLy = (wh.uAperp) * Math.sin(this.theta + wh.theta) * mu_lat * wh.skidFac;
                 // console.log("tract")
             }
             else {
-                wh.skidFac = .02;
+                wh.skidFac = 5;
+                wh.FLx = -Math.sign(wh.uAperp) * Math.cos(this.theta + wh.theta) * mu_lat * wh.skidFac;
+                wh.FLy = Math.sign(wh.uAperp) * Math.sin(this.theta + wh.theta) * mu_lat * wh.skidFac;
                 // console.log("skid")
             }
-            wh.FLx = -wh.uAperp * Math.cos(this.theta + wh.theta) * mu_lat * wh.skidFac;
-            wh.FLy = wh.uAperp * Math.sin(this.theta + wh.theta) * mu_lat * wh.skidFac;
+            
 
             // torque due to thrust
             this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
@@ -443,7 +446,7 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let scl = 1 ;
+let scl =.10 ;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
@@ -453,8 +456,8 @@ let car = new Car(x = 300, y = 400, w = 120, l = 200);
 
 // image set up
 const img = new Image();   // Create new img element
-img.src = 'tiny.png'; // Set source path
-img_scl = 100;
+img.src = 'ring.png'; // Set source path
+img_scl = 1;
 
 
 
