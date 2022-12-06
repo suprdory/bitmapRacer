@@ -51,14 +51,14 @@ class Car {
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
-        
+
 
         // specs
         this.steeringRate = 0.1;
         this.steeringMax = 45 * Math.PI / 180;
         this.steeringCentreRate = 0.01;
         this.torqueRate = 0.5;
-        this.torqueMax = 100;
+        this.torqueMax = 10;
         this.brakeMax = 0.5;
         this.brakeRate = .1;
 
@@ -199,7 +199,7 @@ class Car {
                 wh.FLy = Math.sign(wh.uAperp) * Math.sin(this.theta + wh.theta) * mu_lat * wh.skidFac;
                 // console.log("skid")
             }
-            
+
 
             // torque due to thrust
             this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
@@ -331,7 +331,6 @@ class Wheel {
     }
 
 }
-
 class InputState {
     constructor() {
         this.left = false;
@@ -401,23 +400,86 @@ function anim() {
     n++;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     drawDebug();
+    drawHUD();
 }
-
 function drawDebug() {
-    xw0 = Math.round((car.wheels[0].x + car.x)/img_scl);
-    yw0 = Math.round((car.wheels[0].y + car.y)/img_scl);
+    xw0 = Math.round((car.wheels[0].x + car.x) / img_scl);
+    yw0 = Math.round((car.wheels[0].y + car.y) / img_scl);
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
-    nX=img.width;
-    nY=img.height;
-    s=
-    r=
-    g=
-    b=
+    nX = img.width;
+    nY = img.height;
+    // s=
+    // r=
+    // g=
+    // b=
     // let rgba=imageData[];
     ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
     ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 120)
     ctx.fillText(nX + " " + nY, 100, 140)
+}
+function showImage(fileReader) {
+    var img = document.getElementById("myImage");
+    img.onload = () => getImageData(img);
+    img.src = fileReader.result;
+
+}
+function getImageData(img) {
+    ctx.drawImage(img, 0, 0);
+    imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+    console.log("image data:", imageData);
+}
+function drawHUD() {
+    hudX = 10;
+    hudY = 10;
+    barHeight = 50;
+    barWidthSpace = 5;
+    barWidth = 20;
+    
+    ctx.strokeStyle = "green";
+    ctx.fillStyle = "green";
+    ctx.beginPath();
+    ctx.rect(hudX, Y - hudY, barWidth, -barHeight);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.rect(hudX, Y - hudY, barWidth, -car.wheels[0].torque / car.torqueMax * barHeight);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.strokeStyle = "red";
+    ctx.fillStyle = "red";
+    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -barHeight);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -car.wheels[0].brake / car.brakeMax * barHeight);
+    ctx.fill()
+
+
+    ctx.beginPath();
+    ctx.strokeStyle = "blue";
+    ctx.fillStyle="blue"
+    ctx.rect(hudX + 2*(barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U /100 * barHeight);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = "yellow";
+    ctx.fillStyle="yellow";
+    ctx.rect(hudX, Y - hudY - barHeight - barWidthSpace, barWidth * 3 + barWidthSpace * 2, -barWidth);
+    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, 0, -barWidth);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, -(barWidth * 3 + barWidthSpace * 2)/2 * car.wheels[0].theta / car.steeringMax, -barWidth);
+    ctx.fill();
+
+
+
+
 }
 
 const canvas = document.getElementById("cw");
@@ -429,9 +491,8 @@ canvas.width = window.innerWidth * pixRat;
 canvas.style.width = window.innerWidth + "px";
 canvas.style.height = window.innerHeight + "px";
 let baseLW = 2;
-X = canvas.width;
-Y = canvas.height;
-
+let X = canvas.width;
+let Y = canvas.height;
 
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
@@ -445,35 +506,28 @@ const forceBrake = false;
 const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
-
-let scl =.10 ;
+let scl = .10;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
 let car = new Car(x = 300, y = 400, w = 120, l = 200);
-// car.draw(ctx);
-
 
 // image set up
 const img = new Image();   // Create new img element
 img.src = 'ring.png'; // Set source path
 img_scl = 1;
 
-
-
 // var canvasi = document.createElement("canvas");
 // var ctxi = canvas.getContext("2d");
 // var imageData;
 // ctx.clearRect(0, 0, canvas.width, canvas.height);
 // getImageData(img);
-
-
 // var canvas = document.createElement("canvas");
 // var ctx = canvas.getContext("2d");
+
 var imageData;
 document.getElementById('myFile').onchange = function (evt) {
     var tgt = evt.target || window.event.srcElement, files = tgt.files;
-
     // FileReader support
     if (FileReader && files && files.length) {
         var fr = new FileReader();
@@ -481,21 +535,5 @@ document.getElementById('myFile').onchange = function (evt) {
         fr.readAsDataURL(files[0]);
     }
 }
-
-function showImage(fileReader) {
-    var img = document.getElementById("myImage");
-    img.onload = () => getImageData(img);
-    img.src = fileReader.result;
-
-}
-
-function getImageData(img) {
-    ctx.drawImage(img, 0, 0);
-    imageData = ctx.getImageData(0, 0, img.width, img.height).data;
-    console.log("image data:", imageData);
-}
-
-
-
 anim();
 
