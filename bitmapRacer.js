@@ -47,6 +47,8 @@ class Car {
         this.to = 0; //heading torque;
         this.momI = 10000; // moment of inertia
         this.U = 0; //speed
+        this.thetaU = 0; //velocity angle
+        this.headOff=0; // heading - velocity angle
         this.theta = 0; // heading angle
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
@@ -56,7 +58,7 @@ class Car {
         // specs
         this.steeringRate = 0.2;
         this.steeringMax = 45 * Math.PI / 180;
-        this.steeringCentreRate = 0.02;
+        this.steeringCentreRate = 0.05;
         this.torqueRate = 0.1;
         this.torqueMax = .5;
         this.brakeMax = 1;
@@ -79,8 +81,8 @@ class Car {
     readTrack() {
         this.wheels.forEach(function (wheel) {
             //wheel centre abs coords
-            let xw = Math.round(wheel.xa * scl/img_scl);
-            let yw = Math.round(wheel.ya * scl/img_scl);
+            let xw = Math.round(wheel.xa * scl / img_scl);
+            let yw = Math.round(wheel.ya * scl / img_scl);
             let nX = img.width;
             let nY = img.height;
             if (xw < 0 | xw > nX | yw < 0 | yw > nY) {
@@ -142,13 +144,16 @@ class Car {
         else if (inputState.right) {
             this.wheels[0].theta = Math.max(-this.steeringMax, this.wheels[0].theta - this.steeringRate * dt);
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
-            this.wheels[1].theta = Math.max(-this.steeringMax, this.wheels[1].theta - this.steeringRate * dt);
+            this.wheels[1].theta = this.wheels[0].theta;
             this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
+            // this.wheels[1].theta = Math.max(-this.steeringMax, this.wheels[1].theta - this.steeringRate * dt);
+            // this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         else {
-            this.wheels[0].theta = this.wheels[0].theta - this.wheels[0].theta * this.U ** 0.5 * this.steeringCentreRate * dt;
+            this.wheels[0].theta = this.wheels[0].theta + (-this.wheels[0].theta-this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt;
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
-            this.wheels[1].theta = this.wheels[1].theta - this.wheels[1].theta * this.U ** 0.5 * this.steeringCentreRate * dt;
+            this.wheels[1].theta = this.wheels[0].theta
+            // this.wheels[1].theta = this.wheels[1].theta - this.wheels[1].theta * this.U ** 0.5 * this.steeringCentreRate * dt;
             this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         if (inputState.up) {
@@ -262,12 +267,15 @@ class Car {
         this.ux = this.ux + this.ax * dt;
         this.uy = this.uy + this.ay * dt;
         this.U = (this.ux ** 2 + this.uy ** 2) ** .5
+        this.thetaU = Math.atan2(this.ux, this.uy);
         this.x = this.x + this.ux * dt;
         this.y = this.y + this.uy * dt;
-
         this.thetaDot = this.thetaDot + this.to / this.momI * dt;
         this.theta = this.theta + this.thetaDot * dt;
         this.rotMat = calcRotMat(this.theta);
+        this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
+        if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
+        if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
     }
 
 }
@@ -289,7 +297,7 @@ class Wheel {
         this.FLy = 0;
 
         this.sfc = 0; //surface, to be read from track img
-        this.drg = 0.01;
+        this.drg = 0.005;
 
         this.d = (x ** 2 + y ** 2) ** 0.5; // distance to car CoM
         this.phi = Math.atan2(x, y);
@@ -426,25 +434,28 @@ class InputState {
     }
 }
 function drawDebug() {
-    xw0 = Math.round(car.wheels[0].xa / img_scl);
-    yw0 = Math.round(car.wheels[0].ya / img_scl);
-    xw1 = Math.round(car.wheels[1].xa / img_scl);
-    yw1 = Math.round(car.wheels[1].ya / img_scl);
+    // xw0 = Math.round(car.wheels[0].xa / img_scl);
+    // yw0 = Math.round(car.wheels[0].ya / img_scl);
+    // xw1 = Math.round(car.wheels[1].xa / img_scl);
+    // yw1 = Math.round(car.wheels[1].ya / img_scl);
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
     nX = img.width;
     nY = img.height;
-    r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
-    g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
-    b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
-    a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
+    // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
+    // g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
+    // b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
+    // a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
     // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
 
-    ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
-    ctx.fillText(xw1.toFixed(1) + " " + yw1.toFixed(1), 100, 120)
-    ctx.fillText(nX + " " + nY, 100, 140)
-    ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
+    // ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
+    // ctx.fillText(xw1.toFixed(1) + " " + yw1.toFixed(1), 100, 120)
+    // ctx.fillText(nX + " " + nY, 100, 140);
+    ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
+    ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
+    ctx.fillText("theta-thetaU " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
+    // ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
 }
 function showImage(fileReader) {
     var img = document.getElementById("myImage");
@@ -550,7 +561,7 @@ function anim() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     //scaled stuff
 
-    ctx.setTransform(scl, 0, 0, scl, X/2-car.x, Y/2-car.y);
+    ctx.setTransform(scl, 0, 0, scl, X / 2 - car.x, Y / 2 - car.y);
     ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.height / scl);
     car.draw(ctx);
     car.control(inputState);
@@ -559,7 +570,7 @@ function anim() {
 
     n++;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    // drawDebug();
+    drawDebug();
     drawHUD();
 }
 const canvas = document.getElementById("cw");
