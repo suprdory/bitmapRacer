@@ -79,8 +79,8 @@ class Car {
     readTrack() {
         this.wheels.forEach(function (wheel) {
             //wheel centre abs coords
-            let xw = Math.round(wheel.xa * scl);
-            let yw = Math.round(wheel.ya * scl);
+            let xw = Math.round(wheel.xa * scl/img_scl);
+            let yw = Math.round(wheel.ya * scl/img_scl);
             let nX = img.width;
             let nY = img.height;
             if (xw < 0 | xw > nX | yw < 0 | yw > nY) {
@@ -550,7 +550,7 @@ function anim() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     //scaled stuff
 
-    // ctx.setTransform(scl, 0, 0, scl, 0, 0);
+    ctx.setTransform(scl, 0, 0, scl, X/2-car.x, Y/2-car.y);
     ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.height / scl);
     car.draw(ctx);
     car.control(inputState);
@@ -558,7 +558,7 @@ function anim() {
     car.mechanic();
 
     n++;
-    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     // drawDebug();
     drawHUD();
 }
@@ -597,8 +597,8 @@ let car = new Car(x = 200, y = 300, w = 120, l = 200);
 
 // image set up
 const img = new Image();   // Create new img element
-img.src = 'track.png'; // Set source path
-img_scl = 1;
+img.src = 'square_track.png'; // Set source path
+img_scl = 2;
 
 let imageData;
 
