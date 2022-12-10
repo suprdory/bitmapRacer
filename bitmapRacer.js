@@ -27,19 +27,19 @@ function calcRotMat(theta) {
     [Math.sin(theta), Math.cos(theta)]];
 }
 class Car {
-    constructor(x, y, w, l) {
+    constructor() {
 
         // car design
-        this.w = w; //width
-        this.l = l; //length
-        this.wheelWidth = 30;
+        this.w = 40; //width
+        this.l = 60; //length
+        this.wheelWidth = 10;
         this.wheelAspect = 2
         this.oversize = 1.15;
         this.bodyAspect = 1.3;
 
         // mech + kin
-        this.x = x; // x pos
-        this.y = y; // y pos
+        this.x = 70; // x pos relative to car
+        this.y = 150; // y pos
 
         this.ax = 0; // x accel
         this.ay = 0; // y accel
@@ -54,12 +54,12 @@ class Car {
 
 
         // specs
-        this.steeringRate = 0.1;
+        this.steeringRate = 0.2;
         this.steeringMax = 45 * Math.PI / 180;
-        this.steeringCentreRate = 0.01;
+        this.steeringCentreRate = 0.02;
         this.torqueRate = 0.1;
-        this.torqueMax = 1;
-        this.brakeMax = 2;
+        this.torqueMax = .5;
+        this.brakeMax = 1;
         this.brakeRate = 0.4;
 
         this.rotMat = calcRotMat(this.theta);
@@ -76,23 +76,27 @@ class Car {
             new Wheel(this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, 0.0)
         ];
     }
-
     readTrack() {
         this.wheels.forEach(function (wheel) {
-            let xw = Math.round(wheel.x + car.x);
-            let yw = Math.round(wheel.y + car.y);
+            //wheel centre abs coords
+            let xw = Math.round(wheel.xa * scl);
+            let yw = Math.round(wheel.ya * scl);
             let nX = img.width;
-            let r = imageData[((yw * (nX * 4)) + (xw * 4)) + 0];
-            let g = imageData[((yw * (nX * 4)) + (xw * 4)) + 1];
-            let b = imageData[((yw * (nX * 4)) + (xw * 4)) + 2];
-            // a = imageData[((yw * (img.width * 4)) + (xw * 4)) + 3];
-            wheel.sfc = (r+g+b)/3/255;
+            let nY = img.height;
+            if (xw < 0 | xw > nX | yw < 0 | yw > nY) {
+                wheel.sfc = 1;
+            }
+            else {
+                // yw=nY-yw
+                let r = imageData[((yw * (nX * 4)) + (xw * 4)) + 0];
+                let g = imageData[((yw * (nX * 4)) + (xw * 4)) + 1];
+                let b = imageData[((yw * (nX * 4)) + (xw * 4)) + 2];
+                // a = imageData[((yw * (img.width * 4)) + (xw * 4)) + 3];
+                wheel.sfc = (r + g + b) / 3 / 255;
+            }
             // console.log(r)
         })
     }
-
-
-
     draw(ctx) {
         this.wheels.forEach(wheel => wheel.draw(ctx, this));
 
@@ -102,7 +106,7 @@ class Car {
 
         ctx.beginPath();
         ctx.strokeStyle = "white";
-        ctx.lineWidth = baseLW;
+        ctx.lineWidth = baseLW / scl;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
@@ -110,22 +114,21 @@ class Car {
         }
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.stroke();
-        // console.log(this);
 
-        //velocity vector
-        ctx.beginPath();
-        ctx.strokeStyle = "yellow";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x + this.ux * vel_scl, this.y + this.uy * vel_scl);
-        ctx.stroke();
-        //acceleration vector
-        ctx.beginPath();
-        ctx.strokeStyle = "magenta";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x + this.ax * acc_scl, this.y + this.ay * acc_scl);
-        ctx.stroke();
+        // //velocity vector
+        // ctx.beginPath();
+        // ctx.strokeStyle = "yellow";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(this.x, this.y);
+        // ctx.lineTo(this.x + this.ux * vel_scl, this.y + this.uy * vel_scl);
+        // ctx.stroke();
+        // //acceleration vector
+        // ctx.beginPath();
+        // ctx.strokeStyle = "magenta";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(this.x, this.y);
+        // ctx.lineTo(this.x + this.ax * acc_scl, this.y + this.ay * acc_scl);
+        // ctx.stroke();
 
 
     }
@@ -189,8 +192,11 @@ class Car {
         let Fx = 0;
         let Fy = 0;
 
+
         for (let i = 0; i < 4; i++) {
             let wh = this.wheels[i];
+            let cos_thth = Math.cos(this.theta + wh.theta);
+            let sin_thphi = Math.sin(this.theta + wh.theta);
 
             // velocity - relative to car
             wh.ux = +this.thetaDot * wh.d * Math.cos(this.theta + wh.phi);
@@ -200,35 +206,38 @@ class Car {
             wh.uyA = wh.uy + this.uy;
 
             // velocity parallel/perpendicular to wheel
-            wh.uApar = -wh.uyA * Math.cos(this.theta + wh.theta) - wh.uxA * Math.sin(this.theta + wh.theta);
-            wh.uAperp = -wh.uyA * Math.sin(this.theta + wh.theta) + wh.uxA * Math.cos(this.theta + wh.theta);
+            wh.uApar = -wh.uyA * cos_thth - wh.uxA * sin_thphi;
+            wh.uAperp = -wh.uyA * sin_thphi + wh.uxA * cos_thth;
 
             //thrust
-            wh.FTx = wh.torque * Math.sin(this.theta + wh.theta);
-            wh.FTy = wh.torque * Math.cos(this.theta + wh.theta);
+            wh.FTx = wh.torque * sin_thphi;
+            wh.FTy = wh.torque * cos_thth;
+
+            //drag
+            wh.FDx = -wh.uxA * wh.drg;
+            wh.FDy = -wh.uyA * wh.drg;
 
             // braking
-            if (Math.abs(wh.uApar) < 2) {
-                wh.FBx = wh.uApar * wh.brake * Math.sin(this.theta + wh.theta);
-                wh.FBy = wh.uApar * wh.brake * Math.cos(this.theta + wh.theta);
+            if (Math.abs(wh.uApar) < 1) {
+                wh.FBx = wh.uApar * wh.brake * wh.sfc * sin_thphi;
+                wh.FBy = wh.uApar * wh.brake * wh.sfc * cos_thth;
             }
             else {
-                wh.FBx = Math.sign(wh.uApar) * wh.brake * Math.sin(this.theta + wh.theta);
-                wh.FBy = Math.sign(wh.uApar) * wh.brake * Math.cos(this.theta + wh.theta);
+                wh.FBx = Math.sign(wh.uApar) * wh.brake * sin_thphi;
+                wh.FBy = Math.sign(wh.uApar) * wh.brake * cos_thth;
             }
 
             // lateral friction
-
-            if (Math.abs(wh.uAperp < 1)) {
+            if (Math.abs(wh.uAperp) < 2) {
                 wh.skidFac = 0;
-                wh.FLx = -(wh.uAperp) * Math.cos(this.theta + wh.theta) * mu_lat;
-                wh.FLy = (wh.uAperp) * Math.sin(this.theta + wh.theta) * mu_lat;
+                wh.FLx = -(wh.uAperp) * cos_thth * mu_lat * wh.sfc;
+                wh.FLy = (wh.uAperp) * sin_thphi * mu_lat * wh.sfc;
                 // console.log("tract")
             }
             else {
                 wh.skidFac = 5;
-                wh.FLx = -Math.sign(wh.uAperp) * Math.cos(this.theta + wh.theta) * mu_lat;
-                wh.FLy = Math.sign(wh.uAperp) * Math.sin(this.theta + wh.theta) * mu_lat;
+                wh.FLx = -Math.sign(wh.uAperp) * cos_thth * mu_lat * wh.sfc;
+                wh.FLy = Math.sign(wh.uAperp) * sin_thphi * mu_lat * wh.sfc;
                 // console.log("skid")
             }
 
@@ -242,8 +251,8 @@ class Car {
 
 
             // resultant wheel force
-            Fx = Fx + wh.FTx + wh.FBx + wh.FLx;
-            Fy = Fy + wh.FTy + wh.FBy + wh.FLy;
+            Fx = Fx + wh.FTx + wh.FBx + wh.FLx + wh.FDx;
+            Fy = Fy + wh.FTy + wh.FBy + wh.FLy + wh.FDy;
 
         }
 
@@ -259,14 +268,15 @@ class Car {
         this.thetaDot = this.thetaDot + this.to / this.momI * dt;
         this.theta = this.theta + this.thetaDot * dt;
         this.rotMat = calcRotMat(this.theta);
-
     }
 
 }
 class Wheel {
     constructor(x, y, width, aspect, th) {
-        this.x = x; // wheel centre position relative to car
+        this.x = x; // wheel centre position relative to car CoM
         this.y = y;
+        this.xa = x; // x pos absolute
+        this.ya = y; // y pos
         this.ux = 0; // relative (to car) velocity
         this.uy = 0;
         this.uxA = 0; // abs velocity
@@ -279,8 +289,9 @@ class Wheel {
         this.FLy = 0;
 
         this.sfc = 0; //surface, to be read from track img
+        this.drg = 0.01;
 
-        this.d = (x ** 2 + y ** 2) ** 0.5;
+        this.d = (x ** 2 + y ** 2) ** 0.5; // distance to car CoM
         this.phi = Math.atan2(x, y);
         // this.phiy = Math.atan2(y, -x);
         this.width = width;
@@ -306,7 +317,7 @@ class Wheel {
         x = MatrixTrans(x, [car.x, car.y])
         ctx.beginPath();
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = baseLW;
+        ctx.lineWidth = baseLW / scl;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < 4; i++) {
@@ -317,49 +328,50 @@ class Wheel {
 
         //wheel centre abs coords
         x = MatrixProd([[this.x, this.y]], car.rotMat);
-        x = MatrixTrans(x, [car.x, car.y])
+        x = MatrixTrans(x, [car.x, car.y]);
+        this.xa = x[0][0];
+        this.ya = x[0][1];
+        // //draw rel vel vectors
+        // ctx.beginPath();
+        // ctx.strokeStyle = "purple";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(this.xa, this.ya);
+        // ctx.lineTo(this.xa + this.ux * vel_scl, this.ya + this.uy * vel_scl);
+        // ctx.stroke();
 
-        //draw rel vel vectors
-        ctx.beginPath();
-        ctx.strokeStyle = "purple";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(x[0][0], x[0][1]);
-        ctx.lineTo(x[0][0] + this.ux * vel_scl, x[0][1] + this.uy * vel_scl);
-        ctx.stroke();
-
-        //draw abs vel vectors
-        ctx.beginPath();
-        ctx.strokeStyle = "yellow";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(x[0][0], x[0][1]);
-        ctx.lineTo(x[0][0] + this.uxA * vel_scl, x[0][1] + this.uyA * vel_scl);
-        ctx.stroke();
-
-
-        //draw thrust force vectors
-        ctx.beginPath();
-        ctx.strokeStyle = "green";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(x[0][0], x[0][1]);
-        ctx.lineTo(x[0][0] + this.FTx * force_scl, x[0][1] + this.FTy * force_scl);
-        ctx.stroke();
+        // //draw abs vel vectors
+        // ctx.beginPath();
+        // ctx.strokeStyle = "yellow";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(x[0][0], x[0][1]);
+        // ctx.lineTo(x[0][0] + this.uxA * vel_scl, x[0][1] + this.uyA * vel_scl);
+        // ctx.stroke();
 
 
-        //draw brake force vectors
-        ctx.beginPath();
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(x[0][0], x[0][1]);
-        ctx.lineTo(x[0][0] + this.FBx * force_scl, x[0][1] + this.FBy * force_scl);
-        ctx.stroke();
+        // //draw thrust force vectors
+        // ctx.beginPath();
+        // ctx.strokeStyle = "green";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(x[0][0], x[0][1]);
+        // ctx.lineTo(x[0][0] + this.FTx * force_scl, x[0][1] + this.FTy * force_scl);
+        // ctx.stroke();
 
-        //draw lateral friction force vectors
-        ctx.beginPath();
-        ctx.strokeStyle = "turquoise";
-        ctx.lineWidth = baseLW;
-        ctx.moveTo(x[0][0], x[0][1]);
-        ctx.lineTo(x[0][0] + this.FLx * force_scl, x[0][1] + this.FLy * force_scl);
-        ctx.stroke();
+
+        // //draw brake force vectors
+        // ctx.beginPath();
+        // ctx.strokeStyle = "red";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(x[0][0], x[0][1]);
+        // ctx.lineTo(x[0][0] + this.FBx * force_scl, x[0][1] + this.FBy * force_scl);
+        // ctx.stroke();
+
+        // //draw lateral friction force vectors
+        // ctx.beginPath();
+        // ctx.strokeStyle = "turquoise";
+        // ctx.lineWidth = baseLW;
+        // ctx.moveTo(x[0][0], x[0][1]);
+        // ctx.lineTo(x[0][0] + this.FLx * force_scl, x[0][1] + this.FLy * force_scl);
+        // ctx.stroke();
 
 
     }
@@ -413,33 +425,12 @@ class InputState {
         }
     }
 }
-
-function anim() {
-    if (n < nMax) {
-        requestAnimationFrame(anim);
-    }
-    // if (n == 2) {
-    //     getImageData(img);
-    // }
-
-    // clear screen
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //scaled stuff
-
-    ctx.setTransform(scl, 0, 0, scl, 0, 0);
-    ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.width / scl);
-    car.draw(ctx);
-    car.control(inputState);
-    car.mechanic();
-    car.readTrack();
-    n++;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    drawDebug();
-    drawHUD();
-}
 function drawDebug() {
-    xw0 = Math.round((car.wheels[0].x + car.x) / img_scl);
-    yw0 = Math.round((car.wheels[0].y + car.y) / img_scl);
+    xw0 = Math.round(car.wheels[0].xa / img_scl);
+    yw0 = Math.round(car.wheels[0].ya / img_scl);
+    xw1 = Math.round(car.wheels[1].xa / img_scl);
+    yw1 = Math.round(car.wheels[1].ya / img_scl);
+
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
     nX = img.width;
@@ -451,7 +442,7 @@ function drawDebug() {
     // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
 
     ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
-    ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 120)
+    ctx.fillText(xw1.toFixed(1) + " " + yw1.toFixed(1), 100, 120)
     ctx.fillText(nX + " " + nY, 100, 140)
     ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
 }
@@ -461,14 +452,13 @@ function showImage(fileReader) {
     img.src = fileReader.result;
 
 }
-
 function drawHUD() {
     hudX = 10;
     hudY = 10;
     barHeight = 50;
     barWidthSpace = 5;
     barWidth = 20;
-
+    ctx.lineWidth = baseLW;
     ctx.strokeStyle = "green";
     ctx.fillStyle = "green";
     ctx.beginPath();
@@ -511,7 +501,8 @@ function drawHUD() {
     ctx.fill();
 
 
-    whX = [hudX, hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace)]
+    whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
+
     whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
     for (let i = 0; i < 4; i++) {
         ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
@@ -527,13 +518,50 @@ function drawHUD() {
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
         ctx.font = "15px arial";
-        ctx.fillText(Math.round(car.wheels[i].sfc*10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
+        ctx.fillText(Math.round(car.wheels[i].sfc * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
     }
 
 
 
 }
+function getImageData() {
+    ctx.drawImage(img, 0, 0);
+    imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+    console.log("image data:", imageData);
+}
+// document.getElementById('myFile').onchange = function (evt) {
+//     var tgt = evt.target || window.event.srcElement, files = tgt.files;
+//     // FileReader support
+//     if (FileReader && files && files.length) {
+//         var fr = new FileReader();
+//         fr.onload = () => showImage(fr);
+//         fr.readAsDataURL(files[0]);
+//     }
+// }
+function anim() {
+    if (n < nMax) {
+        requestAnimationFrame(anim);
+    }
+    // if (n == 2) {
+    //     getImageData(img);
+    // }
 
+    // clear screen
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //scaled stuff
+
+    // ctx.setTransform(scl, 0, 0, scl, 0, 0);
+    ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.height / scl);
+    car.draw(ctx);
+    car.control(inputState);
+    car.readTrack();
+    car.mechanic();
+
+    n++;
+    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // drawDebug();
+    drawHUD();
+}
 const canvas = document.getElementById("cw");
 const ctx = canvas.getContext("2d");
 const PI2 = Math.PI * 2;
@@ -546,58 +574,38 @@ let baseLW = 2;
 let X = canvas.width;
 let Y = canvas.height;
 
+console.log("pixel ratio", pixRat)
+
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
 
 const dt = 0.2
 const vel_scl = 1;
 const acc_scl = 1;
-const force_scl = 10;
-const mu_lat = 1;
+const force_scl = 20;
+const mu_lat = 3;
 const forceBrake = false;
 const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
-let scl = 1.0;
+
+let scl = 1;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
-let car = new Car(x = 300, y = 400, w = 120, l = 200);
+let car = new Car(x = 200, y = 300, w = 120, l = 200);
 
 // image set up
 const img = new Image();   // Create new img element
-img.src = 'ring.png'; // Set source path
+img.src = 'track.png'; // Set source path
 img_scl = 1;
 
-// var canvasi = document.createElement("canvas");
-// var ctxi = canvas.getContext("2d");
-// var imageData;
-// ctx.clearRect(0, 0, canvas.width, canvas.height);
-// getImageData(img);
-// var canvas = document.createElement("canvas");
-// var ctx = canvas.getContext("2d");
-
 let imageData;
-document.getElementById('myFile').onchange = function (evt) {
-    var tgt = evt.target || window.event.srcElement, files = tgt.files;
-    // FileReader support
-    if (FileReader && files && files.length) {
-        var fr = new FileReader();
-        fr.onload = () => showImage(fr);
-        fr.readAsDataURL(files[0]);
-    }
-}
-
-
-function getImageData() {
-    ctx.drawImage(img, 0, 0);
-    imageData = ctx.getImageData(0, 0, img.width, img.height).data;
-    console.log("image data:", imageData);
-}
 
 img.onload = function () {
     getImageData();
     anim();
+    console.log(img.width, img.height)
 }
 
 
