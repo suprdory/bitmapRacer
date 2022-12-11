@@ -1,0 +1,3 @@
+-track types. convert img data into tracktype matrix
+-pan ahead of position (predictied position, speed and velocity (delta?) dependendent)
+-bottom track bound error

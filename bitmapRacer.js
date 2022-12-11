@@ -38,8 +38,8 @@ class Car {
         this.bodyAspect = 1.3;
 
         // mech + kin
-        this.x = 70; // x pos relative to car
-        this.y = 150; // y pos
+        this.x = 200*img_scl; // x pos 
+        this.y = 200*img_scl; // y pos
 
         this.ax = 0; // x accel
         this.ay = 0; // y accel
@@ -63,6 +63,7 @@ class Car {
         this.torqueMax = .5;
         this.brakeMax = 1;
         this.brakeRate = 0.4;
+        this.wheelDrag=0.0005;
 
         this.rotMat = calcRotMat(this.theta);
 
@@ -72,10 +73,10 @@ class Car {
         let yr = -this.l / 2 * this.oversize * this.bodyAspect;
         this.coordMat = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
         this.wheels = [
-            new Wheel(-this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, 0.0),
-            new Wheel(this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, 0.0),
-            new Wheel(-this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, 0.0),
-            new Wheel(this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, 0.0)
+            new Wheel(-this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
+            new Wheel(this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
+            new Wheel(-this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
+            new Wheel(this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag)
         ];
     }
     readTrack() {
@@ -85,7 +86,7 @@ class Car {
             let yw = Math.round(wheel.ya * scl / img_scl);
             let nX = img.width;
             let nY = img.height;
-            if (xw < 0 | xw > nX | yw < 0 | yw > nY) {
+            if (xw < 0 | xw > (nX-1) | yw < 0 | yw > (nY-1)) {
                 wheel.sfc = 1;
             }
             else {
@@ -150,10 +151,10 @@ class Car {
             // this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         else {
-            this.wheels[0].theta = this.wheels[0].theta + (-this.wheels[0].theta-this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt;
+            this.wheels[0].theta = Math.max(-this.steeringMax,Math.min(this.steeringMax,this.wheels[0].theta + (-this.wheels[0].theta-this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
+            
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta
-            // this.wheels[1].theta = this.wheels[1].theta - this.wheels[1].theta * this.U ** 0.5 * this.steeringCentreRate * dt;
             this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         if (inputState.up) {
@@ -280,7 +281,7 @@ class Car {
 
 }
 class Wheel {
-    constructor(x, y, width, aspect, th) {
+    constructor(x, y, width, aspect, drag) {
         this.x = x; // wheel centre position relative to car CoM
         this.y = y;
         this.xa = x; // x pos absolute
@@ -297,14 +298,14 @@ class Wheel {
         this.FLy = 0;
 
         this.sfc = 0; //surface, to be read from track img
-        this.drg = 0.005;
+        this.drg = drag;
 
         this.d = (x ** 2 + y ** 2) ** 0.5; // distance to car CoM
         this.phi = Math.atan2(x, y);
         // this.phiy = Math.atan2(y, -x);
         this.width = width;
         this.length = width * aspect;
-        this.theta = th;
+        this.theta = 0;
         this.grip = 1;
         this.color = "white";
         this.torque = 0;
@@ -441,8 +442,8 @@ function drawDebug() {
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
-    nX = img.width;
-    nY = img.height;
+    // nX = img.width;
+    // nY = img.height;
     // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
     // g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
     // b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
@@ -452,9 +453,9 @@ function drawDebug() {
     // ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
     // ctx.fillText(xw1.toFixed(1) + " " + yw1.toFixed(1), 100, 120)
     // ctx.fillText(nX + " " + nY, 100, 140);
-    ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
-    ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
-    ctx.fillText("theta-thetaU " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
+    // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
+    // ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
+    // ctx.fillText("headOff " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
     // ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
 }
 function showImage(fileReader) {
@@ -540,6 +541,12 @@ function getImageData() {
     imageData = ctx.getImageData(0, 0, img.width, img.height).data;
     console.log("image data:", imageData);
 }
+function image2trackDat(){
+    //turn image data into track variables
+    
+
+}
+
 // document.getElementById('myFile').onchange = function (evt) {
 //     var tgt = evt.target || window.event.srcElement, files = tgt.files;
 //     // FileReader support
@@ -561,7 +568,14 @@ function anim() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     //scaled stuff
 
-    ctx.setTransform(scl, 0, 0, scl, X / 2 - car.x, Y / 2 - car.y);
+    xct = (car.x + car.ux * lookAhead)
+    yct = (car.y + car.uy * lookAhead)
+
+    xc=xc+(xct-xc)*panSpeed
+    yc = yc + (yct - yc) * panSpeed
+   
+
+    ctx.setTransform(scl, 0, 0, scl, X / 2 - xc, Y / 2 -yc);
     ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.height / scl);
     car.draw(ctx);
     car.control(inputState);
@@ -573,6 +587,9 @@ function anim() {
     drawDebug();
     drawHUD();
 }
+
+
+
 const canvas = document.getElementById("cw");
 const ctx = canvas.getContext("2d");
 const PI2 = Math.PI * 2;
@@ -584,6 +601,10 @@ canvas.style.height = window.innerHeight + "px";
 let baseLW = 2;
 let X = canvas.width;
 let Y = canvas.height;
+let xc=0 // screen centre coords
+let yc=0
+let lookAhead=5;
+let panSpeed=0.2;
 
 console.log("pixel ratio", pixRat)
 
@@ -601,6 +622,7 @@ const forceLeft = false;
 // const forceBrake = true;
 
 let scl = 1;
+let img_scl = 3;
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
@@ -609,7 +631,7 @@ let car = new Car(x = 200, y = 300, w = 120, l = 200);
 // image set up
 const img = new Image();   // Create new img element
 img.src = 'square_track.png'; // Set source path
-img_scl = 2;
+
 
 let imageData;
 
