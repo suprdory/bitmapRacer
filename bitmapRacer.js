@@ -556,25 +556,22 @@ function image2trackDat(){
 //         fr.readAsDataURL(files[0]);
 //     }
 // }
-function anim() {
+function anim() { 
+    n++;
     if (n < nMax) {
         requestAnimationFrame(anim);
     }
-    // if (n == 2) {
-    //     getImageData(img);
-    // }
 
     // clear screen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //scaled stuff
 
+    // calc screen centre coords
     xct = (car.x + car.ux * lookAhead)
     yct = (car.y + car.uy * lookAhead)
-
     xc=xc+(xct-xc)*panSpeed
     yc = yc + (yct - yc) * panSpeed
    
-
+    //draw scaled stuff
     ctx.setTransform(scl, 0, 0, scl, X / 2 - xc, Y / 2 -yc);
     ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.height / scl);
     car.draw(ctx);
@@ -582,7 +579,7 @@ function anim() {
     car.readTrack();
     car.mechanic();
 
-    n++;
+    // draw unscaled scaled stuff
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     drawDebug();
     drawHUD();
