@@ -38,8 +38,8 @@ class Car {
         this.bodyAspect = 1.3;
 
         // mech + kin
-        this.x = 200*img_scl; // x pos 
-        this.y = 200*img_scl; // y pos
+        this.x = 200 * scl; // x pos 
+        this.y = 200 * scl; // y pos
 
         this.ax = 0; // x accel
         this.ay = 0; // y accel
@@ -48,7 +48,7 @@ class Car {
         this.momI = 10000; // moment of inertia
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
-        this.headOff=0; // heading - velocity angle
+        this.headOff = 0; // heading - velocity angle
         this.theta = 0; // heading angle
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
@@ -63,7 +63,7 @@ class Car {
         this.torqueMax = .5;
         this.brakeMax = 1;
         this.brakeRate = 0.4;
-        this.wheelDrag=0.0005;
+        this.wheelDrag = 0.0005;
 
         this.rotMat = calcRotMat(this.theta);
 
@@ -82,11 +82,11 @@ class Car {
     readTrack() {
         this.wheels.forEach(function (wheel) {
             //wheel centre abs coords
-            let xw = Math.round(wheel.xa * scl / img_scl);
-            let yw = Math.round(wheel.ya * scl / img_scl);
+            let xw = Math.round(wheel.xa * zoom / scl);
+            let yw = Math.round(wheel.ya * zoom / scl);
             let nX = img.width;
             let nY = img.height;
-            if (xw < 0 | xw > (nX-1) | yw < 0 | yw > (nY-1)) {
+            if (xw < 0 | xw > (nX - 1) | yw < 0 | yw > (nY - 1)) {
                 wheel.sfc = 1;
             }
             else {
@@ -100,16 +100,16 @@ class Car {
             // console.log(r)
         })
     }
-    draw(ctx) {
-        this.wheels.forEach(wheel => wheel.draw(ctx, this));
+    draw(ctx, xc, yc) {
+        this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
 
         x = this.coordMat;
         x = MatrixProd(x, this.rotMat);
-        x = MatrixTrans(x, [this.x, this.y])
+        x = MatrixTrans(x, [this.x + xc, this.y + yc])
 
         ctx.beginPath();
         ctx.strokeStyle = "white";
-        ctx.lineWidth = baseLW / scl;
+        ctx.lineWidth = baseLW / zoom;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
@@ -151,8 +151,8 @@ class Car {
             // this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         else {
-            this.wheels[0].theta = Math.max(-this.steeringMax,Math.min(this.steeringMax,this.wheels[0].theta + (-this.wheels[0].theta-this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
-            
+            this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax, this.wheels[0].theta + (-this.wheels[0].theta - this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
+
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta
             this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
@@ -318,15 +318,15 @@ class Wheel {
         this.rotMat = calcRotMat(this.theta);
     }
 
-    draw(ctx, car) {
+    draw(ctx, car,xc,yc) {
         // let x=this.coordMat;
         let x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [this.x, this.y]);
         x = MatrixProd(x, car.rotMat);
-        x = MatrixTrans(x, [car.x, car.y])
+        x = MatrixTrans(x, [car.x+xc, car.y+yc])
         ctx.beginPath();
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = baseLW / scl;
+        ctx.lineWidth = baseLW / zoom;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < 4; i++) {
@@ -435,10 +435,10 @@ class InputState {
     }
 }
 function drawDebug() {
-    // xw0 = Math.round(car.wheels[0].xa / img_scl);
-    // yw0 = Math.round(car.wheels[0].ya / img_scl);
-    // xw1 = Math.round(car.wheels[1].xa / img_scl);
-    // yw1 = Math.round(car.wheels[1].ya / img_scl);
+    // xw0 = Math.round(car.wheels[0].xa / scl);
+    // yw0 = Math.round(car.wheels[0].ya / scl);
+    // xw1 = Math.round(car.wheels[1].xa / scl);
+    // yw1 = Math.round(car.wheels[1].ya / scl);
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
@@ -539,11 +539,13 @@ function drawHUD() {
 function getImageData() {
     ctx.drawImage(img, 0, 0);
     imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+    Xi=img.width;
+    Yi=img.height;
     console.log("image data:", imageData);
 }
-function image2trackDat(){
+function image2trackDat() {
     //turn image data into track variables
-    
+
 
 }
 
@@ -556,7 +558,7 @@ function image2trackDat(){
 //         fr.readAsDataURL(files[0]);
 //     }
 // }
-function anim() { 
+function anim() {
     n++;
     if (n < nMax) {
         requestAnimationFrame(anim);
@@ -566,21 +568,27 @@ function anim() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // calc screen centre coords
-    xct = (car.x + car.ux * lookAhead)
-    yct = (car.y + car.uy * lookAhead)
-    xc=xc+(xct-xc)*panSpeed
+    xct = X/2-(car.x + car.ux * lookAhead)  //centre target, pan to this
+    yct = Y/2-(car.y + car.uy * lookAhead) 
+    xc = xc + (xct - xc) * panSpeed
     yc = yc + (yct - yc) * panSpeed
-   
+
     //draw scaled stuff
-    ctx.setTransform(scl, 0, 0, scl, X / 2 - xc, Y / 2 -yc);
-    ctx.drawImage(img, 0, 0, img_scl * img.width / scl, img_scl * img.height / scl);
-    car.draw(ctx);
+    // ctx.setTransform(zoom, 0, 0, zoom,  xc,   yc);
+    // ctx.drawImage(img, 0, 0, scl * img.width / zoom, scl * img.height / zoom);
+
+    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+    x0=-xc/scl
+    y0=-yc/scl
+    ctx.drawImage(img, x0, y0, Xi/scl, Yi/scl,0,0,X,Y);
+
     car.control(inputState);
     car.readTrack();
     car.mechanic();
 
     // draw unscaled scaled stuff
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    car.draw(ctx, xc, yc);
     drawDebug();
     drawHUD();
 }
@@ -598,10 +606,12 @@ canvas.style.height = window.innerHeight + "px";
 let baseLW = 2;
 let X = canvas.width;
 let Y = canvas.height;
-let xc=0 // screen centre coords
-let yc=0
-let lookAhead=5;
-let panSpeed=0.2;
+let Xi; //image width and height
+let Yi;
+let xc = 0 // screen centre coords
+let yc = 0
+let lookAhead = 5;
+let panSpeed = 0.2;
 
 console.log("pixel ratio", pixRat)
 
@@ -618,8 +628,8 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let scl = 1;
-let img_scl = 3;
+let zoom = 1; //global zoom - not implemented
+let scl = 3; //scale track copmared to car
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
