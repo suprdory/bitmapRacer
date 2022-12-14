@@ -84,26 +84,23 @@ class Car {
             //wheel centre abs coords
             let xw = Math.round(wheel.xa * zoom / scl);
             let yw = Math.round(wheel.ya * zoom / scl);
-            let nX = img.width;
-            let nY = img.height;
-            if (xw < 0 | xw > (nX - 1) | yw < 0 | yw > (nY - 1)) {
-                wheel.sfc = 1;
+            if (xw < 0 | xw > (Xi - 1) | yw < 0 | yw > (Yi - 1)) {
+                wheel.sfc_mu = sfcTypes.outOfBounds.mu;
+                wheel.sfc_drag= sfcTypes.outOfBounds.drag;
             }
             else {
-                // yw=nY-yw
-                let r = imageData[((yw * (nX * 4)) + (xw * 4)) + 0];
-                let g = imageData[((yw * (nX * 4)) + (xw * 4)) + 1];
-                let b = imageData[((yw * (nX * 4)) + (xw * 4)) + 2];
-                // a = imageData[((yw * (img.width * 4)) + (xw * 4)) + 3];
-                wheel.sfc = (r + g + b) / 3 / 255;
+                // wheel.h = h[xw][yw];
+                // wheel.s = s[xw][yw];
+                // wheel.l = l[xw][yw];
+                wheel.sfc_mu = sfc_mu[xw][yw]
+                wheel.sfc_drag = sfc_drag[xw][yw]
             }
-            // console.log(r)
         })
     }
     draw(ctx, xc, yc) {
         this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
 
-        x = this.coordMat;
+        let x = this.coordMat;
         x = MatrixProd(x, this.rotMat);
         x = MatrixTrans(x, [this.x + xc, this.y + yc])
 
@@ -220,13 +217,16 @@ class Car {
             wh.FTy = wh.torque * cos_thth;
 
             //drag
-            wh.FDx = -wh.uxA * wh.drg;
-            wh.FDy = -wh.uyA * wh.drg;
+            wh.FDx = -wh.uxA * wh.sfc_drag;
+            wh.FDy = -wh.uyA * wh.sfc_drag;
+            // //drag
+            // wh.FDx = -wh.uxA * wh.drg;
+            // wh.FDy = -wh.uyA * wh.drg;
 
             // braking
             if (Math.abs(wh.uApar) < 1) {
-                wh.FBx = wh.uApar * wh.brake * wh.sfc * sin_thphi;
-                wh.FBy = wh.uApar * wh.brake * wh.sfc * cos_thth;
+                wh.FBx = wh.uApar * wh.brake * wh.sfc_mu * sin_thphi;
+                wh.FBy = wh.uApar * wh.brake * wh.sfc_mu * cos_thth;
             }
             else {
                 wh.FBx = Math.sign(wh.uApar) * wh.brake * sin_thphi;
@@ -236,14 +236,14 @@ class Car {
             // lateral friction
             if (Math.abs(wh.uAperp) < 2) {
                 wh.skidFac = 0;
-                wh.FLx = -(wh.uAperp) * cos_thth * mu_lat * wh.sfc;
-                wh.FLy = (wh.uAperp) * sin_thphi * mu_lat * wh.sfc;
+                wh.FLx = -(wh.uAperp) * cos_thth * mu_lat * wh.sfc_mu;
+                wh.FLy = (wh.uAperp) * sin_thphi * mu_lat * wh.sfc_mu;
                 // console.log("tract")
             }
             else {
                 wh.skidFac = 5;
-                wh.FLx = -Math.sign(wh.uAperp) * cos_thth * mu_lat * wh.sfc;
-                wh.FLy = Math.sign(wh.uAperp) * sin_thphi * mu_lat * wh.sfc;
+                wh.FLx = -Math.sign(wh.uAperp) * cos_thth * mu_lat * wh.sfc_mu;
+                wh.FLy = Math.sign(wh.uAperp) * sin_thphi * mu_lat * wh.sfc_mu;
                 // console.log("skid")
             }
 
@@ -254,7 +254,6 @@ class Car {
             // torque due to lateral friction
             this.to = this.to + wh.FLx * wh.d * Math.cos(this.theta + wh.phi);
             this.to = this.to + -wh.FLy * wh.d * Math.sin(this.theta + wh.phi);
-
 
             // resultant wheel force
             Fx = Fx + wh.FTx + wh.FBx + wh.FLx + wh.FDx;
@@ -450,7 +449,13 @@ function drawDebug() {
     // a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
     // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
 
-    // ctx.fillText(xw0.toFixed(1) + " " + yw0.toFixed(1), 100, 100)
+    // show hsl
+    // ctx.fillText([
+    //     Math.round(car.wheels[0].h),
+    //     Math.round(car.wheels[0].s),
+    //     Math.round(car.wheels[0].l)
+    // ], 100, 100)
+
     // ctx.fillText(xw1.toFixed(1) + " " + yw1.toFixed(1), 100, 120)
     // ctx.fillText(nX + " " + nY, 100, 140);
     // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
@@ -530,29 +535,120 @@ function drawHUD() {
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
         ctx.font = "15px arial";
-        ctx.fillText(Math.round(car.wheels[i].sfc * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
+        ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
     }
 
 
 
 }
+const RGBToHSL = (r, g, b) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const l = Math.max(r, g, b);
+    const s = l - Math.min(r, g, b);
+    const h = s
+        ? l === r
+            ? (g - b) / s
+            : l === g
+                ? 2 + (b - r) / s
+                : 4 + (r - g) / s
+        : 0;
+    return [
+        60 * h < 0 ? 60 * h + 360 : 60 * h,
+        100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
+        (100 * (2 * l - s)) / 2,
+    ];
+};
+
 function getImageData() {
     ctx.drawImage(img, 0, 0);
     imageData = ctx.getImageData(0, 0, img.width, img.height).data;
     Xi = img.width;
     Yi = img.height;
-    console.log("image data:", imageData);
+    // console.log("image data:", imageData);
+    image2trackDat()
 }
 function image2trackDat() {
     //turn image data into track variables
+
+    // read rbg values from image data
+    let r = Array(Xi);
+    let g = Array(Xi);
+    let b = Array(Xi);
+    let a = Array(Xi);
     for (let i = 0; i < Xi; i++) {
+        let r_col = Array(Yi);
+        let g_col = Array(Yi);
+        let b_col = Array(Yi);
+        let a_col = Array(Yi);
         for (let j = 0; j < Yi; j++) {
-            let r = imageData[((j * (nX * 4)) + (i * 4)) + 0];
-            let g = imageData[((j * (nX * 4)) + (i * 4)) + 1];
-            let b = imageData[((j * (nX * 4)) + (i * 4)) + 2];
+            r_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 0];
+            b_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 1];
+            g_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 2];
+            a_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 2];
         }
+        r[i] = r_col
+        b[i] = g_col
+        g[i] = b_col
+        a[i] = a_col
     }
 
+    // convert rbg matrices into hsl matrices for surface type diag
+    h = Array(Xi);
+    s = Array(Xi);
+    l = Array(Xi);
+    for (let i = 0; i < Xi; i++) {
+        let h_col = Array(Yi);
+        let s_col = Array(Yi);
+        let l_col = Array(Yi);
+        for (let j = 0; j < Yi; j++) {
+            hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
+            h_col[j] = hslj[0];
+            s_col[j] = hslj[1];
+            l_col[j] = hslj[2];
+        }
+        h[i] = h_col
+        s[i] = s_col
+        l[i] = l_col
+    }
+
+    sfc_mu = Array(Xi);
+    sfc_drag = Array(Xi);
+
+    for (let i = 0; i < Xi; i++) {
+        mu_col = Array(Yi);
+        drag_col = Array(Yi);
+        for (let j = 0; j < Yi; j++) {
+            let sfcType;
+            hx = h[i][j];
+            sx = s[i][j];
+            lx = l[i][j];
+            if (lx == 0) { //black
+                sfcType = 'outOfBounds';
+            }
+            else if (sx < 10) { //colourless, not black
+                sfcType = 'tarmac'
+            }
+            else if (hx >= 70 & hx <= 150) { // green
+                sfcType = 'grass';
+            }
+            else if ((hx > 330 | hx < 50) & lx < 50) { //dark red/yellow i.e. brown
+                sfcType = 'mud';
+            }
+            else {
+                sfcType = 'unknown';
+            }
+
+            // console.log(sfcType)
+            mu_col[j] = sfcTypes[sfcType]['mu']
+            drag_col[j] = sfcTypes[sfcType]['drag']
+
+            sfc_mu[i] = mu_col;
+            sfc_drag[i] = drag_col;
+        }
+
+    }
 }
 
 // document.getElementById('myFile').onchange = function (evt) {
@@ -565,11 +661,13 @@ function image2trackDat() {
 //     }
 // }
 function anim() {
-    n++;
-    if (n < nMax) {
-        requestAnimationFrame(anim);
-    }
+    // n++;
+    // if (n < nMax) {
+    //     requestAnimationFrame(anim);
+    // }
 
+    requestAnimationFrame(anim);
+    
     // clear screen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -593,13 +691,13 @@ function anim() {
     car.mechanic();
 
     // draw unscaled scaled stuff
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // ctx.setTransform(1, 0, 0, 1, 0, 0);
     car.draw(ctx, xc, yc);
     drawDebug();
     drawHUD();
 }
 
-
+// let h, s, l;
 
 const canvas = document.getElementById("cw");
 const ctx = canvas.getContext("2d");
@@ -624,7 +722,16 @@ console.log("pixel ratio", pixRat)
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
 
-let sfc_mu;
+let sfcTypes =
+{
+    'outOfBounds': { 'mu': 1.0, 'drag': 0.2 }, //black
+    'tarmac': { 'mu': 0.8, 'drag': 0.001 }, // grey
+    'grass': { 'mu': 0.3, 'drag': 0.02 }, //green
+    'mud': { 'mu': 0.2, 'drag': 0.3 }, // brown
+    'unknown': { 'mu': 0.8, 'drag': 0.01 }, // brown
+}
+
+let sfc_mu; // 2d arrays, dims of track
 let sfc_drag;
 
 const dt = 0.2
@@ -642,11 +749,12 @@ let scl = 3; //scale track copmared to car
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
-let car = new Car(x = 200, y = 300, w = 120, l = 200);
+let car = new Car(200, 300, w = 120, l = 200);
 
 // image set up
-const img = new Image();   // Create new img element
-img.src = 'tracks/square_track.png'; // Set source path
+const img = new Image();
+img.src = 'tracks/square_track.png';
+// img.src = 'tracks/tiny.png';
 
 
 let imageData;
@@ -654,7 +762,5 @@ let imageData;
 img.onload = function () {
     getImageData();
     anim();
-    console.log(img.width, img.height)
+    // console.log(img.width, img.height)
 }
-
-
