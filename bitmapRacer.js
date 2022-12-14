@@ -318,12 +318,12 @@ class Wheel {
         this.rotMat = calcRotMat(this.theta);
     }
 
-    draw(ctx, car,xc,yc) {
+    draw(ctx, car, xc, yc) {
         // let x=this.coordMat;
         let x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [this.x, this.y]);
         x = MatrixProd(x, car.rotMat);
-        x = MatrixTrans(x, [car.x+xc, car.y+yc])
+        x = MatrixTrans(x, [car.x + xc, car.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.color;
         ctx.lineWidth = baseLW / zoom;
@@ -539,13 +539,19 @@ function drawHUD() {
 function getImageData() {
     ctx.drawImage(img, 0, 0);
     imageData = ctx.getImageData(0, 0, img.width, img.height).data;
-    Xi=img.width;
-    Yi=img.height;
+    Xi = img.width;
+    Yi = img.height;
     console.log("image data:", imageData);
 }
 function image2trackDat() {
     //turn image data into track variables
-
+    for (let i = 0; i < Xi; i++) {
+        for (let j = 0; j < Yi; j++) {
+            let r = imageData[((j * (nX * 4)) + (i * 4)) + 0];
+            let g = imageData[((j * (nX * 4)) + (i * 4)) + 1];
+            let b = imageData[((j * (nX * 4)) + (i * 4)) + 2];
+        }
+    }
 
 }
 
@@ -568,8 +574,8 @@ function anim() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // calc screen centre coords
-    xct = X/2-(car.x + car.ux * lookAhead)  //centre target, pan to this
-    yct = Y/2-(car.y + car.uy * lookAhead) 
+    xct = X / 2 - (car.x + car.ux * lookAhead)  //centre target, pan to this
+    yct = Y / 2 - (car.y + car.uy * lookAhead)
     xc = xc + (xct - xc) * panSpeed
     yc = yc + (yct - yc) * panSpeed
 
@@ -578,9 +584,9 @@ function anim() {
     // ctx.drawImage(img, 0, 0, scl * img.width / zoom, scl * img.height / zoom);
 
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
-    x0=-xc/scl
-    y0=-yc/scl
-    ctx.drawImage(img, x0, y0, Xi/scl, Yi/scl,0,0,X,Y);
+    x0 = -xc / scl
+    y0 = -yc / scl
+    ctx.drawImage(img, x0, y0, X / scl, Y / scl, 0, 0, X, Y);
 
     car.control(inputState);
     car.readTrack();
@@ -618,6 +624,9 @@ console.log("pixel ratio", pixRat)
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
 
+let sfc_mu;
+let sfc_drag;
+
 const dt = 0.2
 const vel_scl = 1;
 const acc_scl = 1;
@@ -637,7 +646,7 @@ let car = new Car(x = 200, y = 300, w = 120, l = 200);
 
 // image set up
 const img = new Image();   // Create new img element
-img.src = 'square_track.png'; // Set source path
+img.src = 'tracks/square_track.png'; // Set source path
 
 
 let imageData;
