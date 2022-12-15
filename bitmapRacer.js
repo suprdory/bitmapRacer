@@ -45,7 +45,7 @@ class Car {
         this.ay = 0; // y accel
         this.m = 1; // mass
         this.to = 0; //heading torque;
-        this.momI = 10000; // moment of inertia
+        this.momI = 10000*this.m; // moment of inertia
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
@@ -58,11 +58,11 @@ class Car {
         // specs
         this.steeringRate = 0.2;
         this.steeringMax = 45 * Math.PI / 180;
-        this.steeringCentreRate = 0.05;
+        this.steeringCentreRate = 0.1;
         this.torqueRate = 0.1;
         this.torqueMax = .5;
-        this.brakeMax = 1;
-        this.brakeRate = 0.4;
+        this.brakeMax = 2;
+        this.brakeRate = 0.8;
         this.wheelDrag = 0.0005;
 
         this.rotMat = calcRotMat(this.theta);
@@ -82,8 +82,8 @@ class Car {
     readTrack() {
         this.wheels.forEach(function (wheel) {
             //wheel centre abs coords
-            let xw = Math.round(wheel.xa * zoom / scl);
-            let yw = Math.round(wheel.ya * zoom / scl);
+            let xw = Math.round(wheel.xa / scl);
+            let yw = Math.round(wheel.ya / scl);
             if (xw < 0 | xw > (Xi - 1) | yw < 0 | yw > (Yi - 1)) {
                 wheel.sfc_mu = sfcTypes.outOfBounds.mu;
                 wheel.sfc_drag= sfcTypes.outOfBounds.drag;
@@ -678,10 +678,9 @@ function anim() {
     yc = yc + (yct - yc) * panSpeed
 
     //draw scaled stuff
-    // ctx.setTransform(zoom, 0, 0, zoom,  xc,   yc);
-    // ctx.drawImage(img, 0, 0, scl * img.width / zoom, scl * img.height / zoom);
-
+    ctx.setTransform(zoom, 0, 0, zoom, (1-zoom) * X / 2, (1-zoom) * Y / 2);
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
+
     x0 = -xc / scl
     y0 = -yc / scl
     ctx.drawImage(img, x0, y0, X / scl, Y / scl, 0, 0, X, Y);
@@ -689,10 +688,10 @@ function anim() {
     car.control(inputState);
     car.readTrack();
     car.mechanic();
-
-    // draw unscaled scaled stuff
-    // ctx.setTransform(1, 0, 0, 1, 0, 0);
     car.draw(ctx, xc, yc);
+    
+    // draw unscaled scaled stuff
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     drawDebug();
     drawHUD();
 }
@@ -744,8 +743,8 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let zoom = 1; //global zoom - not implemented
-let scl = 3; //scale track copmared to car
+let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping
+let scl = 3.0; //scale track copmared to car
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
