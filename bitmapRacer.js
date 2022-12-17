@@ -45,7 +45,7 @@ class Car {
         this.ay = 0; // y accel
         this.m = 1; // mass
         this.to = 0; //heading torque;
-        this.momI = 10000*this.m; // moment of inertia
+        this.momI = 10000 * this.m; // moment of inertia
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
@@ -86,7 +86,7 @@ class Car {
             let yw = Math.round(wheel.ya / scl);
             if (xw < 0 | xw > (Xi - 1) | yw < 0 | yw > (Yi - 1)) {
                 wheel.sfc_mu = sfcTypes.outOfBounds.mu;
-                wheel.sfc_drag= sfcTypes.outOfBounds.drag;
+                wheel.sfc_drag = sfcTypes.outOfBounds.drag;
             }
             else {
                 // wheel.h = h[xw][yw];
@@ -568,6 +568,12 @@ function getImageData() {
     Yi = img.height;
     // console.log("image data:", imageData);
     image2trackDat()
+
+    canvasTrackScl.height = Yi * scl;
+    canvasTrackScl.width = Xi*scl;
+    ctxTrackScl.drawImage(img, 0, 0, Xi * scl, Yi * scl)
+
+
 }
 function image2trackDat() {
     //turn image data into track variables
@@ -667,39 +673,48 @@ function anim() {
     // }
 
     requestAnimationFrame(anim);
-    
+
     // clear screen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // calc screen centre coords
     xct = X / 2 - (car.x + car.ux * lookAhead)  //centre target, pan to this
     yct = Y / 2 - (car.y + car.uy * lookAhead)
-    xc = xc + (xct - xc) * panSpeed
+    xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
     //draw scaled stuff
-    ctx.setTransform(zoom, 0, 0, zoom, (1-zoom) * X / 2, (1-zoom) * Y / 2);
+    // ctx.setTransform(zoom, 0, 0, zoom, (1-zoom) * X / 2, (1-zoom) * Y / 2);
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    x0 = -xc / scl
-    y0 = -yc / scl
-    ctx.drawImage(img, x0, y0, X / scl, Y / scl, 0, 0, X, Y);
+    // x0 = Math.floor(-xc / scl)
+    // y0 = Math.floor(-yc / scl)
+    // xiw = Math.floor(X / scl)
+    // yiw = Math.floor(Y / scl)
+    // x0 = (-xc / scl)
+    // y0 = (-yc / scl)
+    // xiw = (X / scl)
+    // yiw = (Y / scl)
+    // ctx.drawImage(img, x0, y0, xiw, yiw, 0, 0, X, Y);
 
+    ctx.drawImage(canvasTrackScl,xc,yc);
     car.control(inputState);
     car.readTrack();
     car.mechanic();
     car.draw(ctx, xc, yc);
-    
+
     // draw unscaled scaled stuff
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // ctx.setTransform(1, 0, 0, 1, 0, 0);
     drawDebug();
     drawHUD();
 }
 
 // let h, s, l;
+const canvasTrackScl = document.createElement("canvas");
+const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
 
 const canvas = document.getElementById("cw");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { alpha: false });
 const PI2 = Math.PI * 2;
 pixRat = window.devicePixelRatio * 1.0;
 canvas.height = window.innerHeight * pixRat;
