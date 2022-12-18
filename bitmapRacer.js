@@ -186,6 +186,16 @@ class Car {
             this.wheels[3].brake = 0;
         }
 
+        if (touchControl.pointerDown){
+            if (touchControl.xax<0){
+                // front wheel accel
+                this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate * dt);
+                this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate * dt);
+                this.wheels[2].torque = Math.min(this.torqueMax, this.wheels[2].torque + this.torqueRate * dt);
+                this.wheels[3].torque = Math.min(this.torqueMax, this.wheels[3].torque + this.torqueRate * dt); 
+            }
+        }
+
     }
     mechanic() {
         // console.log(this);
@@ -570,7 +580,7 @@ function getImageData() {
     image2trackDat()
 
     canvasTrackScl.height = Yi * scl;
-    canvasTrackScl.width = Xi*scl;
+    canvasTrackScl.width = Xi * scl;
     ctxTrackScl.drawImage(img, 0, 0, Xi * scl, Yi * scl)
 
 
@@ -666,6 +676,139 @@ function image2trackDat() {
 //         fr.readAsDataURL(files[0]);
 //     }
 // }
+function isTouchDevice() {
+    return (('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0));
+}
+function addPointerListeners(touchControl) {
+    // window.addEventListener("resize", () => {
+    //     setSize()
+    //     if (!pair.auto) { requestAnimationFrame(anim); }
+    // }
+    // );
+
+    if (isTouchDevice()) {
+        canvas.addEventListener("touchstart", e => {
+            e.preventDefault();
+            // This event is cached to support 2-finger gestures
+            // console.log("pointerDown", e);
+            touchControl.pointerDownHandler(e.touches[0].clientX * pixRat, e.touches[0].clientY * pixRat, e.touches.length);
+
+        },
+            { passive: false }
+        );
+        canvas.addEventListener("touchmove", e => {
+            e.preventDefault();
+            if (e.touches.length == 1) {
+                touchControl.pointerMoveHandler(e.touches[0].clientX * pixRat, e.touches[0].clientY * pixRat)
+            }
+            // // If two pointers are down, check for pinch gestures
+            // if (e.touches.length == 2) {
+            //     curDiff = Math.abs(e.touches[0].clientX - e.touches[1].clientX) +
+            //         Math.abs(e.touches[0].clientY - e.touches[1].clientY);
+            //     if (prevDiff > 0) {
+            //         dDiff = curDiff - prevDiff;
+            //         zoomHandler(
+            //             0.0025 * dDiff,
+            //             (e.touches[0].clientX + e.touches[1].clientX) / 2,
+            //             (e.touches[0].clientY + e.touches[1].clientY) / 2)
+            //     }
+            //     prevDiff = curDiff;
+            //     if (!pair.auto) { requestAnimationFrame(anim); }
+            // }
+
+        },
+            { passive: false }
+        );
+        canvas.addEventListener("touchend", e => {
+            e.preventDefault();
+            // prevDiff = -1;
+            touchControl.pointerUpHandler(e.changedTouches[0].pageX * pixRat, e.changedTouches[0].pageY) * pixRat;
+        },
+            { passive: false }
+        );
+    }
+    else {
+        addEventListener("mousedown", e => {
+            // e.preventDefault();
+            // pointerDownHandler(e.offsetX, e.offsetY);
+            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat)
+            // mouseDown = true
+        },
+            // { passive: false }
+        );
+        addEventListener('mousemove', e => {
+            touchControl.pointerMoveHandler(e.clientX * pixRat, e.clientY * pixRat)
+
+        });
+        addEventListener('mouseup', e => {
+            // mouseDown = false
+            touchControl.pointerUpHandler(e.clientX * pixRat, e.clientY * pixRat);
+
+        });
+        addEventListener('wheel', e => {
+            // console.log(e)
+            touchControl.pointerWheelHandler(-0.0005 * e.deltaY, e.clientX, e.clientY);
+
+        })
+    }
+}
+
+class TouchControl {
+    constructor() {
+        this.x0 = 0
+        this.y0 = 0
+        this.halfheight = 100
+        this.halfwidth = 100
+        this.x = 0
+        this.y = 0
+        this.xax = 0
+        this.yax = 0
+        this.pointerDown = false;
+    }
+    draw(ctx) {
+        if (this.pointerDown) {
+            ctx.beginPath()
+            ctx.strokeStyle = "white";
+            ctx.rect(this.x0 - this.halfwidth, this.y0 - this.halfheight, 2 * this.halfheight, 2 * this.halfwidth)
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.fillStyle = "white";
+            ctx.arc(this.x0 + this.x, this.y0 + this.y, 10, 0, 2 * Math.PI)
+            ctx.fill();
+        }
+    }
+
+    pointerDownHandler(ex, ey) {
+        console.log(ex, ey)
+        this.pointerDown = true;
+        this.x0 = ex;
+        this.y0 = ey;
+        this.x = 0;
+        this.y = 0;
+        this.yax = 0;
+        this.xax = 0;
+    }
+    pointerMoveHandler(ex, ey) {
+        if (this.pointerDown) {
+            this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
+            this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
+            this.xax = this.x/this.halfwidth;
+            this.yax = this.y / this.halfheight;
+        }
+    }
+    pointerUpHandler() {
+        this.pointerDown = false;
+        this.yax = 0;
+        this.xax = 0;
+    }
+
+
+}
+
+
+
 function anim() {
     // n++;
     // if (n < nMax) {
@@ -697,7 +840,7 @@ function anim() {
     // yiw = (Y / scl)
     // ctx.drawImage(img, x0, y0, xiw, yiw, 0, 0, X, Y);
 
-    ctx.drawImage(canvasTrackScl,xc,yc);
+    ctx.drawImage(canvasTrackScl, xc, yc);
     car.control(inputState);
     car.readTrack();
     car.mechanic();
@@ -705,8 +848,11 @@ function anim() {
 
     // draw unscaled scaled stuff
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
-    drawDebug();
+
+    touchControl.draw(ctx);
+    // drawDebug();
     drawHUD();
+
 }
 
 // let h, s, l;
@@ -714,6 +860,8 @@ const canvasTrackScl = document.createElement("canvas");
 const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
 
 const canvas = document.getElementById("cw");
+// const rect = canvas.getBoundingClientRect();
+// console.log(rect)
 const ctx = canvas.getContext("2d", { alpha: false });
 const PI2 = Math.PI * 2;
 pixRat = window.devicePixelRatio * 1.0;
@@ -721,6 +869,13 @@ canvas.height = window.innerHeight * pixRat;
 canvas.width = window.innerWidth * pixRat;
 canvas.style.width = window.innerWidth + "px";
 canvas.style.height = window.innerHeight + "px";
+
+// canvas.width = window.innerWidth * pixRat;
+// canvas.height = window.innerHeight * pixRat;
+// ctx.scale(pixRat, pixRat);
+// canvas.style.width = `${window.innerWidth}px`;
+// canvas.style.height = `${window.innerHeight}px`;
+
 let baseLW = 2;
 let X = canvas.width;
 let Y = canvas.height;
@@ -764,6 +919,9 @@ let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
 let car = new Car(200, 300, w = 120, l = 200);
+
+let touchControl = new TouchControl();
+addPointerListeners(touchControl);
 
 // image set up
 const img = new Image();
