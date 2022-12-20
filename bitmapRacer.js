@@ -844,7 +844,7 @@ function anim() {
         leftBtn.draw(ctx);
         rightBtn.draw(ctx);
     }
-    drawDebug();
+    // drawDebug();
     drawHUD();
 
 }
@@ -909,11 +909,12 @@ let car = new Car();
 
 let debugTxt = "";
 
+let accBtn, brkBtn, leftBtn,rightBtn;
 if (isTouch) {
-    let accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
-    let brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
-    let leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
-    let rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
+    accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
+    brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
+    leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
+    rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
     addPointerListeners(accBtn);
     addPointerListeners(brkBtn);
     addPointerListeners(leftBtn);
