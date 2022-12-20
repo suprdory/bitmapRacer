@@ -106,7 +106,7 @@ class Car {
 
         ctx.beginPath();
         ctx.strokeStyle = "white";
-        ctx.lineWidth = baseLW / zoom;
+        ctx.lineWidth = baseLW / zoom*pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
@@ -186,15 +186,15 @@ class Car {
             this.wheels[3].brake = 0;
         }
 
-        if (touchControl.pointerDown){
-            if (touchControl.xax<0){
-                // front wheel accel
-                this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate * dt);
-                this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate * dt);
-                this.wheels[2].torque = Math.min(this.torqueMax, this.wheels[2].torque + this.torqueRate * dt);
-                this.wheels[3].torque = Math.min(this.torqueMax, this.wheels[3].torque + this.torqueRate * dt); 
-            }
-        }
+        // if (touchControl.pointerDown) {
+        //     if (touchControl.xax < 0) {
+        //         // front wheel accel
+        //         this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate * dt);
+        //         this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate * dt);
+        //         this.wheels[2].torque = Math.min(this.torqueMax, this.wheels[2].torque + this.torqueRate * dt);
+        //         this.wheels[3].torque = Math.min(this.torqueMax, this.wheels[3].torque + this.torqueRate * dt);
+        //     }
+        // }
 
     }
     mechanic() {
@@ -335,7 +335,7 @@ class Wheel {
         x = MatrixTrans(x, [car.x + xc, car.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = baseLW / zoom;
+        ctx.lineWidth = baseLW / zoom*pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < 4; i++) {
@@ -442,6 +442,22 @@ class InputState {
             this.left = true;
         }
     }
+    setTouch(action,state){
+        if (action=="up"){
+            this.up=state;
+        }
+        if (action == "down") {
+            this.down = state;
+        }
+        if (action == "left") {
+            this.left = state;
+        }
+        if (action == "right") {
+            this.right = state;
+        }
+
+
+    }
 }
 function drawDebug() {
     // xw0 = Math.round(car.wheels[0].xa / scl);
@@ -481,7 +497,7 @@ function showImage(fileReader) {
 }
 function drawHUD() {
     hudX = 10;
-    hudY = 10;
+    hudY = Y-160;
     barHeight = 50;
     barWidthSpace = 5;
     barWidth = 20;
@@ -693,38 +709,16 @@ function addPointerListeners(touchControl) {
             e.preventDefault();
             // This event is cached to support 2-finger gestures
             // console.log("pointerDown", e);
-            touchControl.pointerDownHandler(e.touches[0].clientX * pixRat, e.touches[0].clientY * pixRat, e.touches.length);
+            touchControl.pointerDownHandler(e.changedTouches[0].clientX * pixRat, e.touches[0].clientY * pixRat, e.changedTouches[0].identifier);
 
         },
             { passive: false }
         );
-        canvas.addEventListener("touchmove", e => {
-            e.preventDefault();
-            if (e.touches.length == 1) {
-                touchControl.pointerMoveHandler(e.touches[0].clientX * pixRat, e.touches[0].clientY * pixRat)
-            }
-            // // If two pointers are down, check for pinch gestures
-            // if (e.touches.length == 2) {
-            //     curDiff = Math.abs(e.touches[0].clientX - e.touches[1].clientX) +
-            //         Math.abs(e.touches[0].clientY - e.touches[1].clientY);
-            //     if (prevDiff > 0) {
-            //         dDiff = curDiff - prevDiff;
-            //         zoomHandler(
-            //             0.0025 * dDiff,
-            //             (e.touches[0].clientX + e.touches[1].clientX) / 2,
-            //             (e.touches[0].clientY + e.touches[1].clientY) / 2)
-            //     }
-            //     prevDiff = curDiff;
-            //     if (!pair.auto) { requestAnimationFrame(anim); }
-            // }
 
-        },
-            { passive: false }
-        );
         canvas.addEventListener("touchend", e => {
             e.preventDefault();
             // prevDiff = -1;
-            touchControl.pointerUpHandler(e.changedTouches[0].pageX * pixRat, e.changedTouches[0].pageY) * pixRat;
+            touchControl.pointerUpHandler(e.changedTouches[0].identifier);
         },
             { passive: false }
         );
@@ -733,76 +727,134 @@ function addPointerListeners(touchControl) {
         addEventListener("mousedown", e => {
             // e.preventDefault();
             // pointerDownHandler(e.offsetX, e.offsetY);
-            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat)
+            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat,0)
             // mouseDown = true
         },
             // { passive: false }
         );
-        addEventListener('mousemove', e => {
-            touchControl.pointerMoveHandler(e.clientX * pixRat, e.clientY * pixRat)
 
-        });
         addEventListener('mouseup', e => {
             // mouseDown = false
-            touchControl.pointerUpHandler(e.clientX * pixRat, e.clientY * pixRat);
+            touchControl.pointerUpHandler(0);
 
         });
-        addEventListener('wheel', e => {
-            // console.log(e)
-            touchControl.pointerWheelHandler(-0.0005 * e.deltaY, e.clientX, e.clientY);
 
-        })
     }
 }
 
-class TouchControl {
-    constructor() {
-        this.x0 = 0
-        this.y0 = 0
-        this.halfheight = 100
-        this.halfwidth = 100
-        this.x = 0
-        this.y = 0
-        this.xax = 0
-        this.yax = 0
-        this.pointerDown = false;
+// class TouchControl {
+//     constructor() {
+//         this.x0 = 0
+//         this.y0 = 0
+//         this.halfheight = 100
+//         this.halfwidth = 100
+//         this.x = 0
+//         this.y = 0
+//         this.xax = 0
+//         this.yax = 0
+//         this.pointerDown = false;
+//     }
+//     draw(ctx) {
+//         if (this.pointerDown) {
+//             ctx.beginPath()
+//             ctx.strokeStyle = "white";
+//             ctx.rect(this.x0 - this.halfwidth, this.y0 - this.halfheight, 2 * this.halfheight, 2 * this.halfwidth)
+//             ctx.stroke();
+//             ctx.beginPath();
+//             ctx.fillStyle = "white";
+//             ctx.arc(this.x0 + this.x, this.y0 + this.y, 10, 0, 2 * Math.PI)
+//             ctx.fill();
+//         }
+//     }
+
+//     pointerDownHandler(ex, ey) {
+//         console.log(ex, ey)
+//         this.pointerDown = true;
+//         this.x0 = ex;
+//         this.y0 = ey;
+//         this.x = 0;
+//         this.y = 0;
+//         this.yax = 0;
+//         this.xax = 0;
+//     }
+//     pointerMoveHandler(ex, ey) {
+//         if (this.pointerDown) {
+//             this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
+//             this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
+//             this.xax = this.x / this.halfwidth;
+//             this.yax = this.y / this.halfheight;
+//         }
+//     }
+//     pointerUpHandler() {
+//         this.pointerDown = false;
+//         this.yax = 0;
+//         this.xax = 0;
+//     }
+
+
+// }
+
+class TouchButton {
+    constructor(x0, y0, w, h,action,txt) {
+        this.x0 = x0;
+        this.y0 = y0;
+        this.h = h;
+        this.w = w;
+        this.active = false; //is being touched
+        this.en = null; // touch number
+        this.action=action;
+        this.txt=txt
     }
     draw(ctx) {
-        if (this.pointerDown) {
+        ctx.beginPath()
+        ctx.strokeStyle = "white";
+        ctx.rect(this.x0, this.y0, this.w, this.h)
+        ctx.stroke();
+        if (this.active) {
             ctx.beginPath()
-            ctx.strokeStyle = "white";
-            ctx.rect(this.x0 - this.halfwidth, this.y0 - this.halfheight, 2 * this.halfheight, 2 * this.halfwidth)
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.fillStyle = "white";
-            ctx.arc(this.x0 + this.x, this.y0 + this.y, 10, 0, 2 * Math.PI)
+            ctx.fillStyle = "hsla(0,0%,0%,0.5)";
+            ctx.rect(this.x0, this.y0, this.w, this.h)
             ctx.fill();
+        }
+        // ctx.fillStyle = uiTextColor;
+        ctx.beginPath()
+        ctx.textAlign = "center";
+        ctx.font = 20 * pixRat + 'px sans-serif';
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
+
+    }
+
+    contains(ex, ey) {
+        return (ex > this.x0 & ex < (this.x0 + this.w) & ey > this.y0 & ey < (this.y0 + this.h));
+    }
+    pointerDownHandler(ex, ey, en) {
+        if (this.contains(ex, ey)) {
+            console.log("PD contained:",ex, ey, en)
+            this.active = true;
+            this.en = en;
+            inputState.setTouch(this.action,true)
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            console.log("PU",en)
+            this.en = null;
+            this.active = false;
+            inputState.setTouch(this.action, false)
         }
     }
 
-    pointerDownHandler(ex, ey) {
-        console.log(ex, ey)
-        this.pointerDown = true;
-        this.x0 = ex;
-        this.y0 = ey;
-        this.x = 0;
-        this.y = 0;
-        this.yax = 0;
-        this.xax = 0;
-    }
-    pointerMoveHandler(ex, ey) {
-        if (this.pointerDown) {
-            this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
-            this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
-            this.xax = this.x/this.halfwidth;
-            this.yax = this.y / this.halfheight;
-        }
-    }
-    pointerUpHandler() {
-        this.pointerDown = false;
-        this.yax = 0;
-        this.xax = 0;
-    }
+    // pointerMoveHandler(ex, ey) {
+    //     if (this.pointerDown) {
+    //         this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
+    //         this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
+    //         this.xax = this.x / this.halfwidth;
+    //         this.yax = this.y / this.halfheight;
+    //     }
+    // }
+
 
 
 }
@@ -822,7 +874,7 @@ function anim() {
 
     // calc screen centre coords
     xct = X / 2 - (car.x + car.ux * lookAhead)  //centre target, pan to this
-    yct = Y / 2 - (car.y + car.uy * lookAhead)
+    yct = Y / 2 - (car.y + car.uy * lookAhead)-yOff
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
@@ -849,7 +901,13 @@ function anim() {
     // draw unscaled scaled stuff
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    touchControl.draw(ctx);
+    // touchControl.draw(ctx);
+    if (isTouchDevice){
+    accBtn.draw(ctx);
+    brkBtn.draw(ctx);
+    leftBtn.draw(ctx);
+    rightBtn.draw(ctx);
+    }
     // drawDebug();
     drawHUD();
 
@@ -883,6 +941,8 @@ let Xi; //image width and height
 let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
+let yOff=isTouchDevice ? X/3 :0;
+console.log("yOff",yOff)
 let lookAhead = 5;
 let panSpeed = 0.2;
 
@@ -920,9 +980,18 @@ let nMax = 10000;
 let inputState = new InputState;
 let car = new Car(200, 300, w = 120, l = 200);
 
-let touchControl = new TouchControl();
-addPointerListeners(touchControl);
+// let touchControl = new TouchControl();
+// addPointerListeners(touchControl);
 
+
+let accBtn = new TouchButton(X * 2 / 3, Y - 800, X / 3, 400, "up", "Acc");
+let brkBtn = new TouchButton(X * 2 / 3, Y - 400, X / 3, 400, "down", "Brake");
+let leftBtn = new TouchButton(X * 0 / 3, Y - 800, X / 3, 800, "left", "<");
+let rightBtn = new TouchButton(X * 1 / 3, Y - 800, X / 3, 800, "right", ">");
+addPointerListeners(accBtn);
+addPointerListeners(brkBtn);
+addPointerListeners(leftBtn);
+addPointerListeners(rightBtn);
 // image set up
 const img = new Image();
 img.src = 'tracks/square_track.png';
