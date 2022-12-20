@@ -791,8 +791,8 @@ class TouchButton {
         this.w = w;
         this.active = false; //is being touched
         this.en = null; // touch number
-        this.action=action;
-        this.txt=txt
+        this.action=action; // action to update in inputState
+        this.txt=txt // display text
     }
     draw(ctx) {
         ctx.beginPath()
@@ -816,7 +816,7 @@ class TouchButton {
     }
 
     contains(ex, ey) {
-        return (ex > this.x0 & ex < (this.x0 + this.w) & ey > this.y0 & ey < (this.y0 + this.h));
+        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
     }
     pointerDownHandler(ex, ey, en) {
         if (this.contains(ex, ey)) {
