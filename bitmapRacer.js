@@ -456,6 +456,7 @@ function drawDebug() {
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
+    ctx.font = 10*pixRat+'px sans-serif'
     // nX = img.width;
     // nY = img.height;
     // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
@@ -470,8 +471,9 @@ function drawDebug() {
     //     Math.round(car.wheels[0].s),
     //     Math.round(car.wheels[0].l)
     // ], 100, 100)
+    ctx.fillText(debugTxt,X-500,20,500)
 
-    ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
+    // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
     // ctx.fillText(nX + " " + nY, 100, 140);
     // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
     // ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
@@ -820,7 +822,7 @@ class TouchButton {
     }
     pointerDownHandler(ex, ey, en) {
         if (this.contains(ex, ey)) {
-            console.log("PD contained:",ex, ey, en)
+            debugTxt = "PD: " + en + " " + this.action;
             this.active = true;
             this.en = en;
             inputState.setTouch(this.action,true)
@@ -828,7 +830,7 @@ class TouchButton {
     }
     pointerUpHandler(en) {
         if (en == this.en) {
-            console.log("PU",en)
+            debugTxt = "PU: " + en +  " " +this.action;
             this.en = null;
             this.active = false;
             inputState.setTouch(this.action, false)
@@ -897,7 +899,7 @@ function anim() {
     leftBtn.draw(ctx);
     rightBtn.draw(ctx);
     }
-    // drawDebug();
+    drawDebug();
     drawHUD();
 
 }
@@ -970,6 +972,7 @@ let nMax = 10000;
 let inputState = new InputState;
 let car = new Car(200, 300, w = 120, l = 200);
 
+let debugTxt="";
 // let touchControl = new TouchControl();
 // addPointerListeners(touchControl);
 
@@ -986,12 +989,9 @@ addPointerListeners(rightBtn);
 const img = new Image();
 img.src = 'tracks/square_track.png';
 // img.src = 'tracks/tiny.png';
-
-
 let imageData;
 
 img.onload = function () {
     getImageData();
     anim();
-    // console.log(img.width, img.height)
 }
