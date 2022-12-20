@@ -106,7 +106,7 @@ class Car {
 
         ctx.beginPath();
         ctx.strokeStyle = "white";
-        ctx.lineWidth = baseLW / zoom*pixRat;
+        ctx.lineWidth = baseLW / zoom * pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
@@ -132,7 +132,7 @@ class Car {
 
 
     }
-    control(inputState) {   
+    control(inputState) {
         if (inputState.left) {
             this.wheels[0].theta = Math.min(this.steeringMax, this.wheels[0].theta + this.steeringRate * dt);
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
@@ -184,7 +184,8 @@ class Car {
             this.wheels[1].brake = 0;
             this.wheels[2].brake = 0;
             this.wheels[3].brake = 0;
-        }}
+        }
+    }
 
     mechanic() {
         // console.log(this);
@@ -324,7 +325,7 @@ class Wheel {
         x = MatrixTrans(x, [car.x + xc, car.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = baseLW / zoom*pixRat;
+        ctx.lineWidth = baseLW / zoom * pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < 4; i++) {
@@ -431,9 +432,9 @@ class InputState {
             this.left = true;
         }
     }
-    setTouch(action,state){
-        if (action=="up"){
-            this.up=state;
+    setTouch(action, state) {
+        if (action == "up") {
+            this.up = state;
         }
         if (action == "down") {
             this.down = state;
@@ -456,7 +457,7 @@ function drawDebug() {
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
-    ctx.font = 10*pixRat+'px sans-serif'
+    ctx.font = 10 * pixRat + 'px sans-serif'
     // nX = img.width;
     // nY = img.height;
     // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
@@ -471,7 +472,7 @@ function drawDebug() {
     //     Math.round(car.wheels[0].s),
     //     Math.round(car.wheels[0].l)
     // ], 100, 100)
-    ctx.fillText(debugTxt,X-500,20,500)
+    ctx.fillText(debugTxt, X - 500, 20, 500)
 
     // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
     // ctx.fillText(nX + " " + nY, 100, 140);
@@ -488,7 +489,7 @@ function showImage(fileReader) {
 }
 function drawHUD() {
     hudX = 10;
-    hudY = Y-160;
+    hudY = Y - 160;
     barHeight = 50;
     barWidthSpace = 5;
     barWidth = 20;
@@ -691,24 +692,22 @@ function isTouchDevice() {
 function addPointerListeners(touchControl) {
     // window.addEventListener("resize", () => {
     //     setSize()
-    //     if (!pair.auto) { requestAnimationFrame(anim); }
     // }
     // );
 
     if (isTouchDevice()) {
         canvas.addEventListener("touchstart", e => {
             e.preventDefault();
-            // This event is cached to support 2-finger gestures
-            // console.log("pointerDown", e);
-            touchControl.pointerDownHandler(e.changedTouches[0].clientX * pixRat, e.touches[0].clientY * pixRat, e.changedTouches[0].identifier);
-
+            touchControl.pointerDownHandler(
+                e.changedTouches[0].clientX * pixRat,
+                e.changedTouches[0].clientY * pixRat,
+                e.changedTouches[0].identifier);
         },
             { passive: false }
         );
 
         canvas.addEventListener("touchend", e => {
             e.preventDefault();
-            // prevDiff = -1;
             touchControl.pointerUpHandler(e.changedTouches[0].identifier);
         },
             { passive: false }
@@ -718,16 +717,11 @@ function addPointerListeners(touchControl) {
         addEventListener("mousedown", e => {
             // e.preventDefault();
             // pointerDownHandler(e.offsetX, e.offsetY);
-            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat,0)
-            // mouseDown = true
+            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat, 0)
         },
-            // { passive: false }
         );
-
         addEventListener('mouseup', e => {
-            // mouseDown = false
             touchControl.pointerUpHandler(0);
-
         });
 
     }
@@ -786,15 +780,15 @@ function addPointerListeners(touchControl) {
 // }
 
 class TouchButton {
-    constructor(x0, y0, w, h,action,txt) {
+    constructor(x0, y0, w, h, action, txt) {
         this.x0 = x0;
         this.y0 = y0;
         this.h = h;
         this.w = w;
         this.active = false; //is being touched
         this.en = null; // touch number
-        this.action=action; // action to update in inputState
-        this.txt=txt // display text
+        this.action = action; // action to update in inputState
+        this.txt = txt // display text
     }
     draw(ctx) {
         ctx.beginPath()
@@ -825,12 +819,12 @@ class TouchButton {
             debugTxt = "PD: " + en + " " + this.action;
             this.active = true;
             this.en = en;
-            inputState.setTouch(this.action,true)
+            inputState.setTouch(this.action, true)
         }
     }
     pointerUpHandler(en) {
         if (en == this.en) {
-            debugTxt = "PU: " + en +  " " +this.action;
+            debugTxt = "PU: " + en + " " + this.action;
             this.en = null;
             this.active = false;
             inputState.setTouch(this.action, false)
@@ -865,7 +859,7 @@ function anim() {
 
     // calc screen centre coords
     xct = X / 2 - (car.x + car.ux * lookAhead)  //centre target, pan to this
-    yct = Y / 2 - (car.y + car.uy * lookAhead)-yOff
+    yct = Y / 2 - (car.y + car.uy * lookAhead) - yOff
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
@@ -893,11 +887,11 @@ function anim() {
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // touchControl.draw(ctx);
-    if (isTouch){
-    accBtn.draw(ctx);
-    brkBtn.draw(ctx);
-    leftBtn.draw(ctx);
-    rightBtn.draw(ctx);
+    if (isTouch) {
+        accBtn.draw(ctx);
+        brkBtn.draw(ctx);
+        leftBtn.draw(ctx);
+        rightBtn.draw(ctx);
     }
     drawDebug();
     drawHUD();
@@ -905,7 +899,7 @@ function anim() {
 }
 
 // let h, s, l;
-const isTouch =isTouchDevice();
+const isTouch = isTouchDevice();
 const canvasTrackScl = document.createElement("canvas");
 const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
 
@@ -933,7 +927,7 @@ let Xi; //image width and height
 let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
-let yOff=isTouch ? X/3 :0; // Y offset if touch controls present
+let yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
 // console.log("yOff",yOff)
 let lookAhead = 5;
 let panSpeed = 0.2;
@@ -972,15 +966,15 @@ let nMax = 10000;
 let inputState = new InputState;
 let car = new Car(200, 300, w = 120, l = 200);
 
-let debugTxt="";
+let debugTxt = "";
 // let touchControl = new TouchControl();
 // addPointerListeners(touchControl);
 
 
-let accBtn = new TouchButton(X * 2 / 3, Y *4/6, X / 3, Y/6, "up", "Acc");
+let accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
 let brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
-let leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y/3, "left", "<");
-let rightBtn = new TouchButton(X * 1 / 3, Y * 4 /6, X / 3, Y / 3, "right", ">");
+let leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
+let rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
 addPointerListeners(accBtn);
 addPointerListeners(brkBtn);
 addPointerListeners(leftBtn);
