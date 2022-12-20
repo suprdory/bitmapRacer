@@ -931,8 +931,8 @@ let Xi; //image width and height
 let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
-let yOff=isTouch ? X/3 :0;
-console.log("yOff",yOff)
+let yOff=isTouch ? X/3 :0; // Y offset if touch controls present
+// console.log("yOff",yOff)
 let lookAhead = 5;
 let panSpeed = 0.2;
 
@@ -974,10 +974,10 @@ let car = new Car(200, 300, w = 120, l = 200);
 // addPointerListeners(touchControl);
 
 
-let accBtn = new TouchButton(X * 2 / 3, Y - 800, X / 3, 400, "up", "Acc");
-let brkBtn = new TouchButton(X * 2 / 3, Y - 400, X / 3, 400, "down", "Brake");
-let leftBtn = new TouchButton(X * 0 / 3, Y - 800, X / 3, 800, "left", "<");
-let rightBtn = new TouchButton(X * 1 / 3, Y - 800, X / 3, 800, "right", ">");
+let accBtn = new TouchButton(X * 2 / 3, Y *4/6, X / 3, Y/6, "up", "Acc");
+let brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
+let leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y/3, "left", "<");
+let rightBtn = new TouchButton(X * 1 / 3, Y * 4 /6, X / 3, Y / 3, "right", ">");
 addPointerListeners(accBtn);
 addPointerListeners(brkBtn);
 addPointerListeners(leftBtn);
