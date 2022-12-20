@@ -797,7 +797,7 @@ class TouchButton {
         ctx.stroke();
         if (this.active) {
             ctx.beginPath()
-            ctx.fillStyle = "hsla(0,0%,0%,0.5)";
+            ctx.fillStyle = "hsla(0,0%,50%,0.5)";
             ctx.rect(this.x0, this.y0, this.w, this.h)
             ctx.fill();
         }
