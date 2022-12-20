@@ -57,7 +57,9 @@ class Car {
 
         // specs
         this.steeringRate = 0.2;
-        this.steeringMax = 45 * Math.PI / 180;
+        this.steeringMaxBase = 45 * Math.PI / 180; //steering lock at 0 speed.
+        this.steeringMax = this.steeringMaxBase; // can vary with speed.
+        this.steeringUscl=20; // U scl of steering lock limiting
         this.steeringCentreRate = 0.1;
         this.torqueRate = 0.1;
         this.torqueMax = .5;
@@ -262,6 +264,7 @@ class Car {
         }
 
         // console.log(this.wheels[0].theta)
+        this.steeringMax=this.steeringMaxBase*+this.steeringUscl/(this.steeringUscl+this.U)
         this.ax = Fx / this.m;
         this.ay = Fy / this.m;
         this.ux = this.ux + this.ax * dt;
@@ -727,58 +730,6 @@ function addPointerListeners(touchControl) {
     }
 }
 
-// class TouchControl {
-//     constructor() {
-//         this.x0 = 0
-//         this.y0 = 0
-//         this.halfheight = 100
-//         this.halfwidth = 100
-//         this.x = 0
-//         this.y = 0
-//         this.xax = 0
-//         this.yax = 0
-//         this.pointerDown = false;
-//     }
-//     draw(ctx) {
-//         if (this.pointerDown) {
-//             ctx.beginPath()
-//             ctx.strokeStyle = "white";
-//             ctx.rect(this.x0 - this.halfwidth, this.y0 - this.halfheight, 2 * this.halfheight, 2 * this.halfwidth)
-//             ctx.stroke();
-//             ctx.beginPath();
-//             ctx.fillStyle = "white";
-//             ctx.arc(this.x0 + this.x, this.y0 + this.y, 10, 0, 2 * Math.PI)
-//             ctx.fill();
-//         }
-//     }
-
-//     pointerDownHandler(ex, ey) {
-//         console.log(ex, ey)
-//         this.pointerDown = true;
-//         this.x0 = ex;
-//         this.y0 = ey;
-//         this.x = 0;
-//         this.y = 0;
-//         this.yax = 0;
-//         this.xax = 0;
-//     }
-//     pointerMoveHandler(ex, ey) {
-//         if (this.pointerDown) {
-//             this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
-//             this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
-//             this.xax = this.x / this.halfwidth;
-//             this.yax = this.y / this.halfheight;
-//         }
-//     }
-//     pointerUpHandler() {
-//         this.pointerDown = false;
-//         this.yax = 0;
-//         this.xax = 0;
-//     }
-
-
-// }
-
 class TouchButton {
     constructor(x0, y0, w, h, action, txt) {
         this.x0 = x0;
@@ -898,14 +849,11 @@ function anim() {
 
 }
 
-// let h, s, l;
 const isTouch = isTouchDevice();
 const canvasTrackScl = document.createElement("canvas");
 const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
 
 const canvas = document.getElementById("cw");
-// const rect = canvas.getBoundingClientRect();
-// console.log(rect)
 const ctx = canvas.getContext("2d", { alpha: false });
 const PI2 = Math.PI * 2;
 pixRat = window.devicePixelRatio * 1.0;
@@ -913,12 +861,6 @@ canvas.height = window.innerHeight * pixRat;
 canvas.width = window.innerWidth * pixRat;
 canvas.style.width = window.innerWidth + "px";
 canvas.style.height = window.innerHeight + "px";
-
-// canvas.width = window.innerWidth * pixRat;
-// canvas.height = window.innerHeight * pixRat;
-// ctx.scale(pixRat, pixRat);
-// canvas.style.width = `${window.innerWidth}px`;
-// canvas.style.height = `${window.innerHeight}px`;
 
 let baseLW = 2;
 let X = canvas.width;
@@ -928,7 +870,6 @@ let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
 let yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
-// console.log("yOff",yOff)
 let lookAhead = 5;
 let panSpeed = 0.2;
 
@@ -964,25 +905,23 @@ let scl = 3.0; //scale track copmared to car
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
-let car = new Car(200, 300, w = 120, l = 200);
+let car = new Car();
 
 let debugTxt = "";
-// let touchControl = new TouchControl();
-// addPointerListeners(touchControl);
 
-
-let accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
-let brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
-let leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
-let rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
-addPointerListeners(accBtn);
-addPointerListeners(brkBtn);
-addPointerListeners(leftBtn);
-addPointerListeners(rightBtn);
+if (isTouch) {
+    let accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
+    let brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
+    let leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
+    let rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
+    addPointerListeners(accBtn);
+    addPointerListeners(brkBtn);
+    addPointerListeners(leftBtn);
+    addPointerListeners(rightBtn);
+}
 // image set up
 const img = new Image();
 img.src = 'tracks/square_track.png';
-// img.src = 'tracks/tiny.png';
 let imageData;
 
 img.onload = function () {
