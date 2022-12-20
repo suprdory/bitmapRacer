@@ -132,44 +132,7 @@ class Car {
 
 
     }
-    control(inputState) {
-        if (touchControl.pointerDown){
-            if (touchControl.yax>0){
-                this.wheels[0].brake = 0;
-                this.wheels[1].brake = 0;
-                this.wheels[2].brake = 0;
-                this.wheels[3].brake = 0;
-                // front wheel accel
-                this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate * dt);
-                this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate * dt);
-                this.wheels[2].torque = Math.min(this.torqueMax, this.wheels[2].torque + this.torqueRate * dt);
-                this.wheels[3].torque = Math.min(this.torqueMax, this.wheels[3].torque + this.torqueRate * dt); 
-            }
-            if (touchControl.yax<0){
-                // front wheel accel
-                this.wheels[0].torque = 0;
-                this.wheels[1].torque = 0;
-                this.wheels[2].torque = 0;
-                this.wheels[3].torque = 0;
-                // 4 wheel braking
-                this.wheels[0].brake = Math.min(this.brakeMax, this.wheels[0].brake + this.brakeRate * dt);
-                this.wheels[1].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate * dt);
-                this.wheels[2].brake = Math.min(this.brakeMax, this.wheels[2].brake + this.brakeRate * dt);
-                this.wheels[3].brake = Math.min(this.brakeMax, this.wheels[3].brake + this.brakeRate * dt);
-            }
-            if(touchControl.xax!=0)
-            {
-                this.wheels[0].theta = Math.max(-this.steeringMax,Math.min(this.steeringMax, -touchControl.xax*this.steeringMax));
-                this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
-                this.wheels[1].theta =  this.wheels[0].theta
-                this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
-            }
-
-
-
-        }
-        else{
-
+    control(inputState) {   
         if (inputState.left) {
             this.wheels[0].theta = Math.min(this.steeringMax, this.wheels[0].theta + this.steeringRate * dt);
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
@@ -223,9 +186,6 @@ class Car {
             this.wheels[3].brake = 0;
         }}
 
-
-
-    }
     mechanic() {
         // console.log(this);
         this.to = 0;
@@ -931,7 +891,7 @@ function anim() {
     // ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // touchControl.draw(ctx);
-    if (isTouchDevice){
+    if (isTouch){
     accBtn.draw(ctx);
     brkBtn.draw(ctx);
     leftBtn.draw(ctx);
@@ -943,6 +903,7 @@ function anim() {
 }
 
 // let h, s, l;
+const isTouch =isTouchDevice();
 const canvasTrackScl = document.createElement("canvas");
 const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
 
@@ -970,7 +931,7 @@ let Xi; //image width and height
 let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
-let yOff=isTouchDevice ? X/3 :0;
+let yOff=isTouch ? X/3 :0;
 console.log("yOff",yOff)
 let lookAhead = 5;
 let panSpeed = 0.2;
