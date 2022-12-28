@@ -891,7 +891,7 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let zoom = 0.5; //global zoom - half implemented, need to adjust track cropping
+let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping
 let pixPM = 100; // pixel per meters
 let scl = 5.0; //scale track copmared to car
 let n = 0;
