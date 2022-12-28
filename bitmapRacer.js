@@ -59,7 +59,7 @@ class Car {
         this.steeringRate = 0.2;
         this.steeringMaxBase = 45 * Math.PI / 180; //steering lock at 0 speed.
         this.steeringMax = this.steeringMaxBase; // can vary with speed.
-        this.steeringUscl=20; // U scl of steering lock limiting
+        this.steeringUscl = 20; // U scl of steering lock limiting
         this.steeringCentreRate = 0.1;
         this.torqueRate = 0.1;
         this.torqueMax = .5;
@@ -264,7 +264,7 @@ class Car {
         }
 
         // console.log(this.wheels[0].theta)
-        this.steeringMax=this.steeringMaxBase*+this.steeringUscl/(this.steeringUscl+this.U)
+        this.steeringMax = this.steeringMaxBase * +this.steeringUscl / (this.steeringUscl + this.U)
         this.ax = Fx / this.m;
         this.ay = Fy / this.m;
         this.ux = this.ux + this.ax * dt;
@@ -805,8 +805,9 @@ function anim() {
 
     requestAnimationFrame(anim);
 
-    // clear screen
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    car.control(inputState);
+    car.readTrack();
+    car.mechanic();
 
     // calc screen centre coords
     xct = X / 2 - (car.x + car.ux * lookAhead)  //centre target, pan to this
@@ -815,27 +816,17 @@ function anim() {
     yc = yc + (yct - yc) * panSpeed
 
     //draw scaled stuff
-    // ctx.setTransform(zoom, 0, 0, zoom, (1-zoom) * X / 2, (1-zoom) * Y / 2);
-    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
+    // clear screen
+    ctx.clearRect(X/2-X/2/zoom, Y/2-Y/2/zoom, X/zoom, Y/zoom);
 
-    // x0 = Math.floor(-xc / scl)
-    // y0 = Math.floor(-yc / scl)
-    // xiw = Math.floor(X / scl)
-    // yiw = Math.floor(Y / scl)
-    // x0 = (-xc / scl)
-    // y0 = (-yc / scl)
-    // xiw = (X / scl)
-    // yiw = (Y / scl)
-    // ctx.drawImage(img, x0, y0, xiw, yiw, 0, 0, X, Y);
 
     ctx.drawImage(canvasTrackScl, xc, yc);
-    car.control(inputState);
-    car.readTrack();
-    car.mechanic();
+
     car.draw(ctx, xc, yc);
 
     // draw unscaled scaled stuff
-    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // touchControl.draw(ctx);
     if (isTouch) {
@@ -900,8 +891,9 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping
-let scl = 3.0; //scale track copmared to car
+let zoom = 0.5; //global zoom - half implemented, need to adjust track cropping
+let pixPM = 100; // pixel per meters
+let scl = 5.0; //scale track copmared to car
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
@@ -909,7 +901,7 @@ let car = new Car();
 
 let debugTxt = "";
 
-let accBtn, brkBtn, leftBtn,rightBtn;
+let accBtn, brkBtn, leftBtn, rightBtn;
 if (isTouch) {
     accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
     brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
