@@ -38,8 +38,8 @@ class Car {
         this.bodyAspect = 1.3;
 
         // mech + kin
-        this.x = 200 * scl; // x pos 
-        this.y = 200 * scl; // y pos
+        this.x = 200 * trackScl; // x pos 
+        this.y = 200 * trackScl; // y pos
 
         this.ax = 0; // x accel
         this.ay = 0; // y accel
@@ -84,11 +84,12 @@ class Car {
     readTrack() {
         this.wheels.forEach(function (wheel) {
             //wheel centre abs coords
-            let xw = Math.round(wheel.xa / scl);
-            let yw = Math.round(wheel.ya / scl);
+            let xw = Math.round(wheel.xa / trackScl);
+            let yw = Math.round(wheel.ya / trackScl);
             if (xw < 0 | xw > (Xi - 1) | yw < 0 | yw > (Yi - 1)) {
                 wheel.sfc_mu = sfcTypes.outOfBounds.mu;
                 wheel.sfc_drag = sfcTypes.outOfBounds.drag;
+                // console.log('OOB')
             }
             else {
                 // wheel.h = h[xw][yw];
@@ -589,12 +590,9 @@ function getImageData() {
     Yi = img.height;
     // console.log("image data:", imageData);
     image2trackDat()
-
-    canvasTrackScl.height = Yi * scl;
-    canvasTrackScl.width = Xi * scl;
-    ctxTrackScl.drawImage(img, 0, 0, Xi * scl, Yi * scl)
-
-
+    canvasTrackScl.height = Yi * trackScl;
+    canvasTrackScl.width = Xi * trackScl;
+    ctxTrackScl.drawImage(img, 0, 0, Xi * trackScl, Yi * trackScl)
 }
 function image2trackDat() {
     //turn image data into track variables
@@ -795,8 +793,6 @@ class TouchButton {
 
 }
 
-
-
 function anim() {
     // n++;
     // if (n < nMax) {
@@ -891,9 +887,12 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping
-let pixPM = 100; // pixel per meters
-let scl = 5.0; //scale track copmared to car
+let PPM = 100; // init scale, screen pixels per metre - pre zoom
+let trackPPM = 20; // track image pixels per metre
+let trackScl = PPM/trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
+
+let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
+
 let n = 0;
 let nMax = 10000;
 let inputState = new InputState;
