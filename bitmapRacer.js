@@ -44,7 +44,7 @@ class Car {
         this.ay = 0; // y accel
         this.m = 100; // mass
         this.to = 0; //heading torque;
-        this.momI = 10 * this.m; // moment of inertia
+        this.momI = 100 * this.m; // moment of inertia
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
@@ -58,10 +58,10 @@ class Car {
         this.steeringRate = 0.2;
         this.steeringMaxBase = 45 * Math.PI / 180; //steering lock at 0 speed.
         this.steeringMax = this.steeringMaxBase; // can vary with speed.
-        this.steeringUscl = 20; // U scl of steering lock limiting
-        this.steeringCentreRate = 0.1;
-        this.torqueRate = 10;
-        this.torqueMax = 100;
+        this.steeringUscl = 2; // U scl of steering lock limiting
+        this.steeringCentreRate = .2;
+        this.torqueRate = 2;
+        this.torqueMax = 20;
         this.brakeMax = 200;
         this.brakeRate = 10;
         this.wheelDrag = 0.05;
@@ -874,7 +874,7 @@ const vel_scl = 1;
 const acc_scl = 1;
 const force_scl = 20;
 
-const F_lat = 10; // max lat fric force
+const F_lat = 30; // max lat fric force
 const stiffness = 10; // cornering stiffness
 const CD = 100; //drag coefficient
 
@@ -884,7 +884,7 @@ const forceLeft = false;
 // const forceBrake = true;
 
 let PPM = 5; // init scale, screen pixels per metre - pre zoom
-let trackPPM = 2; // track image pixels per metre
+let trackPPM = 3; // track image pixels per metre
 let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
 let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
