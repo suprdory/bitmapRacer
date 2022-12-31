@@ -887,8 +887,8 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let PPM = 100; // init scale, screen pixels per metre - pre zoom
-let trackPPM = 20; // track image pixels per metre
+let PPM = 80; // init scale, screen pixels per metre - pre zoom
+let trackPPM = 25; // track image pixels per metre
 let trackScl = PPM/trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
 let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
