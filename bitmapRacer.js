@@ -30,7 +30,7 @@ class Car {
     constructor() {
         // car design
         this.w = 2; //width
-        this.l = 3.5; //length
+        this.l = 3.2; //length
         this.wheelWidth = .4;
         this.wheelAspect = 2.5;
         this.oversize = 1.05;
@@ -874,7 +874,7 @@ const vel_scl = 1;
 const acc_scl = 1;
 const force_scl = 20;
 
-const F_lat = 30; // max lat fric force
+const F_lat = 20; // max lat fric force
 const stiffness = 10; // cornering stiffness
 const CD = 100; //drag coefficient
 
@@ -883,8 +883,8 @@ const forceLeft = false;
 // const forceLeft = true;
 // const forceBrake = true;
 
-let PPM = 5; // init scale, screen pixels per metre - pre zoom
-let trackPPM = 3; // track image pixels per metre
+let PPM = 10; // init scale, screen pixels per metre - pre zoom
+let trackPPM = 6; // track image pixels per metre
 let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
 let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
