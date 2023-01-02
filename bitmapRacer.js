@@ -40,6 +40,7 @@ class Car {
         this.x = 40; // x pos 
         this.y = 40; // y pos
 
+        this.Fxy = [0, 0]; //resultant Force on car as column vector;
         this.ax = 0; // x accel
         this.ay = 0; // y accel
         this.m = 100; // mass
@@ -54,9 +55,13 @@ class Car {
         this.uy = this.U * Math.cos(this.theta); // y vel
 
         this.n = {}; // "new" mechanics derived in car ref frame
-        this.n.Fair = {}; // air resitance
+        this.n.Fair = {}; // air resistance
         this.n.Fair.lon = 0;
         this.n.Fair.lat = 0;
+        this.n.Fres = {}; // resultant force from car and wheels
+        this.n.Fres.lon = 0;
+        this.n.Fres.lat = 0;
+        this.n.Mres = 0; // resultant moment from wheels
 
 
         // specs
@@ -167,6 +172,11 @@ class Car {
         let x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'brown')
 
+        xd = [[this.n.Fres.lat, this.n.Fres.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'white')
+
     }
     control(inputState) {
         if (inputState.left) {
@@ -226,15 +236,37 @@ class Car {
 
     mech2() {
         // calc all forces in car rel coords before transforming to track from and applying.
+        this.n.Fres.lon = 0;
+        this.n.Fres.lat = 0;
+        this.n.Mres = 0;
+
         //forces directly on car - air resistance
         this.n.Fair.lon = -CA * this.U ** 2 * Math.cos(-this.headOff);
         this.n.Fair.lat = -CA * this.U ** 2 * Math.sin(-this.headOff);
 
+        this.n.Fres.lon += this.n.Fair.lon;
+        this.n.Fres.lat += this.n.Fair.lat;
+
 
         for (let i = 0; i < 4; i++) {
+
             let wh = this.wheels[i];
             let cosTh = Math.cos(wh.theta);
             let sinTh = Math.sin(wh.theta);
+
+            let cos_thth = Math.cos(this.theta + wh.theta);
+            let sin_thphi = Math.sin(this.theta + wh.theta);
+
+            // wheel velocity - relative to car
+            wh.ux = +this.thetaDot * wh.d * Math.cos(this.theta + wh.phi);
+            wh.uy = -this.thetaDot * wh.d * Math.sin(this.theta + wh.phi);
+            // wheel velocity - absolute
+            wh.uxA = wh.ux + this.ux;
+            wh.uyA = wh.uy + this.uy;
+            // wheel velocity parallel/perpendicular to wheel
+            wh.uApar = -wh.uyA * cos_thth - wh.uxA * sin_thphi;
+            wh.uAperp = -wh.uyA * sin_thphi + wh.uxA * cos_thth;
+
 
             wh.n.u.lonWheel = -wh.uApar; //wheel speed in wheel direction (sign error in wh.uApar?)
             wh.n.u.latWheel = wh.uAperp; //wheel speed purp to wheel direction
@@ -269,11 +301,17 @@ class Car {
             // lateral friction
             let maxF = F_lat * wh.sfc_mu;
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
-            let skidThresh = maxF / stiffness*10;
-            if (Math.abs(slipAngle) < skidThresh) {
+            let skidThresh = maxF / stiffness;
+            
+            if (car.U < .1) {
                 wh.skidFac = 0;
-                wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness*10;
-                wh.n.Fcorn.lon = slipAngle * sinTh * stiffness*10;
+                wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * stiffness * .1;
+                wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * stiffness * .1;
+            }
+            else             if (Math.abs(slipAngle) < skidThresh) {
+                wh.skidFac = 0;
+                wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness;
+                wh.n.Fcorn.lon = slipAngle * sinTh * stiffness;
                 // console.log("tract")
             }
             else {
@@ -282,9 +320,43 @@ class Car {
                 wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
                 // console.log("skid")
             }
+            wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
+            wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
 
+            
+            wh.n.Mres = -wh.n.Fres.lon * wh.x + wh.n.Fres.lat * wh.y;
+            this.n.Fres.lon += wh.n.Fres.lon
+            this.n.Fres.lat += wh.n.Fres.lat
 
+            this.n.Mres += wh.n.Mres
+            console.log()
         }
+
+        this.Fxy = MatrixProd([[this.n.Fres.lat, this.n.Fres.lon]], calcRotMat(this.theta))[0]
+
+
+        this.steeringMax = this.steeringMaxBase * +this.steeringUscl / (this.steeringUscl + this.U)
+
+        this.ax = this.Fxy[0] / this.m;
+        this.ay = this.Fxy[1] / this.m;
+        this.ux = this.ux + this.ax * dt;
+        this.uy = this.uy + this.ay * dt;
+        this.U = (this.ux ** 2 + this.uy ** 2) ** .5
+        this.thetaU = Math.atan2(this.ux, this.uy);
+        this.x = this.x + this.ux * dt;
+        this.y = this.y + this.uy * dt;
+        // if (this.n.Mres) {
+            this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
+            this.theta = this.theta + this.thetaDot * dt;
+            this.rotMat = calcRotMat(this.theta);
+            this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
+            if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
+            if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
+            this.ulon = this.U * Math.cos(this.headOff)
+            this.ulat = this.U * Math.sin(this.headOff)
+        // }
+
+
     }
 
     mechanic() {
@@ -311,6 +383,7 @@ class Car {
             // velocity parallel/perpendicular to wheel
             wh.uApar = -wh.uyA * cos_thth - wh.uxA * sin_thphi;
             wh.uAperp = -wh.uyA * sin_thphi + wh.uxA * cos_thth;
+
 
             //thrust
             wh.FTx = wh.torque * sin_thphi;
@@ -420,6 +493,9 @@ class Wheel {
         this.n.Fcorn = {};
         this.n.Fcorn.lat = 0;
         this.n.Fcorn.lon = 0;
+        this.n.Fres = {};
+        this.n.Fres.lat = 0;
+        this.n.Fres.lon = 0;
         this.n.u = {};
         this.n.u.lon = 0;
         this.n.u.lat = 0;
@@ -560,6 +636,11 @@ class Wheel {
         xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'yellow')
+
+        xd = [[this.n.Fres.lat, this.n.Fres.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'white')
         // if (n == 10) {
         // console.log(x1[0],x1[1])
         // }
@@ -982,7 +1063,7 @@ function anim() {
 
     car.control(inputState);
     car.readTrack();
-    car.mechanic();
+    // car.mechanic();
     car.mech2();
 
     // calc screen centre coords
@@ -1061,11 +1142,11 @@ const vel_scl = 1;
 const acc_scl = 1;
 const force_scl = 20;
 
-const F_lat = 10; // max lat fric force
-const stiffness = 10; // cornering stiffness
+const F_lat = 30; // max lat fric force
+const stiffness = 250; // cornering stiffness
 const CD = 100; // surface drag coefficient
-const Crr = 10; // rolling resistance
-const CA = 1; //air drag coefficient
+const Crr = 5; // rolling resistance
+const CA = .5; //air drag coefficient
 
 const forceBrake = false;
 const forceLeft = false;
