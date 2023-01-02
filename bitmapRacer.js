@@ -269,11 +269,11 @@ class Car {
             // lateral friction
             let maxF = F_lat * wh.sfc_mu;
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
-            let skidThresh = maxF / stiffness;
+            let skidThresh = maxF / stiffness*10;
             if (Math.abs(slipAngle) < skidThresh) {
                 wh.skidFac = 0;
-                wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * maxF * stiffness;
-                wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * maxF * stiffness;
+                wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness*10;
+                wh.n.Fcorn.lon = slipAngle * sinTh * stiffness*10;
                 // console.log("tract")
             }
             else {
