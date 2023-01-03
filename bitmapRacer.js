@@ -848,7 +848,7 @@ class TouchButton {
     }
     pointerDownHandler(ex, ey, en) {
         if (this.contains(ex, ey)) {
-            debugTxt = "PD: " + en + " " + this.action;
+            // debugTxt = "PD: " + en + " " + this.action;
             this.active = true;
             this.en = en;
             inputState.setTouch(this.action, true)
@@ -856,7 +856,7 @@ class TouchButton {
     }
     pointerUpHandler(en) {
         if (en == this.en) {
-            debugTxt = "PU: " + en + " " + this.action;
+            // debugTxt = "PU: " + en + " " + this.action;
             this.en = null;
             this.active = false;
             inputState.setTouch(this.action, false)
