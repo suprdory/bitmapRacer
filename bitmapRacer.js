@@ -29,12 +29,14 @@ function calcRotMat(theta) {
 class Car {
     constructor() {
         // car design
-        this.w = 2; //width
-        this.l = 3; //length
-        this.wheelWidth = .4;
-        this.wheelAspect = 2.5;
-        this.oversize = 1.20;
-        this.bodyAspect = 1.2;
+        this.w = p.car.width; //width
+        this.l = p.car.height; //length
+        this.wheelWidth = p.car.wheelWidth;
+        this.wheelAspect = p.car.wheelAspect;
+        this.oversize = p.car.oversize;
+        this.bodyAspect = p.car.bodyAspect;
+        this.m = p.car.mass; // mass
+        this.momI = p.car.momIfac * this.m; // moment of inertia
 
         // mech + kin
         this.x = 40; // x pos 
@@ -43,9 +45,9 @@ class Car {
         this.Fxy = [0, 0]; //resultant Force on car as column vector;
         this.ax = 0; // x accel
         this.ay = 0; // y accel
-        this.m = 100; // mass
+
         this.to = 0; //heading torque;
-        this.momI = 40 * this.m; // moment of inertia
+
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
@@ -65,18 +67,17 @@ class Car {
 
 
         // specs
-        this.steeringRate = 0.1;
-        this.steeringMaxBase = 35 * Math.PI / 180; //steering lock at 0 speed.
-        this.steeringMax = this.steeringMaxBase; // can vary with speed.
-        this.steeringUscl = 2; // U scl of steering lock limiting
-        this.steeringCentreRate = 1;
-        this.steeringFollow = 0; //steering relaxes to motion direction
-        this.torqueRate = 2;
-        this.torqueMax = 10;
-        this.brakeMax = 30;
-        this.brakeRate = 10;
-        // this.wheelDrag = 1000.0;
+        this.steeringRate = p.car.steeringRate;
+        this.steeringMaxBase = p.car.steeringMaxBase; //steering lock at 0 speed.
+        this.steeringUscl = p.car.steeringUscl; // U scl of steering lock limiting
+        this.steeringCentreRate = p.car.steeringCentreRate;
+        this.steeringFollow = p.car.steeringFollow; //steering relaxes to motion direction
+        this.torqueRate = p.car.torqueRate;
+        this.torqueMax = p.car.torqueMax;
+        this.brakeMax = p.car.brakeMax;
+        this.brakeRate = p.car.brakeRate;
 
+        this.steeringMax = 0; // can vary with speed.
         this.rotMat = calcRotMat(this.theta);
 
         let xl = -this.w * PPM / 2 * this.oversize;
@@ -129,21 +130,6 @@ class Car {
         }
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.stroke();
-
-        // //velocity vector
-        // ctx.beginPath();
-        // ctx.strokeStyle = "yellow";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(this.x, this.y);
-        // ctx.lineTo(this.x + this.ux * vel_scl, this.y + this.uy * vel_scl);
-        // ctx.stroke();
-        // //acceleration vector
-        // ctx.beginPath();
-        // ctx.strokeStyle = "magenta";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(this.x, this.y);
-        // ctx.lineTo(this.x + this.ax * acc_scl, this.y + this.ay * acc_scl);
-        // ctx.stroke();
 
     }
     drawHUD(ctx) {
@@ -276,7 +262,7 @@ class Car {
             wh.n.Fthrust.lat = sinTh * wh.torque;
 
             // braking
-            if (Math.abs(wh.n.u.lonWheel) < 1) {
+            if (Math.abs(wh.n.u.lonWheel) < .1) {
                 wh.n.Fbrake.lon = -wh.n.u.lon * wh.brake * wh.sfc_mu * cosTh;
                 wh.n.Fbrake.lat = -wh.n.u.lon * wh.brake * wh.sfc_mu * sinTh;
             }
@@ -285,7 +271,7 @@ class Car {
                 wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * wh.brake * wh.sfc_mu * sinTh;
             }
             // rolling resistance
-            if (Math.abs(wh.n.u.lonWheel) < 1) {
+            if (Math.abs(wh.n.u.lonWheel) < .1) {
                 wh.n.Frollres.lon = -wh.n.u.lonWheel * Crr * wh.sfc_mu * cosTh;
                 wh.n.Frollres.lat = -wh.n.u.lonWheel * Crr * wh.sfc_mu * sinTh;
             }
@@ -303,13 +289,13 @@ class Car {
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / stiffness;
 
-            if (car.U < .1) {
+            if (car.U < .2) {//m,aybe use longitudinal velocity for damping thresh?
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * stiffness * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * stiffness * .1;
             }
             else if (Math.abs(slipAngle) < skidThresh) {
-                wh.skidFac = 0;
+                wh.skidFac = 2;
                 wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness;
                 wh.n.Fcorn.lon = slipAngle * sinTh * stiffness;
                 // console.log("tract")
@@ -365,16 +351,6 @@ class Wheel {
         this.y = y;
         this.xa = x; // x pos absolute
         this.ya = y; // y pos
-        this.ux = 0; // relative (to car) velocity
-        this.uy = 0;
-        this.uxA = 0; // abs velocity
-        this.uyA = 0;
-        this.FTx = 0;// thrust force components
-        this.FTy = 0;
-        this.FBx = 0;// brake force components
-        this.FBy = 0;
-        this.FLx = 0;// perpendicular force components
-        this.FLy = 0;
 
         this.n = {};
         this.n.Fthrust = {};
@@ -401,16 +377,12 @@ class Wheel {
         this.n.u.lonWheel = 0;
         this.n.u.latWheel = 0;
 
-        this.sfc = 0; //surface, to be read from track img
-        this.drg = drag;
-
         this.d = (x ** 2 + y ** 2) ** 0.5; // distance to car CoM
         this.phi = Math.atan2(x, y);
         // this.phiy = Math.atan2(y, -x);
         this.width = width;
         this.length = width * aspect;
         this.theta = 0; // angle relative to car
-        this.grip = 1;
         this.color = "white";
         this.torque = 0;
         this.brake = 0;
@@ -444,48 +416,6 @@ class Wheel {
         x = MatrixTrans(x, [car.x, car.y]);
         this.xa = x[0][0];
         this.ya = x[0][1];
-        // console.log(x[0][0])
-        // //draw rel vel vectors
-        // ctx.beginPath();
-        // ctx.strokeStyle = "purple";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(this.xa, this.ya);
-        // ctx.lineTo(this.xa + this.ux * vel_scl, this.ya + this.uy * vel_scl);
-        // ctx.stroke();
-
-        // //draw abs vel vectors
-        // ctx.beginPath();
-        // ctx.strokeStyle = "yellow";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(x[0][0], x[0][1]);
-        // ctx.lineTo(x[0][0] + this.uxA * vel_scl, x[0][1] + this.uyA * vel_scl);
-        // ctx.stroke();
-
-
-        // //draw thrust force vectors
-        // ctx.beginPath();
-        // ctx.strokeStyle = "green";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(x[0][0], x[0][1]);
-        // ctx.lineTo(x[0][0] + this.FTx * force_scl, x[0][1] + this.FTy * force_scl);
-        // ctx.stroke();
-
-
-        // //draw brake force vectors
-        // ctx.beginPath();
-        // ctx.strokeStyle = "red";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(x[0][0], x[0][1]);
-        // ctx.lineTo(x[0][0] + this.FBx * force_scl, x[0][1] + this.FBy * force_scl);
-        // ctx.stroke();
-
-        // //draw lateral friction force vectors
-        // ctx.beginPath();
-        // ctx.strokeStyle = "turquoise";
-        // ctx.lineWidth = baseLW;
-        // ctx.moveTo(x[0][0], x[0][1]);
-        // ctx.lineTo(x[0][0] + this.FLx * force_scl, x[0][1] + this.FLy * force_scl);
-        // ctx.stroke();
     }
     drawHUD(ctx, car, HUDx, HUDy, HUDscl) {
 
@@ -1022,8 +952,8 @@ let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
 let yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
-let lookAhead = p.run.lookAhead; //seconds
-let panSpeed = p.run.panSpeed;
+let lookAhead = p.draw.lookAhead; //seconds
+let panSpeed = p.draw.panSpeed;
 let accBtn, brkBtn, leftBtn, rightBtn;
 let sfcTypes = p.track.sfcTypes;
 let sfc_mu, sfc_drag; // 2d arrays, dims of track
@@ -1038,7 +968,7 @@ const CA = p.phys.CA; //air drag coefficient
 const forceBrake = false;
 const forceLeft = false;
 
-let PPM = p.run.pixPerMetre; // init scale, screen pixels per metre - pre zoom
+let PPM = p.draw.pixPerMetre; // init scale, screen pixels per metre - pre zoom
 let trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
 let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
