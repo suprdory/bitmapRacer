@@ -358,107 +358,6 @@ class Car {
 
 
     }
-
-    mechanic() {
-        // console.log(this);
-        this.to = 0;
-        this.ax = 0;
-        this.ay = 0;
-        let Fx = 0;
-        let Fy = 0;
-
-
-        for (let i = 0; i < 4; i++) {
-            let wh = this.wheels[i];
-            let cos_thth = Math.cos(this.theta + wh.theta);
-            let sin_thphi = Math.sin(this.theta + wh.theta);
-
-            // velocity - relative to car
-            wh.ux = +this.thetaDot * wh.d * Math.cos(this.theta + wh.phi);
-            wh.uy = -this.thetaDot * wh.d * Math.sin(this.theta + wh.phi);
-            // velocity - absolute
-            wh.uxA = wh.ux + this.ux;
-            wh.uyA = wh.uy + this.uy;
-
-            // velocity parallel/perpendicular to wheel
-            wh.uApar = -wh.uyA * cos_thth - wh.uxA * sin_thphi;
-            wh.uAperp = -wh.uyA * sin_thphi + wh.uxA * cos_thth;
-
-
-            //thrust
-            wh.FTx = wh.torque * sin_thphi;
-            wh.FTy = wh.torque * cos_thth;
-
-            //drag
-            wh.FDx = -wh.uxA * wh.sfc_drag * CD;
-            wh.FDy = -wh.uyA * wh.sfc_drag * CD;
-            // //drag
-            // wh.FDx = -wh.uxA * wh.drg;
-            // wh.FDy = -wh.uyA * wh.drg;
-
-            // braking
-            if (Math.abs(wh.uApar) < 1) {
-                wh.FBx = wh.uApar * wh.brake * wh.sfc_mu * sin_thphi;
-                wh.FBy = wh.uApar * wh.brake * wh.sfc_mu * cos_thth;
-            }
-            else {
-                wh.FBx = Math.sign(wh.uApar) * wh.brake * sin_thphi;
-                wh.FBy = Math.sign(wh.uApar) * wh.brake * cos_thth;
-            }
-
-            // lateral friction
-            let maxF = F_lat * wh.sfc_mu;
-            let slipAngle = Math.atan(wh.uAperp / wh.uApar);
-            let skidThresh = maxF / stiffness;
-            if (Math.abs(slipAngle) < skidThresh) {
-                wh.skidFac = 0;
-
-                wh.FLx = -(wh.uAperp) * cos_thth * stiffness * maxF;
-                wh.FLy = (wh.uAperp) * sin_thphi * stiffness * maxF;
-                // console.log("tract")
-            }
-            else {
-                wh.skidFac = 5;
-                wh.FLx = -Math.sign(wh.uAperp) * cos_thth * maxF;
-                wh.FLy = Math.sign(wh.uAperp) * sin_thphi * maxF;
-                // console.log("skid")
-            }
-
-
-            // torque due to thrust
-            this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
-
-            // torque due to lateral friction
-            this.to = this.to + wh.FLx * wh.d * Math.cos(this.theta + wh.phi);
-            this.to = this.to + -wh.FLy * wh.d * Math.sin(this.theta + wh.phi);
-
-            // resultant wheel force
-            Fx = Fx + wh.FTx + wh.FBx + wh.FLx + wh.FDx;
-            Fy = Fy + wh.FTy + wh.FBy + wh.FLy + wh.FDy;
-
-        }
-
-        // console.log(this.wheels[0].theta)
-        this.steeringMax = this.steeringMaxBase * +this.steeringUscl / (this.steeringUscl + this.U)
-        this.ax = Fx / this.m;
-        this.ay = Fy / this.m;
-        this.ux = this.ux + this.ax * dt;
-        this.uy = this.uy + this.ay * dt;
-        this.U = (this.ux ** 2 + this.uy ** 2) ** .5
-        this.thetaU = Math.atan2(this.ux, this.uy);
-        this.x = this.x + this.ux * dt;
-        this.y = this.y + this.uy * dt;
-        this.thetaDot = this.thetaDot + this.to / this.momI * dt;
-        this.theta = this.theta + this.thetaDot * dt;
-        this.rotMat = calcRotMat(this.theta);
-        this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
-        if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
-        if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
-        this.ulon = this.U * Math.cos(this.headOff)
-        this.ulat = this.U * Math.sin(this.headOff)
-
-    }
-
 }
 class Wheel {
     constructor(x, y, width, aspect, drag) {
@@ -641,9 +540,6 @@ class Wheel {
         xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'white')
-        // if (n == 10) {
-        // console.log(x1[0],x1[1])
-        // }
 
     }
 
@@ -986,7 +882,7 @@ function addPointerListeners(touchControl) {
     }
 }
 class TouchButton {
-    constructor(x0, y0, w, h, action, txt) {
+    constructor(x0, y0, w, h, action, txt, inputState) {
         this.x0 = x0;
         this.y0 = y0;
         this.h = h;
@@ -1049,7 +945,20 @@ class TouchButton {
 
 
 }
-
+function addListeners(inputState) {
+    if (isTouch) {
+        accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
+        brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
+        leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
+        rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
+        addPointerListeners(accBtn);
+        addPointerListeners(brkBtn);
+        addPointerListeners(leftBtn);
+        addPointerListeners(rightBtn);
+    }
+    addEventListener('keydown', (event) => { inputState.set(event) });
+    addEventListener('keyup', (event) => { inputState.set(event) });
+}
 function anim() {
     n++;
     if (n < nMax) {
@@ -1091,14 +1000,11 @@ function anim() {
     car.drawHUD(ctx);
 
 }
-import pJSON from './params.json' assert {type: 'json'};
-import {p} from './params.js'
-// console.log(p)
+import { p } from './params.js'
 const PI2 = Math.PI * 2;
 const isTouch = isTouchDevice();
 const canvasTrackScl = document.createElement("canvas");
 const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
-
 const canvas = document.getElementById("cw");
 const ctx = canvas.getContext("2d", { alpha: false });
 
@@ -1108,7 +1014,7 @@ canvas.width = window.innerWidth * pixRat;
 canvas.style.width = window.innerWidth + "px";
 canvas.style.height = window.innerHeight + "px";
 
-let baseLW = 2;
+let baseLW = p.draw.baseLW;
 let X = canvas.width;
 let Y = canvas.height;
 let Xi; //track image width and height
@@ -1118,23 +1024,16 @@ let yc = 0
 let yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
 let lookAhead = p.run.lookAhead; //seconds
 let panSpeed = p.run.panSpeed;
-
-// console.log("pixel ratio", pixRat)
-
-addEventListener('keydown', (event) => { inputState.set(event) });
-addEventListener('keyup', (event) => { inputState.set(event) });
-
+let accBtn, brkBtn, leftBtn, rightBtn;
 let sfcTypes = p.track.sfcTypes;
-
 let sfc_mu, sfc_drag; // 2d arrays, dims of track
 
 const dt = p.run.dt;
-
-const F_lat = 30; // max lat fric force
-const stiffness = 250; // cornering stiffness
+const F_lat = p.phys.F_lat; // max lat fric force
+const stiffness = p.phys.stiffness; // cornering stiffness
 const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
-const CA = .5; //air drag coefficient
+const CA = p.phys.CA; //air drag coefficient
 
 const forceBrake = false;
 const forceLeft = false;
@@ -1144,32 +1043,19 @@ let trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
 let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
 let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
-
-let n = 0;
-let nMax = p.run.nMax;
 let inputState = new InputState;
+addListeners(inputState);
 let car = new Car();
+// let debugTxt = "";
 
-let debugTxt = "";
-
-let accBtn, brkBtn, leftBtn, rightBtn;
-if (isTouch) {
-    accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
-    brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
-    leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
-    rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
-    addPointerListeners(accBtn);
-    addPointerListeners(brkBtn);
-    addPointerListeners(leftBtn);
-    addPointerListeners(rightBtn);
-}
-// image set up
+// track set up
 const img = new Image();
 img.src = 'tracks/square_track.png';
 let imageData;
 
 
-console.log(p.car.x)
+let n = 0;
+let nMax = p.run.nMax;
 img.onload = function () {
     getImageData();
     anim();
