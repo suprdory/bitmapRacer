@@ -20,7 +20,7 @@ export let p = {
     },
     "run": {
         "dt": 0.2,
-        "nMax": 10000,
+        "nMax": 100000,
     },
     "phys": {
         "CD": 100,
@@ -44,6 +44,6 @@ export let p = {
         "pixPerMetre": 12,
         "lookAhead": 0.333,
         "panSpeed": 0.2,
-
+        "zoom":1.0,
     }
 }

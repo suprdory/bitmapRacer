@@ -1,1 +1,1 @@
-- make track class which stores data and functions to return track physics params at given coord, and may to draw track.
+- fix track edge OOB bug
