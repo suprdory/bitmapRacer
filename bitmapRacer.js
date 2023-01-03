@@ -28,24 +28,24 @@ function calcRotMat(theta) {
 }
 class Car {
     constructor() {
-
         // car design
-        this.w = 40; //width
-        this.l = 60; //length
-        this.wheelWidth = 10;
-        this.wheelAspect = 2
-        this.oversize = 1.15;
-        this.bodyAspect = 1.3;
+        this.w = 2; //width
+        this.l = 3; //length
+        this.wheelWidth = .4;
+        this.wheelAspect = 2.5;
+        this.oversize = 1.20;
+        this.bodyAspect = 1.2;
 
         // mech + kin
-        this.x = 200 * trackScl; // x pos 
-        this.y = 200 * trackScl; // y pos
+        this.x = 40; // x pos 
+        this.y = 40; // y pos
 
+        this.Fxy = [0, 0]; //resultant Force on car as column vector;
         this.ax = 0; // x accel
         this.ay = 0; // y accel
-        this.m = 1; // mass
+        this.m = 100; // mass
         this.to = 0; //heading torque;
-        this.momI = 10000 * this.m; // moment of inertia
+        this.momI = 40 * this.m; // moment of inertia
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
@@ -54,25 +54,35 @@ class Car {
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
 
+        this.n = {}; // "new" mechanics derived in car ref frame
+        this.n.Fair = {}; // air resistance
+        this.n.Fair.lon = 0;
+        this.n.Fair.lat = 0;
+        this.n.Fres = {}; // resultant force from car and wheels
+        this.n.Fres.lon = 0;
+        this.n.Fres.lat = 0;
+        this.n.Mres = 0; // resultant moment from wheels
+
 
         // specs
-        this.steeringRate = 0.2;
-        this.steeringMaxBase = 45 * Math.PI / 180; //steering lock at 0 speed.
+        this.steeringRate = 0.1;
+        this.steeringMaxBase = 35 * Math.PI / 180; //steering lock at 0 speed.
         this.steeringMax = this.steeringMaxBase; // can vary with speed.
-        this.steeringUscl = 20; // U scl of steering lock limiting
-        this.steeringCentreRate = 0.1;
-        this.torqueRate = 0.1;
-        this.torqueMax = .5;
-        this.brakeMax = 2;
-        this.brakeRate = 0.8;
-        this.wheelDrag = 0.0005;
+        this.steeringUscl = 2; // U scl of steering lock limiting
+        this.steeringCentreRate = 1;
+        this.steeringFollow = 0; //steering relaxes to motion direction
+        this.torqueRate = 2;
+        this.torqueMax = 10;
+        this.brakeMax = 30;
+        this.brakeRate = 10;
+        // this.wheelDrag = 1000.0;
 
         this.rotMat = calcRotMat(this.theta);
 
-        let xl = -this.w / 2 * this.oversize;
-        let xr = +this.w / 2 * this.oversize;
-        let yf = this.l / 2 * this.oversize * this.bodyAspect;
-        let yr = -this.l / 2 * this.oversize * this.bodyAspect;
+        let xl = -this.w * PPM / 2 * this.oversize;
+        let xr = +this.w * PPM / 2 * this.oversize;
+        let yf = this.l * PPM / 2 * this.oversize * this.bodyAspect;
+        let yr = -this.l * PPM / 2 * this.oversize * this.bodyAspect;
         this.coordMat = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
         this.wheels = [
             new Wheel(-this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
@@ -80,12 +90,14 @@ class Car {
             new Wheel(-this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
             new Wheel(this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag)
         ];
+
+
     }
     readTrack() {
         this.wheels.forEach(function (wheel) {
             //wheel centre abs coords
-            let xw = Math.round(wheel.xa / trackScl);
-            let yw = Math.round(wheel.ya / trackScl);
+            let xw = Math.round(wheel.xa * PPM / trackScl);
+            let yw = Math.round(wheel.ya * PPM / trackScl);
             if (xw < 0 | xw > (Xi - 1) | yw < 0 | yw > (Yi - 1)) {
                 wheel.sfc_mu = sfcTypes.outOfBounds.mu;
                 wheel.sfc_drag = sfcTypes.outOfBounds.drag;
@@ -105,7 +117,7 @@ class Car {
 
         let x = this.coordMat;
         x = MatrixProd(x, this.rotMat);
-        x = MatrixTrans(x, [this.x + xc, this.y + yc])
+        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
         ctx.strokeStyle = "white";
@@ -133,6 +145,37 @@ class Car {
         // ctx.lineTo(this.x + this.ax * acc_scl, this.y + this.ay * acc_scl);
         // ctx.stroke();
 
+    }
+    drawHUD(ctx) {
+        let HUDscl = 2;
+        let HUDx = X - 50 * HUDscl;
+        let HUDy = 50 * HUDscl;
+        let x = this.coordMat;
+        // x = MatrixProd(x, calcRotMat(Math.PI));
+        x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
+        x = MatrixTrans(x, [HUDx, HUDy])
+        ctx.beginPath();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < x.length; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        ctx.stroke();
+        this.wheels.forEach(wheel => wheel.drawHUD(ctx, this, HUDx, HUDy, HUDscl));
+
+        let x0 = [HUDx, HUDy]
+        let xd = [[this.n.Fair.lat, this.n.Fair.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        let x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'brown')
+
+        xd = [[this.n.Fres.lat, this.n.Fres.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'white')
 
     }
     control(inputState) {
@@ -151,7 +194,8 @@ class Car {
             // this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
         }
         else {
-            this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax, this.wheels[0].theta + (-this.wheels[0].theta - this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
+            this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
+                this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
 
             this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta
@@ -190,98 +234,130 @@ class Car {
         }
     }
 
-    mechanic() {
-        // console.log(this);
-        this.to = 0;
-        this.ax = 0;
-        this.ay = 0;
-        let Fx = 0;
-        let Fy = 0;
+    mech2() {
+        // calc all forces in car rel coords before transforming to track from and applying.
+        this.n.Fres.lon = 0;
+        this.n.Fres.lat = 0;
+        this.n.Mres = 0;
+
+        //forces directly on car - air resistance
+        this.n.Fair.lon = -CA * this.U ** 2 * Math.cos(-this.headOff);
+        this.n.Fair.lat = -CA * this.U ** 2 * Math.sin(-this.headOff);
+
+        this.n.Fres.lon += this.n.Fair.lon;
+        this.n.Fres.lat += this.n.Fair.lat;
 
 
         for (let i = 0; i < 4; i++) {
+
             let wh = this.wheels[i];
+            let cosTh = Math.cos(wh.theta);
+            let sinTh = Math.sin(wh.theta);
+
             let cos_thth = Math.cos(this.theta + wh.theta);
             let sin_thphi = Math.sin(this.theta + wh.theta);
 
-            // velocity - relative to car
+            // wheel velocity - relative to car
             wh.ux = +this.thetaDot * wh.d * Math.cos(this.theta + wh.phi);
             wh.uy = -this.thetaDot * wh.d * Math.sin(this.theta + wh.phi);
-            // velocity - absolute
+            // wheel velocity - absolute
             wh.uxA = wh.ux + this.ux;
             wh.uyA = wh.uy + this.uy;
-
-            // velocity parallel/perpendicular to wheel
+            // wheel velocity parallel/perpendicular to wheel
             wh.uApar = -wh.uyA * cos_thth - wh.uxA * sin_thphi;
             wh.uAperp = -wh.uyA * sin_thphi + wh.uxA * cos_thth;
 
-            //thrust
-            wh.FTx = wh.torque * sin_thphi;
-            wh.FTy = wh.torque * cos_thth;
 
-            //drag
-            wh.FDx = -wh.uxA * wh.sfc_drag;
-            wh.FDy = -wh.uyA * wh.sfc_drag;
-            // //drag
-            // wh.FDx = -wh.uxA * wh.drg;
-            // wh.FDy = -wh.uyA * wh.drg;
+            wh.n.u.lonWheel = -wh.uApar; //wheel speed in wheel direction (sign error in wh.uApar?)
+            wh.n.u.latWheel = wh.uAperp; //wheel speed purp to wheel direction
+
+            //accelerating
+            wh.n.Fthrust.lon = cosTh * wh.torque;
+            wh.n.Fthrust.lat = sinTh * wh.torque;
 
             // braking
-            if (Math.abs(wh.uApar) < 1) {
-                wh.FBx = wh.uApar * wh.brake * wh.sfc_mu * sin_thphi;
-                wh.FBy = wh.uApar * wh.brake * wh.sfc_mu * cos_thth;
+            if (Math.abs(wh.n.u.lonWheel) < 1) {
+                wh.n.Fbrake.lon = -wh.n.u.lon * wh.brake * wh.sfc_mu * cosTh;
+                wh.n.Fbrake.lat = -wh.n.u.lon * wh.brake * wh.sfc_mu * sinTh;
             }
             else {
-                wh.FBx = Math.sign(wh.uApar) * wh.brake * sin_thphi;
-                wh.FBy = Math.sign(wh.uApar) * wh.brake * cos_thth;
+                wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * wh.brake * wh.sfc_mu * cosTh;
+                wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * wh.brake * wh.sfc_mu * sinTh;
             }
+            // rolling resistance
+            if (Math.abs(wh.n.u.lonWheel) < 1) {
+                wh.n.Frollres.lon = -wh.n.u.lonWheel * Crr * wh.sfc_mu * cosTh;
+                wh.n.Frollres.lat = -wh.n.u.lonWheel * Crr * wh.sfc_mu * sinTh;
+            }
+            else {
+                wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * Crr * wh.sfc_mu * cosTh;
+                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * Crr * wh.sfc_mu * sinTh;
+            }
+            //surface drag
+            wh.n.Fdrag.lon = -wh.n.u.lonWheel * wh.sfc_drag * CD;
+            wh.n.Fdrag.lat = -wh.n.u.latWheel * wh.sfc_drag * CD;
+
 
             // lateral friction
-            if (Math.abs(wh.uAperp) < 2) {
+            let maxF = F_lat * wh.sfc_mu;
+            let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
+            let skidThresh = maxF / stiffness;
+
+            if (car.U < .1) {
                 wh.skidFac = 0;
-                wh.FLx = -(wh.uAperp) * cos_thth * mu_lat * wh.sfc_mu;
-                wh.FLy = (wh.uAperp) * sin_thphi * mu_lat * wh.sfc_mu;
+                wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * stiffness * .1;
+                wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * stiffness * .1;
+            }
+            else if (Math.abs(slipAngle) < skidThresh) {
+                wh.skidFac = 0;
+                wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness;
+                wh.n.Fcorn.lon = slipAngle * sinTh * stiffness;
                 // console.log("tract")
             }
             else {
                 wh.skidFac = 5;
-                wh.FLx = -Math.sign(wh.uAperp) * cos_thth * mu_lat * wh.sfc_mu;
-                wh.FLy = Math.sign(wh.uAperp) * sin_thphi * mu_lat * wh.sfc_mu;
+                wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * maxF;
+                wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
                 // console.log("skid")
             }
+            wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
+            wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
 
 
-            // torque due to thrust
-            this.to = this.to + wh.torque * wh.d * Math.sin(wh.theta + wh.phi);
+            wh.n.Mres = -wh.n.Fres.lon * wh.x + wh.n.Fres.lat * wh.y;
+            this.n.Fres.lon += wh.n.Fres.lon
+            this.n.Fres.lat += wh.n.Fres.lat
 
-            // torque due to lateral friction
-            this.to = this.to + wh.FLx * wh.d * Math.cos(this.theta + wh.phi);
-            this.to = this.to + -wh.FLy * wh.d * Math.sin(this.theta + wh.phi);
-
-            // resultant wheel force
-            Fx = Fx + wh.FTx + wh.FBx + wh.FLx + wh.FDx;
-            Fy = Fy + wh.FTy + wh.FBy + wh.FLy + wh.FDy;
-
+            this.n.Mres += wh.n.Mres
+            console.log()
         }
 
-        // console.log(this.wheels[0].theta)
+        this.Fxy = MatrixProd([[this.n.Fres.lat, this.n.Fres.lon]], calcRotMat(this.theta))[0]
+
+
         this.steeringMax = this.steeringMaxBase * +this.steeringUscl / (this.steeringUscl + this.U)
-        this.ax = Fx / this.m;
-        this.ay = Fy / this.m;
+
+        this.ax = this.Fxy[0] / this.m;
+        this.ay = this.Fxy[1] / this.m;
         this.ux = this.ux + this.ax * dt;
         this.uy = this.uy + this.ay * dt;
         this.U = (this.ux ** 2 + this.uy ** 2) ** .5
         this.thetaU = Math.atan2(this.ux, this.uy);
         this.x = this.x + this.ux * dt;
         this.y = this.y + this.uy * dt;
-        this.thetaDot = this.thetaDot + this.to / this.momI * dt;
+        // if (this.n.Mres) {
+        this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
         this.theta = this.theta + this.thetaDot * dt;
         this.rotMat = calcRotMat(this.theta);
         this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
         if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
         if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
-    }
+        this.ulon = this.U * Math.cos(this.headOff)
+        this.ulat = this.U * Math.sin(this.headOff)
+        // }
 
+
+    }
 }
 class Wheel {
     constructor(x, y, width, aspect, drag) {
@@ -300,6 +376,31 @@ class Wheel {
         this.FLx = 0;// perpendicular force components
         this.FLy = 0;
 
+        this.n = {};
+        this.n.Fthrust = {};
+        this.n.Fthrust.lat = 0;
+        this.n.Fthrust.lon = 0;
+        this.n.Fbrake = {};
+        this.n.Fbrake.lat = 0;
+        this.n.Fbrake.lon = 0;
+        this.n.Frollres = {};
+        this.n.Frollres.lat = 0;
+        this.n.Frollres.lon = 0;
+        this.n.Fdrag = {};
+        this.n.Fdrag.lat = 0;
+        this.n.Fdrag.lon = 0;
+        this.n.Fcorn = {};
+        this.n.Fcorn.lat = 0;
+        this.n.Fcorn.lon = 0;
+        this.n.Fres = {};
+        this.n.Fres.lat = 0;
+        this.n.Fres.lon = 0;
+        this.n.u = {};
+        this.n.u.lon = 0;
+        this.n.u.lat = 0;
+        this.n.u.lonWheel = 0;
+        this.n.u.latWheel = 0;
+
         this.sfc = 0; //surface, to be read from track img
         this.drg = drag;
 
@@ -308,15 +409,15 @@ class Wheel {
         // this.phiy = Math.atan2(y, -x);
         this.width = width;
         this.length = width * aspect;
-        this.theta = 0;
+        this.theta = 0; // angle relative to car
         this.grip = 1;
         this.color = "white";
         this.torque = 0;
         this.brake = 0;
-        let xl = -this.width / 2;
-        let xr = this.width / 2;
-        let yf = this.length / 2;
-        let yr = -this.length / 2;
+        let xl = -this.width * PPM / 2;
+        let xr = this.width * PPM / 2;
+        let yf = this.length * PPM / 2;
+        let yr = -this.length * PPM / 2;
         this.coordMat = [[xl, yr], [xl, yf], [xr, yf], [xr, yr]];
         this.rotMat = calcRotMat(this.theta);
     }
@@ -324,9 +425,9 @@ class Wheel {
     draw(ctx, car, xc, yc) {
         // let x=this.coordMat;
         let x = MatrixProd(this.coordMat, this.rotMat);
-        x = MatrixTrans(x, [this.x, this.y]);
+        x = MatrixTrans(x, [this.x * PPM, this.y * PPM]);
         x = MatrixProd(x, car.rotMat);
-        x = MatrixTrans(x, [car.x + xc, car.y + yc])
+        x = MatrixTrans(x, [car.x * PPM + xc, car.y * PPM + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.color;
         ctx.lineWidth = baseLW / zoom * pixRat;
@@ -343,6 +444,7 @@ class Wheel {
         x = MatrixTrans(x, [car.x, car.y]);
         this.xa = x[0][0];
         this.ya = x[0][1];
+        // console.log(x[0][0])
         // //draw rel vel vectors
         // ctx.beginPath();
         // ctx.strokeStyle = "purple";
@@ -384,11 +486,74 @@ class Wheel {
         // ctx.moveTo(x[0][0], x[0][1]);
         // ctx.lineTo(x[0][0] + this.FLx * force_scl, x[0][1] + this.FLy * force_scl);
         // ctx.stroke();
+    }
+    drawHUD(ctx, car, HUDx, HUDy, HUDscl) {
 
+        let x = MatrixProd(this.coordMat, this.rotMat);
+        x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
+        x = MatrixTrans(x, [this.x * PPM * HUDscl, this.y * PPM * HUDscl]);
+        // x = MatrixProd(x, car.rotMat);
+        x = MatrixTrans(x, [HUDx, HUDy])
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < 4; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        ctx.stroke();
+
+        let xd, x1;
+        let x0 = [[0, 0]];
+
+        x0 = MatrixTrans(x0, [this.x * PPM * HUDscl, this.y * PPM * HUDscl]);
+        x0 = MatrixTrans(x0, [HUDx, HUDy])[0]
+
+        xd = [[this.n.Fthrust.lat, this.n.Fthrust.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'green')
+
+        xd = [[this.n.Fbrake.lat, this.n.Fbrake.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'red')
+
+        xd = [[this.n.Frollres.lat, this.n.Frollres.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'purple')
+
+        xd = [[this.n.Fdrag.lat, this.n.Fdrag.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'blue')
+
+        xd = [[this.n.Fcorn.lat, this.n.Fcorn.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'yellow')
+
+        xd = [[this.n.Fres.lat, this.n.Fres.lon]]
+        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        x1 = MatrixTrans([x0], xd)[0];
+        drawHUDArrow(x0, x1, 'white')
 
     }
 
 }
+
+function drawHUDArrow(x0, x1, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = baseLW / zoom * pixRat;
+    ctx.beginPath();
+    ctx.moveTo(x0[0], x0[1]);
+    ctx.lineTo(x1[0], x1[1]);
+    ctx.stroke();
+}
+
 class InputState {
     constructor() {
         this.left = false;
@@ -492,11 +657,11 @@ function showImage(fileReader) {
 
 }
 function drawHUD() {
-    hudX = 10;
-    hudY = Y - 160;
-    barHeight = 50;
-    barWidthSpace = 5;
-    barWidth = 20;
+    let hudX = 10;
+    let hudY = Y - 160;
+    let barHeight = 50;
+    let barWidthSpace = 5;
+    let barWidth = 20;
     ctx.lineWidth = baseLW;
     ctx.strokeStyle = "green";
     ctx.fillStyle = "green";
@@ -540,9 +705,8 @@ function drawHUD() {
     ctx.fill();
 
 
-    whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
-
-    whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
+    let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
+    let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
     for (let i = 0; i < 4; i++) {
         ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
         ctx.beginPath();
@@ -620,15 +784,15 @@ function image2trackDat() {
     }
 
     // convert rbg matrices into hsl matrices for surface type diag
-    h = Array(Xi);
-    s = Array(Xi);
-    l = Array(Xi);
+    let h = Array(Xi);
+    let s = Array(Xi);
+    let l = Array(Xi);
     for (let i = 0; i < Xi; i++) {
         let h_col = Array(Yi);
         let s_col = Array(Yi);
         let l_col = Array(Yi);
         for (let j = 0; j < Yi; j++) {
-            hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
+            let hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
             h_col[j] = hslj[0];
             s_col[j] = hslj[1];
             l_col[j] = hslj[2];
@@ -642,13 +806,13 @@ function image2trackDat() {
     sfc_drag = Array(Xi);
 
     for (let i = 0; i < Xi; i++) {
-        mu_col = Array(Yi);
-        drag_col = Array(Yi);
+        let mu_col = Array(Yi);
+        let drag_col = Array(Yi);
         for (let j = 0; j < Yi; j++) {
             let sfcType;
-            hx = h[i][j];
-            sx = s[i][j];
-            lx = l[i][j];
+            let hx = h[i][j];
+            let sx = s[i][j];
+            let lx = l[i][j];
             if (lx == 0) { //black
                 sfcType = 'outOfBounds';
             }
@@ -675,16 +839,6 @@ function image2trackDat() {
 
     }
 }
-
-// document.getElementById('myFile').onchange = function (evt) {
-//     var tgt = evt.target || window.event.srcElement, files = tgt.files;
-//     // FileReader support
-//     if (FileReader && files && files.length) {
-//         var fr = new FileReader();
-//         fr.onload = () => showImage(fr);
-//         fr.readAsDataURL(files[0]);
-//     }
-// }
 function isTouchDevice() {
     return (('ontouchstart' in window) ||
         (navigator.maxTouchPoints > 0) ||
@@ -727,9 +881,8 @@ function addPointerListeners(touchControl) {
 
     }
 }
-
 class TouchButton {
-    constructor(x0, y0, w, h, action, txt) {
+    constructor(x0, y0, w, h, action, txt, inputState) {
         this.x0 = x0;
         this.y0 = y0;
         this.h = h;
@@ -792,33 +945,44 @@ class TouchButton {
 
 
 }
-
+function addListeners(inputState) {
+    if (isTouch) {
+        accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
+        brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
+        leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
+        rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
+        addPointerListeners(accBtn);
+        addPointerListeners(brkBtn);
+        addPointerListeners(leftBtn);
+        addPointerListeners(rightBtn);
+    }
+    addEventListener('keydown', (event) => { inputState.set(event) });
+    addEventListener('keyup', (event) => { inputState.set(event) });
+}
 function anim() {
-    // n++;
-    // if (n < nMax) {
-    //     requestAnimationFrame(anim);
-    // }
+    n++;
+    if (n < nMax) {
+        requestAnimationFrame(anim);
+    }
 
-    requestAnimationFrame(anim);
+    // requestAnimationFrame(anim);
 
     car.control(inputState);
     car.readTrack();
-    car.mechanic();
+    // car.mechanic();
+    car.mech2();
 
     // calc screen centre coords
-    xct = X / 2 - (car.x + car.ux * lookAhead)  //centre target, pan to this
-    yct = Y / 2 - (car.y + car.uy * lookAhead) - yOff
+    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
+    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
     //draw scaled stuff
     ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
     // clear screen
-    ctx.clearRect(X/2-X/2/zoom, Y/2-Y/2/zoom, X/zoom, Y/zoom);
-
-
+    ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
     ctx.drawImage(canvasTrackScl, xc, yc);
-
     car.draw(ctx, xc, yc);
 
     // draw unscaled scaled stuff
@@ -833,90 +997,67 @@ function anim() {
     }
     // drawDebug();
     drawHUD();
+    car.drawHUD(ctx);
 
 }
-
+import { p } from './params.js'
+const PI2 = Math.PI * 2;
 const isTouch = isTouchDevice();
 const canvasTrackScl = document.createElement("canvas");
 const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
-
 const canvas = document.getElementById("cw");
 const ctx = canvas.getContext("2d", { alpha: false });
-const PI2 = Math.PI * 2;
-pixRat = window.devicePixelRatio * 1.0;
+
+let pixRat = window.devicePixelRatio * 1.0;
 canvas.height = window.innerHeight * pixRat;
 canvas.width = window.innerWidth * pixRat;
 canvas.style.width = window.innerWidth + "px";
 canvas.style.height = window.innerHeight + "px";
 
-let baseLW = 2;
+let baseLW = p.draw.baseLW;
 let X = canvas.width;
 let Y = canvas.height;
-let Xi; //image width and height
+let Xi; //track image width and height
 let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
 let yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
-let lookAhead = 5;
-let panSpeed = 0.2;
+let lookAhead = p.run.lookAhead; //seconds
+let panSpeed = p.run.panSpeed;
+let accBtn, brkBtn, leftBtn, rightBtn;
+let sfcTypes = p.track.sfcTypes;
+let sfc_mu, sfc_drag; // 2d arrays, dims of track
 
-console.log("pixel ratio", pixRat)
+const dt = p.run.dt;
+const F_lat = p.phys.F_lat; // max lat fric force
+const stiffness = p.phys.stiffness; // cornering stiffness
+const CD = p.phys.CD; // surface drag coefficient
+const Crr = p.phys.Crr; // rolling resistance
+const CA = p.phys.CA; //air drag coefficient
 
-addEventListener('keydown', (event) => { inputState.set(event) });
-addEventListener('keyup', (event) => { inputState.set(event) });
-
-let sfcTypes =
-{
-    'outOfBounds': { 'mu': 1.0, 'drag': 0.2 }, //black
-    'tarmac': { 'mu': 0.8, 'drag': 0.001 }, // grey
-    'grass': { 'mu': 0.3, 'drag': 0.02 }, //green
-    'mud': { 'mu': 0.2, 'drag': 0.3 }, // brown
-    'unknown': { 'mu': 0.8, 'drag': 0.01 }, // brown
-}
-
-let sfc_mu; // 2d arrays, dims of track
-let sfc_drag;
-
-const dt = 0.2
-const vel_scl = 1;
-const acc_scl = 1;
-const force_scl = 20;
-const mu_lat = 3;
 const forceBrake = false;
 const forceLeft = false;
-// const forceLeft = true;
-// const forceBrake = true;
 
-let PPM = 80; // init scale, screen pixels per metre - pre zoom
-let trackPPM = 25; // track image pixels per metre
-let trackScl = PPM/trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
+let PPM = p.run.pixPerMetre; // init scale, screen pixels per metre - pre zoom
+let trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
+let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
 let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
-
-let n = 0;
-let nMax = 10000;
 let inputState = new InputState;
+addListeners(inputState);
 let car = new Car();
+// let debugTxt = "";
 
-let debugTxt = "";
-
-let accBtn, brkBtn, leftBtn, rightBtn;
-if (isTouch) {
-    accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc");
-    brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake");
-    leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<");
-    rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">");
-    addPointerListeners(accBtn);
-    addPointerListeners(brkBtn);
-    addPointerListeners(leftBtn);
-    addPointerListeners(rightBtn);
-}
-// image set up
+// track set up
 const img = new Image();
 img.src = 'tracks/square_track.png';
 let imageData;
 
+
+let n = 0;
+let nMax = p.run.nMax;
 img.onload = function () {
     getImageData();
     anim();
 }
+
