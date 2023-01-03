@@ -302,13 +302,13 @@ class Car {
             let maxF = F_lat * wh.sfc_mu;
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / stiffness;
-            
+
             if (car.U < .1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * stiffness * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * stiffness * .1;
             }
-            else             if (Math.abs(slipAngle) < skidThresh) {
+            else if (Math.abs(slipAngle) < skidThresh) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness;
                 wh.n.Fcorn.lon = slipAngle * sinTh * stiffness;
@@ -323,7 +323,7 @@ class Car {
             wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
             wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
 
-            
+
             wh.n.Mres = -wh.n.Fres.lon * wh.x + wh.n.Fres.lat * wh.y;
             this.n.Fres.lon += wh.n.Fres.lon
             this.n.Fres.lat += wh.n.Fres.lat
@@ -346,14 +346,14 @@ class Car {
         this.x = this.x + this.ux * dt;
         this.y = this.y + this.uy * dt;
         // if (this.n.Mres) {
-            this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
-            this.theta = this.theta + this.thetaDot * dt;
-            this.rotMat = calcRotMat(this.theta);
-            this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
-            if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
-            if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
-            this.ulon = this.U * Math.cos(this.headOff)
-            this.ulat = this.U * Math.sin(this.headOff)
+        this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
+        this.theta = this.theta + this.thetaDot * dt;
+        this.rotMat = calcRotMat(this.theta);
+        this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
+        if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
+        if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
+        this.ulon = this.U * Math.cos(this.headOff)
+        this.ulat = this.U * Math.sin(this.headOff)
         // }
 
 
@@ -761,11 +761,11 @@ function showImage(fileReader) {
 
 }
 function drawHUD() {
-    hudX = 10;
-    hudY = Y - 160;
-    barHeight = 50;
-    barWidthSpace = 5;
-    barWidth = 20;
+    let hudX = 10;
+    let hudY = Y - 160;
+    let barHeight = 50;
+    let barWidthSpace = 5;
+    let barWidth = 20;
     ctx.lineWidth = baseLW;
     ctx.strokeStyle = "green";
     ctx.fillStyle = "green";
@@ -809,9 +809,8 @@ function drawHUD() {
     ctx.fill();
 
 
-    whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
-
-    whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
+    let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
+    let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
     for (let i = 0; i < 4; i++) {
         ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
         ctx.beginPath();
@@ -889,15 +888,15 @@ function image2trackDat() {
     }
 
     // convert rbg matrices into hsl matrices for surface type diag
-    h = Array(Xi);
-    s = Array(Xi);
-    l = Array(Xi);
+    let h = Array(Xi);
+    let s = Array(Xi);
+    let l = Array(Xi);
     for (let i = 0; i < Xi; i++) {
         let h_col = Array(Yi);
         let s_col = Array(Yi);
         let l_col = Array(Yi);
         for (let j = 0; j < Yi; j++) {
-            hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
+            let hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
             h_col[j] = hslj[0];
             s_col[j] = hslj[1];
             l_col[j] = hslj[2];
@@ -911,13 +910,13 @@ function image2trackDat() {
     sfc_drag = Array(Xi);
 
     for (let i = 0; i < Xi; i++) {
-        mu_col = Array(Yi);
-        drag_col = Array(Yi);
+        let mu_col = Array(Yi);
+        let drag_col = Array(Yi);
         for (let j = 0; j < Yi; j++) {
             let sfcType;
-            hx = h[i][j];
-            sx = s[i][j];
-            lx = l[i][j];
+            let hx = h[i][j];
+            let sx = s[i][j];
+            let lx = l[i][j];
             if (lx == 0) { //black
                 sfcType = 'outOfBounds';
             }
@@ -944,7 +943,6 @@ function image2trackDat() {
 
     }
 }
-
 function isTouchDevice() {
     return (('ontouchstart' in window) ||
         (navigator.maxTouchPoints > 0) ||
@@ -987,7 +985,6 @@ function addPointerListeners(touchControl) {
 
     }
 }
-
 class TouchButton {
     constructor(x0, y0, w, h, action, txt) {
         this.x0 = x0;
@@ -1067,8 +1064,8 @@ function anim() {
     car.mech2();
 
     // calc screen centre coords
-    xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
-    yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
+    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
+    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
@@ -1094,7 +1091,9 @@ function anim() {
     car.drawHUD(ctx);
 
 }
-
+import pJSON from './params.json' assert {type: 'json'};
+import {p} from './params.js'
+// console.log(p)
 const PI2 = Math.PI * 2;
 const isTouch = isTouchDevice();
 const canvasTrackScl = document.createElement("canvas");
@@ -1103,7 +1102,7 @@ const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
 const canvas = document.getElementById("cw");
 const ctx = canvas.getContext("2d", { alpha: false });
 
-pixRat = window.devicePixelRatio * 1.0;
+let pixRat = window.devicePixelRatio * 1.0;
 canvas.height = window.innerHeight * pixRat;
 canvas.width = window.innerWidth * pixRat;
 canvas.style.width = window.innerWidth + "px";
@@ -1117,50 +1116,37 @@ let Yi;
 let xc = 0 // screen centre coords
 let yc = 0
 let yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
-let lookAhead = .333; //seconds
-let panSpeed = 0.2;
+let lookAhead = p.run.lookAhead; //seconds
+let panSpeed = p.run.panSpeed;
 
 // console.log("pixel ratio", pixRat)
 
 addEventListener('keydown', (event) => { inputState.set(event) });
 addEventListener('keyup', (event) => { inputState.set(event) });
 
-let sfcTypes =
-{
-    'outOfBounds': { 'mu': 1.0, 'drag': 0.2 }, //black
-    'tarmac': { 'mu': 0.8, 'drag': 0.001 }, // grey
-    'grass': { 'mu': 0.3, 'drag': 0.02 }, //green
-    'mud': { 'mu': 0.2, 'drag': 0.3 }, // brown
-    'unknown': { 'mu': 0.8, 'drag': 0.01 }, // brown
-}
+let sfcTypes = p.track.sfcTypes;
 
-let sfc_mu; // 2d arrays, dims of track
-let sfc_drag;
+let sfc_mu, sfc_drag; // 2d arrays, dims of track
 
-const dt = 0.2
-const vel_scl = 1;
-const acc_scl = 1;
-const force_scl = 20;
+const dt = p.run.dt;
 
 const F_lat = 30; // max lat fric force
 const stiffness = 250; // cornering stiffness
-const CD = 100; // surface drag coefficient
-const Crr = 5; // rolling resistance
+const CD = p.phys.CD; // surface drag coefficient
+const Crr = p.phys.Crr; // rolling resistance
 const CA = .5; //air drag coefficient
 
 const forceBrake = false;
 const forceLeft = false;
-// const forceLeft = true;
-// const forceBrake = true;
 
-let PPM = 12; // init scale, screen pixels per metre - pre zoom
-let trackPPM = 4; // track image pixels per metre
+let PPM = p.run.pixPerMetre; // init scale, screen pixels per metre - pre zoom
+let trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
 let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
 
 let zoom = 1.0; //global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 let n = 0;
-let nMax = 10000;
+let nMax = p.run.nMax;
 let inputState = new InputState;
 let car = new Car();
 
@@ -1182,6 +1168,8 @@ const img = new Image();
 img.src = 'tracks/square_track.png';
 let imageData;
 
+
+console.log(p.car.x)
 img.onload = function () {
     getImageData();
     anim();

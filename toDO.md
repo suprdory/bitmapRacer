@@ -1,3 +1,1 @@
--track types. convert img data into tracktype matrix
--pan ahead of position (predictied position, speed and velocity (delta?) dependendent)
--bottom track bound error
+- make track class which stores data and functions to return track physics params at given coord, and may to draw track.
