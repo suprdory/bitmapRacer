@@ -1,1 +1,1 @@
-- fix track edge OOB bug
+- fix low speed lat fric

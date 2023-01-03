@@ -26,6 +26,149 @@ function calcRotMat(theta) {
     return [[Math.cos(theta), -Math.sin(theta)],
     [Math.sin(theta), Math.cos(theta)]];
 }
+class Track {
+    constructor(img_fname) {
+
+        this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
+        this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
+        this.canvas = document.createElement("canvas"); // draw original img here
+        this.ctx = this.canvas.getContext("2d", { alpha: false });
+        this.canvasScl = document.createElement("canvas"); // draw prescaled track imgh here
+        this.ctxScl = this.canvasScl.getContext("2d", { alpha: false });
+        this.trackReady = false;
+        this.imageData; // extracted on img load;
+        this.sfc_mu; // derived after img load by image2trackDat();
+        this.sfc_drag; // derived after img load by image2trackDat();
+        this.sfcTypes = p.track.sfcTypes;
+        this.img = new Image();
+        this.img.onload = () => {
+            // console.log("track object img loaded")
+            this.getImageData();
+            this.trackReady = 1;
+            // console.log("track ready", this)
+        }
+        this.img.src = img_fname;
+        this.Xi = 0; //img dimensions, obtained after load.
+        this.Yi = 0;
+    }
+    get_sfc_params(x, y) {
+        // returns drag and mu at x,y (metres)
+
+        // convert metres to track pixels
+        let xw = Math.round(x * PPM / this.trackScl);
+        let yw = Math.round(y * PPM / this.trackScl);
+        if (xw < 0 | xw > (this.Xi - 1) | yw < 0 | yw > (this.Yi - 1)) {
+            console.log('OOB')
+            return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
+        }
+        else {
+            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+        }
+    }
+
+    image2trackDat() {
+        //turn imageData into track variables this.sfc_mu and sfc_drag
+
+        // console.log("im2trck")
+        let Xi = this.Xi;
+        let Yi = this.Yi;
+        // read rbg values from image data
+        let r = Array(Xi);
+        let g = Array(Xi);
+        let b = Array(Xi);
+        let a = Array(Xi);
+        for (let i = 0; i < Xi; i++) {
+            let r_col = Array(Yi);
+            let g_col = Array(Yi);
+            let b_col = Array(Yi);
+            let a_col = Array(Yi);
+            for (let j = 0; j < Yi; j++) {
+                r_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 0];
+                b_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 1];
+                g_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 2];
+                a_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 2];
+            }
+            r[i] = r_col
+            b[i] = g_col
+            g[i] = b_col
+            a[i] = a_col
+        }
+        // console.log(Xi, Yi);
+
+        // convert rbg matrices into hsl matrices for surface type diag
+        let h = Array(Xi);
+        let s = Array(Xi);
+        let l = Array(Xi);
+        for (let i = 0; i < Xi; i++) {
+            let h_col = Array(Yi);
+            let s_col = Array(Yi);
+            let l_col = Array(Yi);
+            for (let j = 0; j < Yi; j++) {
+                let hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
+                h_col[j] = hslj[0];
+                s_col[j] = hslj[1];
+                l_col[j] = hslj[2];
+            }
+            h[i] = h_col
+            s[i] = s_col
+            l[i] = l_col
+        }
+
+
+        this.sfc_mu = Array(Xi);
+        this.sfc_drag = Array(Xi);
+
+        for (let i = 0; i < Xi; i++) {
+            let mu_col = Array(Yi);
+            let drag_col = Array(Yi);
+            for (let j = 0; j < Yi; j++) {
+                let sfcType;
+                let hx = h[i][j];
+                let sx = s[i][j];
+                let lx = l[i][j];
+                if (lx == 0) { //black
+                    sfcType = 'outOfBounds';
+                }
+                else if (sx < 10) { //colourless, not black
+                    sfcType = 'tarmac'
+                }
+                else if (hx >= 70 & hx <= 150) { // green
+                    sfcType = 'grass';
+                }
+                else if ((hx > 330 | hx < 50) & lx < 50) { //dark red/yellow i.e. brown
+                    sfcType = 'mud';
+                }
+                else {
+                    sfcType = 'unknown';
+                }
+
+                // console.log(sfcType)
+                mu_col[j] = this.sfcTypes[sfcType]['mu']
+                drag_col[j] = this.sfcTypes[sfcType]['drag']
+
+                this.sfc_mu[i] = mu_col;
+                this.sfc_drag[i] = drag_col;
+            }
+        }
+    }
+    getImageData() {
+        this.Xi = this.img.width;
+        this.Yi = this.img.height;
+        this.canvas.height = this.Yi;
+        this.canvas.width = this.Xi;
+
+        // console.log(this.Xi,this.Yi)
+        this.ctx.drawImage(this.img, 0, 0);
+        this.imageData = this.ctx.getImageData(0, 0, this.img.width, this.img.height).data;
+
+
+        this.image2trackDat()
+        this.canvasScl.height = this.Yi * this.trackScl;
+        this.canvasScl.width = this.Xi * this.trackScl;
+        this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
+    }
+
+}
 class Car {
     constructor() {
         // car design
@@ -462,19 +605,9 @@ class Wheel {
     }
 
 }
-
-function drawHUDArrow(x0, x1, color) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = baseLW / zoom * pixRat;
-    ctx.beginPath();
-    ctx.moveTo(x0[0], x0[1]);
-    ctx.lineTo(x1[0], x1[1]);
-    ctx.stroke();
-}
-
 class InputState {
     constructor() {
-        this.touch=isTouchDevice();
+        this.touch = isTouchDevice();
         this.left = false;
         this.right = false;
         this.up = false;
@@ -535,6 +668,78 @@ class InputState {
         }
 
     }
+}
+class TouchButton {
+    constructor(x0, y0, w, h, action, txt, inputState) {
+        this.x0 = x0;
+        this.y0 = y0;
+        this.h = h;
+        this.w = w;
+        this.active = false; //is being touched
+        this.en = null; // touch number
+        this.action = action; // action to update in inputState
+        this.txt = txt // display text
+    }
+    draw(ctx) {
+        ctx.beginPath()
+        ctx.strokeStyle = "white";
+        ctx.rect(this.x0, this.y0, this.w, this.h)
+        ctx.stroke();
+        if (this.active) {
+            ctx.beginPath()
+            ctx.fillStyle = "hsla(0,0%,50%,0.5)";
+            ctx.rect(this.x0, this.y0, this.w, this.h)
+            ctx.fill();
+        }
+        // ctx.fillStyle = uiTextColor;
+        ctx.beginPath()
+        ctx.textAlign = "center";
+        ctx.font = 20 * pixRat + 'px sans-serif';
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
+
+    }
+
+    contains(ex, ey) {
+        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    pointerDownHandler(ex, ey, en) {
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+            inputState.setTouch(this.action, true)
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.en = null;
+            this.active = false;
+            inputState.setTouch(this.action, false)
+        }
+    }
+
+    // pointerMoveHandler(ex, ey) {
+    //     if (this.pointerDown) {
+    //         this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
+    //         this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
+    //         this.xax = this.x / this.halfwidth;
+    //         this.yax = this.y / this.halfheight;
+    //     }
+    // }
+
+
+
+}
+function drawHUDArrow(x0, x1, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = baseLW / zoom * pixRat;
+    ctx.beginPath();
+    ctx.moveTo(x0[0], x0[1]);
+    ctx.lineTo(x1[0], x1[1]);
+    ctx.stroke();
 }
 function drawDebug() {
     // xw0 = Math.round(car.wheels[0].xa / scl);
@@ -664,7 +869,6 @@ const RGBToHSL = (r, g, b) => {
         (100 * (2 * l - s)) / 2,
     ];
 };
-
 function isTouchDevice() {
     return (('ontouchstart' in window) ||
         (navigator.maxTouchPoints > 0) ||
@@ -706,70 +910,6 @@ function addPointerListeners(touchControl) {
         });
 
     }
-}
-class TouchButton {
-    constructor(x0, y0, w, h, action, txt, inputState) {
-        this.x0 = x0;
-        this.y0 = y0;
-        this.h = h;
-        this.w = w;
-        this.active = false; //is being touched
-        this.en = null; // touch number
-        this.action = action; // action to update in inputState
-        this.txt = txt // display text
-    }
-    draw(ctx) {
-        ctx.beginPath()
-        ctx.strokeStyle = "white";
-        ctx.rect(this.x0, this.y0, this.w, this.h)
-        ctx.stroke();
-        if (this.active) {
-            ctx.beginPath()
-            ctx.fillStyle = "hsla(0,0%,50%,0.5)";
-            ctx.rect(this.x0, this.y0, this.w, this.h)
-            ctx.fill();
-        }
-        // ctx.fillStyle = uiTextColor;
-        ctx.beginPath()
-        ctx.textAlign = "center";
-        ctx.font = 20 * pixRat + 'px sans-serif';
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "white";
-        ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
-
-    }
-
-    contains(ex, ey) {
-        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
-    }
-    pointerDownHandler(ex, ey, en) {
-        if (this.contains(ex, ey)) {
-            // debugTxt = "PD: " + en + " " + this.action;
-            this.active = true;
-            this.en = en;
-            inputState.setTouch(this.action, true)
-        }
-    }
-    pointerUpHandler(en) {
-        if (en == this.en) {
-            // debugTxt = "PU: " + en + " " + this.action;
-            this.en = null;
-            this.active = false;
-            inputState.setTouch(this.action, false)
-        }
-    }
-
-    // pointerMoveHandler(ex, ey) {
-    //     if (this.pointerDown) {
-    //         this.x = Math.max(-this.halfwidth, Math.min(this.halfwidth, ex - this.x0));
-    //         this.y = Math.max(-this.halfheight, Math.min(this.halfheight, ey - this.y0));
-    //         this.xax = this.x / this.halfwidth;
-    //         this.yax = this.y / this.halfheight;
-    //     }
-    // }
-
-
-
 }
 function addListeners(inputState) {
     if (inputState.touch) {
@@ -841,6 +981,7 @@ function resize(){
     yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
     isTouch = isTouchDevice();
 }
+
 // import parameter object
 import { p } from './params.js'
 
@@ -859,7 +1000,6 @@ const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 
-
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
 resize();
@@ -871,245 +1011,8 @@ let inputState = new InputState;
 let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
 addListeners(inputState);
 
-
-// track set up
-function image2trackDat() {
-    //turn image data into track variables
-
-    // read rbg values from image data
-    let r = Array(Xi);
-    let g = Array(Xi);
-    let b = Array(Xi);
-    let a = Array(Xi);
-    for (let i = 0; i < Xi; i++) {
-        let r_col = Array(Yi);
-        let g_col = Array(Yi);
-        let b_col = Array(Yi);
-        let a_col = Array(Yi);
-        for (let j = 0; j < Yi; j++) {
-            r_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 0];
-            b_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 1];
-            g_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 2];
-            a_col[j] = imageData[((j * (Xi * 4)) + (i * 4)) + 2];
-        }
-        r[i] = r_col
-        b[i] = g_col
-        g[i] = b_col
-        a[i] = a_col
-    }
-
-    // convert rbg matrices into hsl matrices for surface type diag
-    let h = Array(Xi);
-    let s = Array(Xi);
-    let l = Array(Xi);
-    for (let i = 0; i < Xi; i++) {
-        let h_col = Array(Yi);
-        let s_col = Array(Yi);
-        let l_col = Array(Yi);
-        for (let j = 0; j < Yi; j++) {
-            let hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
-            h_col[j] = hslj[0];
-            s_col[j] = hslj[1];
-            l_col[j] = hslj[2];
-        }
-        h[i] = h_col
-        s[i] = s_col
-        l[i] = l_col
-    }
-
-    sfc_mu = Array(Xi);
-    sfc_drag = Array(Xi);
-
-    for (let i = 0; i < Xi; i++) {
-        let mu_col = Array(Yi);
-        let drag_col = Array(Yi);
-        for (let j = 0; j < Yi; j++) {
-            let sfcType;
-            let hx = h[i][j];
-            let sx = s[i][j];
-            let lx = l[i][j];
-            if (lx == 0) { //black
-                sfcType = 'outOfBounds';
-            }
-            else if (sx < 10) { //colourless, not black
-                sfcType = 'tarmac'
-            }
-            else if (hx >= 70 & hx <= 150) { // green
-                sfcType = 'grass';
-            }
-            else if ((hx > 330 | hx < 50) & lx < 50) { //dark red/yellow i.e. brown
-                sfcType = 'mud';
-            }
-            else {
-                sfcType = 'unknown';
-            }
-
-            // console.log(sfcType)
-            mu_col[j] = sfcTypes[sfcType]['mu']
-            drag_col[j] = sfcTypes[sfcType]['drag']
-
-            sfc_mu[i] = mu_col;
-            sfc_drag[i] = drag_col;
-        }
-
-    }
-}
-function getImageData() {
-    ctx.drawImage(img, 0, 0);
-    imageData = ctx.getImageData(0, 0, img.width, img.height).data;
-    Xi = img.width;
-    Yi = img.height;
-    // console.log("image data:", imageData);
-    image2trackDat()
-    canvasTrackScl.height = Yi * trackScl;
-    canvasTrackScl.width = Xi * trackScl;
-    ctxTrackScl.drawImage(img, 0, 0, Xi * trackScl, Yi * trackScl)
-}
-
-class Track{
-    constructor(img_fname){
-        this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
-        this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
-        this.canvasScl = document.createElement("canvas");
-        this.ctxScl = this.canvasScl.getContext("2d", { alpha: false });
-        this.trackReady=false;
-        this.imageData;
-        this.sfc_mu;
-        this.sfc_drag;
-        this.sfcTypes=p.track.sfcTypes;
-        this.img = new Image();
-        this.img.onload=() => {
-            console.log("track object img loaded")
-            this.getImageData();
-            this.trackReady = 1;
-        }
-        this.img.src=img_fname;
-        this.Xi=0;
-        this.Yi=0;
-    }
-    get_sfc_params(x,y){
-        // returns drag and mu at x,y (metres)
-        
-        // convert metres to track pixels
-        let xw = Math.round(x * PPM / this.trackScl);
-        let yw = Math.round(y * PPM / this.trackScl);
-        if (xw < 0 | xw > (this.Xi - 1) | yw < 0 | yw > (this.Yi - 1)) {
-            console.log('OOB')
-            return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
-        }
-        else {
-            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
-        }
-    }
-
-    image2trackDat() {
-    //turn imageData into track variables this.sfc_mu and sfc_drag
-
-    console.log("im2trck")
-    let Xi=this.Xi;
-    let Yi=this.Yi;
-    // read rbg values from image data
-    let r = Array(Xi);
-    let g = Array(Xi);
-    let b = Array(Xi);
-    let a = Array(Xi);
-    for (let i = 0; i < Xi; i++) {
-        let r_col = Array(Yi);
-        let g_col = Array(Yi);
-        let b_col = Array(Yi);
-        let a_col = Array(Yi);
-        for (let j = 0; j < Yi; j++) {
-            r_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 0];
-            b_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 1];
-            g_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 2];
-            a_col[j] = this.imageData[((j * (Xi * 4)) + (i * 4)) + 2];
-        }
-        r[i] = r_col
-        b[i] = g_col
-        g[i] = b_col
-        a[i] = a_col
-    }
-
-    // convert rbg matrices into hsl matrices for surface type diag
-    let h = Array(Xi);
-    let s = Array(Xi);
-    let l = Array(Xi);
-    for (let i = 0; i < Xi; i++) {
-        let h_col = Array(Yi);
-        let s_col = Array(Yi);
-        let l_col = Array(Yi);
-        for (let j = 0; j < Yi; j++) {
-            let hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
-            h_col[j] = hslj[0];
-            s_col[j] = hslj[1];
-            l_col[j] = hslj[2];
-        }
-        h[i] = h_col
-        s[i] = s_col
-        l[i] = l_col
-    }
-
-    this.sfc_mu = Array(Xi);
-    this.sfc_drag = Array(Xi);
-
-    for (let i = 0; i < Xi; i++) {
-        let mu_col = Array(Yi);
-        let drag_col = Array(Yi);
-        for (let j = 0; j < Yi; j++) {
-            let sfcType;
-            let hx = h[i][j];
-            let sx = s[i][j];
-            let lx = l[i][j];
-            if (lx == 0) { //black
-                sfcType = 'outOfBounds';
-            }
-            else if (sx < 10) { //colourless, not black
-                sfcType = 'tarmac'
-            }
-            else if (hx >= 70 & hx <= 150) { // green
-                sfcType = 'grass';
-            }
-            else if ((hx > 330 | hx < 50) & lx < 50) { //dark red/yellow i.e. brown
-                sfcType = 'mud';
-            }
-            else {
-                sfcType = 'unknown';
-            }
-
-            // console.log(sfcType)
-            mu_col[j] = this.sfcTypes[sfcType]['mu']
-            drag_col[j] = this.sfcTypes[sfcType]['drag']
-
-            this.sfc_mu[i] = mu_col;
-            this.sfc_drag[i] = drag_col;
-        }
-    }
-}
-    getImageData(){
-        ctx.drawImage(this.img, 0, 0);
-        this.imageData = ctx.getImageData(0, 0, this.img.width, this.img.height).data;
-        this.Xi = this.img.width;
-        this.Yi = this.img.height;
-        this.image2trackDat()
-        this.canvasScl.height = this.Yi * this.trackScl;
-        this.canvasScl.width = this.Xi * this.trackScl;
-        this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
-        console.log(this, "got image data")
-    }
-
-}
-//track class trial
+//track set up
 let track = new Track('tracks/square_track.png')
-
-// const canvasTrackScl = document.createElement("canvas");
-// const ctxTrackScl = canvasTrackScl.getContext("2d", { alpha: false });
-// let sfcTypes = p.track.sfcTypes;
-// let sfc_mu, sfc_drag; // 2d arrays, dims of track
-// let trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
-// let trackScl = PPM / trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
-// const img = new Image();
-// img.src = 'tracks/square_track.png';
-// let imageData;
 
 // car set up
 let car = new Car();
@@ -1117,8 +1020,4 @@ let car = new Car();
 // run
 let n = 0;
 let nMax = p.run.nMax;
-// img.onload = function () {
-//     getImageData();
-    // trackReady=1;
-// }
 anim();
