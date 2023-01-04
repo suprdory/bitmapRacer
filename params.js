@@ -9,15 +9,15 @@ export let p = {
         "oversize": 0.2,
         "bodyAspect": 0.25,
         "mass": 200,
-        "momIfac": 10, // moment of intertia over mass
+        "momIfac": 5, // moment of intertia over mass
         "steeringRate": 0.1,
         "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
         "steeringUscl": 5, // U scl of steering lock limiting
         "steeringCentreRate": 1,
         "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-        "fade": 1.0, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD.
+        "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD.
         "torqueRate": 2,
-        "torqueMax": 40,
+        "torqueMax": 50,
         "brakeMax": 30,
         "brakeRate": 10,
     },

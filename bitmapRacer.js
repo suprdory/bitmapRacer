@@ -252,7 +252,7 @@ class Car {
         })
     }
     draw(ctx, xc, yc) {
-        this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
+       
 
         let x = this.coordMat;
         x = MatrixProd(x, this.rotMat);
@@ -260,6 +260,7 @@ class Car {
 
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
+        ctx.fillStyle=this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
@@ -267,7 +268,9 @@ class Car {
             ctx.lineTo(x[i][0], x[i][1]);
         }
         ctx.lineTo(x[0][0], x[0][1]);
-        ctx.stroke();
+        // ctx.stroke();
+        ctx.fill();
+        this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
 
     }
     drawHUD(ctx) {
@@ -582,18 +585,7 @@ class Wheel {
         x = MatrixTrans(x, [this.x * PPM * HUDscl, this.y * PPM * HUDscl]);
         // x = MatrixProd(x, car.rotMat);
         x = MatrixTrans(x, [HUDx, HUDy])
-        ctx.beginPath();
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = baseLW / zoom * pixRat;
-        // console.table(this.coordMat)
-        ctx.moveTo(x[0][0], x[0][1])
-        for (let i = 1; i < 4; i++) {
-            ctx.lineTo(x[i][0], x[i][1]);
-        }
-        ctx.lineTo(x[0][0], x[0][1]);
-        // ctx.stroke();
-        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (car.m / 2))}, 0,0)`;
-        ctx.fill();
+       
         let xd, x1;
         let x0 = [[0, 0]];
 
@@ -629,6 +621,19 @@ class Wheel {
         xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'white')
+
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < 4; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        // ctx.stroke();
+        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (car.m / 2))}, 0,0)`;
+        ctx.fill();
 
     }
 
@@ -1021,10 +1026,14 @@ let log = console.log;
 // import parameter object
 import { p } from './params.js'
 
+// screen set up
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
+resize();
+
 // draw constants
-const PPM = p.draw.pixPerMetre; // init scale, screen pixels per metre - pre zoom
+const PPM = p.draw.pixPerMetre*pixRat; // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
-const lookAhead = p.draw.lookAhead; // seconds
+const lookAhead = p.draw.lookAhead/pixRat; // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
@@ -1036,9 +1045,7 @@ const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 
-// screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
-resize();
+
 
 //control set up
 // const forceBrake = false;
