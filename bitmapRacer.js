@@ -31,6 +31,8 @@ class Track {
 
         this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
+        this.startX = p.track.startX / this.trackPPM;
+        this.startY = p.track.startY / this.trackPPM;;
         this.canvas = document.createElement("canvas"); // draw original img here
         this.ctx = this.canvas.getContext("2d", { alpha: false });
         this.canvasScl = document.createElement("canvas"); // draw prescaled track imgh here
@@ -173,17 +175,21 @@ class Car {
     constructor() {
         // car design
         this.w = p.car.width; //width
-        this.l = p.car.height; //length
+        this.frontLength = p.car.frontLength; //longitudinal distance to front wheel axis from COM
+        this.rearLength = p.car.rearLength; //longitudinal distance to rear wheel axis from COM
+        this.l = this.frontLength + this.rearLength // longitudinal distant from front to rear wheel axis
+        this.height = p.car.height; //height of CoM
         this.wheelWidth = p.car.wheelWidth;
         this.wheelAspect = p.car.wheelAspect;
         this.oversize = p.car.oversize;
         this.bodyAspect = p.car.bodyAspect;
         this.m = p.car.mass; // mass
         this.momI = p.car.momIfac * this.m; // moment of inertia
+        this.colour = "red";
 
         // mech + kin
-        this.x = 40; // x pos 
-        this.y = 40; // y pos
+        this.x = track.startX; // x pos 
+        this.y = track.startY;; // y pos
 
         this.Fxy = [0, 0]; //resultant Force on car as column vector;
         this.ax = 0; // x accel
@@ -217,22 +223,23 @@ class Car {
         this.steeringFollow = p.car.steeringFollow; //steering relaxes to motion direction
         this.torqueRate = p.car.torqueRate;
         this.torqueMax = p.car.torqueMax;
+        this.fade = p.car.fade; // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD.
         this.brakeMax = p.car.brakeMax;
         this.brakeRate = p.car.brakeRate;
 
         this.steeringMax = 0; // can vary with speed.
         this.rotMat = calcRotMat(this.theta);
 
-        let xl = -this.w * PPM / 2 * this.oversize;
-        let xr = +this.w * PPM / 2 * this.oversize;
-        let yf = this.l * PPM / 2 * this.oversize * this.bodyAspect;
-        let yr = -this.l * PPM / 2 * this.oversize * this.bodyAspect;
+        let xl = PPM * (-this.w / 2 * (1 + this.oversize));
+        let xr = PPM * (+this.w / 2 * (1 + this.oversize));
+        let yf = PPM * (this.frontLength + this.l / 2 * (this.oversize + this.bodyAspect));
+        let yr = PPM * (-this.rearLength - this.l / 2 * (this.oversize + this.bodyAspect));
         this.coordMat = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
         this.wheels = [
-            new Wheel(-this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
-            new Wheel(this.w / 2, this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
-            new Wheel(-this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag),
-            new Wheel(this.w / 2, -this.l / 2, this.wheelWidth, this.wheelAspect, this.wheelDrag)
+            new Wheel(-this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
+            new Wheel(this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
+            new Wheel(-this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect),
+            new Wheel(this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect)
         ];
 
 
@@ -242,7 +249,7 @@ class Car {
             // wheel.sfc_mu=track.get_mu(wheel.xa,wheel.ya);
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
             [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
-           })
+        })
     }
     draw(ctx, xc, yc) {
         this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
@@ -252,7 +259,7 @@ class Car {
         x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
-        ctx.strokeStyle = "white";
+        ctx.strokeStyle = this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
@@ -320,10 +327,10 @@ class Car {
         }
         if (inputState.up) {
             // front wheel accel
-            this.wheels[0].torque = Math.min(this.torqueMax, this.wheels[0].torque + this.torqueRate * dt);
-            this.wheels[1].torque = Math.min(this.torqueMax, this.wheels[1].torque + this.torqueRate * dt);
-            this.wheels[2].torque = Math.min(this.torqueMax, this.wheels[2].torque + this.torqueRate * dt);
-            this.wheels[3].torque = Math.min(this.torqueMax, this.wheels[3].torque + this.torqueRate * dt);
+            this.wheels[0].torque = Math.min(this.torqueMax * (1 - this.fade), this.wheels[0].torque + this.torqueRate * dt);
+            this.wheels[1].torque = Math.min(this.torqueMax * (1 - this.fade), this.wheels[1].torque + this.torqueRate * dt);
+            this.wheels[2].torque = Math.min(this.torqueMax * (this.fade), this.wheels[2].torque + this.torqueRate * dt);
+            this.wheels[3].torque = Math.min(this.torqueMax * (this.fade), this.wheels[3].torque + this.torqueRate * dt);
         }
         else {
             this.wheels[0].torque = 0;
@@ -350,7 +357,6 @@ class Car {
             this.wheels[3].brake = 0;
         }
     }
-
     mech2() {
         // calc all forces in car rel coords before transforming to track from and applying.
         this.n.Fres.lon = 0;
@@ -420,13 +426,14 @@ class Car {
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / stiffness;
 
-            if (car.U < .2) {//m,aybe use longitudinal velocity for damping thresh?
+            if (this.ulon < 1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * stiffness * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * stiffness * .1;
             }
             else if (Math.abs(slipAngle) < skidThresh) {
                 wh.skidFac = 2;
+                // let maximp = dt * this.m * this.ulat
                 wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness;
                 wh.n.Fcorn.lon = slipAngle * sinTh * stiffness;
                 // console.log("tract")
@@ -450,8 +457,23 @@ class Car {
         }
 
         this.Fxy = MatrixProd([[this.n.Fres.lat, this.n.Fres.lon]], calcRotMat(this.theta))[0]
+        this.alon = this.n.Fres.lon / this.m;
+        this.alat = this.n.Fres.lat / this.m;
+        this.ulon = this.ulon + this.alon * dt;
+        this.ulat = this.ulat + this.alat * dt;
 
+        this.loadFront = this.m * (this.rearLength - this.height * this.alon) / (this.l);
+        this.loadRear = this.m * (this.frontLength + this.height * this.alon) / (this.l);
+        this.loadFrontRight = this.loadFront * (this.w / 2 + this.height * this.alat) / (this.w);
+        this.loadFrontLeft = this.loadFront * (this.w / 2 - this.height * this.alat) / (this.w);
+        this.loadRearRight = this.loadRear * (this.w / 2 + this.height * this.alat) / (this.w);
+        this.loadRearLeft = this.loadRear * (this.w / 2 - this.height * this.alat) / (this.w);
 
+        this.wheels[0].load = this.loadFrontRight
+        this.wheels[1].load = this.loadFrontLeft
+        this.wheels[2].load = this.loadRearRight
+        this.wheels[3].load = this.loadRearLeft
+        // log(this.loadRear);
         this.steeringMax = this.steeringMaxBase * +this.steeringUscl / (this.steeringUscl + this.U)
 
         this.ax = this.Fxy[0] / this.m;
@@ -477,7 +499,7 @@ class Car {
     }
 }
 class Wheel {
-    constructor(x, y, width, aspect, drag) {
+    constructor(x, y, width, aspect) {
         this.x = x; // wheel centre position relative to car CoM
         this.y = y;
         this.xa = x; // x pos absolute
@@ -514,9 +536,10 @@ class Wheel {
         this.width = width;
         this.length = width * aspect;
         this.theta = 0; // angle relative to car
-        this.color = "white";
+        this.colour = "black";
         this.torque = 0;
         this.brake = 0;
+        this.load = 0;
         let xl = -this.width * PPM / 2;
         let xr = this.width * PPM / 2;
         let yf = this.length * PPM / 2;
@@ -532,7 +555,7 @@ class Wheel {
         x = MatrixProd(x, car.rotMat);
         x = MatrixTrans(x, [car.x * PPM + xc, car.y * PPM + yc])
         ctx.beginPath();
-        ctx.strokeStyle = this.color;
+        ctx.strokeStyle = this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
@@ -541,6 +564,10 @@ class Wheel {
         }
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.stroke();
+        ctx.fillStyle = this.colour;
+        ctx.fill();
+
+
 
         //wheel centre abs coords
         x = MatrixProd([[this.x, this.y]], car.rotMat);
@@ -564,8 +591,9 @@ class Wheel {
             ctx.lineTo(x[i][0], x[i][1]);
         }
         ctx.lineTo(x[0][0], x[0][1]);
-        ctx.stroke();
-
+        // ctx.stroke();
+        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (car.m / 2))}, 0,0)`;
+        ctx.fill();
         let xd, x1;
         let x0 = [[0, 0]];
 
@@ -912,6 +940,12 @@ function addPointerListeners(touchControl) {
     }
 }
 function addListeners(inputState) {
+
+    window.addEventListener("resize", () => {
+        resize();
+    }
+    );
+
     if (inputState.touch) {
         accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
         brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
@@ -934,7 +968,7 @@ function anim() {
     // requestAnimationFrame(anim);
 
     car.control(inputState);
-    if(track.trackReady){
+    if (track.trackReady) {
         car.readTrack();
         car.mech2();
     }
@@ -966,7 +1000,7 @@ function anim() {
     car.drawHUD(ctx);
 
 }
-function resize(){
+function resize() {
     canvas = document.getElementById("cw");
     ctx = canvas.getContext("2d", { alpha: false });
     pixRat = window.devicePixelRatio * 1.0;
@@ -974,13 +1008,15 @@ function resize(){
     canvas.width = window.innerWidth * pixRat;
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
-    X = canvas.width; 
+    X = canvas.width;
     Y = canvas.height;
     xc = 0 // screen centre coords
     yc = 0
     yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
     isTouch = isTouchDevice();
 }
+
+let log = console.log;
 
 // import parameter object
 import { p } from './params.js'
