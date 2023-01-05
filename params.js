@@ -15,7 +15,7 @@ export let p = {
         "steeringUscl": 5, // U scl of steering lock limiting
         "steeringCentreRate": 1,
         "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-        "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD.
+        "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
         "torqueRate": 2,
         "torqueMax": 50,
         "brakeMax": 30,
@@ -23,14 +23,14 @@ export let p = {
     },
     "run": {
         "dt": 0.2,
-        "nMax": 100000,
+        "nMax": 100000000,
     },
     "phys": {
-        "CD": 100,
-        "Crr": 2,
-        "CA": 0.5,
-        "F_lat": 50,
-        "stiffness": 500,
+        "CD": 100, // Surface Drag resistance
+        "Crr": 2, // Rolling resistance
+        "CA": 0.5, //Air resistance
+        "F_lat": 1.2, // Max lateral friction multiplier, above 1.0 gives "superweight" force.
+        "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
     },
     "track": {
         "startX":200,

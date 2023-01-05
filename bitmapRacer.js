@@ -425,7 +425,7 @@ class Car {
 
 
             // lateral friction
-            let maxF = F_lat * wh.sfc_mu;
+            let maxF = F_lat * wh.sfc_mu*wh.load;
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / stiffness;
 
