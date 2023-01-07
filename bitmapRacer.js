@@ -1,33 +1,6 @@
 
-let MatrixProd = (A, B) =>
-    A.map((row, i) =>
-        B[0].map((_, j) =>
-            row.reduce((acc, _, n) =>
-                acc + A[i][n] * B[n][j], 0
-            )
-        )
-    )
-function MatrixTrans(A, B) {
-    let ni = A.length;
-    let nj = A[0].length;
-    let C = new Array(ni);
-    for (let i = 0; i < ni; i++) {
-        C[i] = new Array(nj);
-    }
-    for (let i = 0; i < ni; i++) {
-        for (let j = 0; j < nj; j++) {
-            C[i][j] = A[i][j] + B[j];
-        }
-    }
-    // console.log(ni, nj);
-    return C;
-}
-function calcRotMat(theta) {
-    return [[Math.cos(theta), -Math.sin(theta)],
-    [Math.sin(theta), Math.cos(theta)]];
-}
 class Track {
-    constructor(img_fname) {
+    constructor() {
 
         this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
@@ -50,7 +23,7 @@ class Track {
             this.trackReady = 1;
             // console.log("track ready", this)
         }
-        this.img.src = img_fname;
+        this.img.src = p.track.fname;
         this.Xi = 0; //img dimensions, obtained after load.
         this.Yi = 0;
     }
@@ -171,7 +144,7 @@ class Track {
         this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
     }
     drawGates(ctx, xc, yc) {
-       let gate=this.gates[0]
+        let gate = this.gates[0]
         ctx.beginPath();
         ctx.strokeStyle = 'white';
         ctx.lineWidth = baseLW / zoom * pixRat;
@@ -182,8 +155,8 @@ class Track {
         // ctx.fillStyle = 'blue';
         // ctx.fillText(gate.n, gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
 
-        };
-    
+    };
+
     drawAllGates(ctx, xc, yc) {
         this.gates.forEach(gate => {
             ctx.beginPath();
@@ -262,19 +235,23 @@ class Car {
 
         this.rotMat = calcRotMat(this.theta);
 
-        let xl = PPM * (-this.w / 2 * (1 + this.oversize));
-        let xr = PPM * (+this.w / 2 * (1 + this.oversize));
-        let yf = PPM * (this.frontLength + this.l / 2 * (this.oversize + this.bodyAspect));
-        let yr = PPM * (-this.rearLength - this.l / 2 * (this.oversize + this.bodyAspect));
-        this.coordMat = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+        let xl = (-this.w / 2 * (1 + this.oversize));
+        let xr = (+this.w / 2 * (1 + this.oversize));
+        let yf = (this.frontLength + this.l / 2 * (this.oversize + this.bodyAspect));
+        let yr = (-this.rearLength - this.l / 2 * (this.oversize + this.bodyAspect));
+        //scaled for drawing on track
+        this.coordMat = [[PPM * xl, PPM * yr], [PPM * xl, PPM * yf], [0, PPM * yf * 1.1], [PPM * xr, PPM * yf], [PPM * xr, PPM * yr]];
+        //unscaled for HUD
+        this.coordMatHUD = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+
         this.wheels = [
             new Wheel(-this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
             new Wheel(this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
             new Wheel(-this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect),
             new Wheel(this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect)
         ];
-        
-        this.torqueWheelHUD = this.fade > 0.5 ? this.wheels[0]:this.wheels[2];
+
+        this.torqueWheelHUD = this.fade > 0.5 ? this.wheels[0] : this.wheels[2];
         this.maxTorqueHUD = Math.max(this.fade * this.torqueMax, this.fade * this.torqueMax);
 
     }
@@ -308,10 +285,11 @@ class Car {
 
     }
     drawHUD(ctx) {
-        let HUDscl = 2;
-        let HUDx = X - 50 * HUDscl;
-        let HUDy = 50 * HUDscl;
-        let x = this.coordMat;
+        let HUDscl = p.draw.HUDscl * pixRat;
+        let HUDforceScl = p.draw.HUDforceScl * pixRat;
+        let HUDx = X - 50 * pixRat;
+        let HUDy = 50 * pixRat;
+        let x = this.coordMatHUD;
         // x = MatrixProd(x, calcRotMat(Math.PI));
         x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
         x = MatrixTrans(x, [HUDx, HUDy])
@@ -325,16 +303,16 @@ class Car {
         }
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.stroke();
-        this.wheels.forEach(wheel => wheel.drawHUD(ctx, this, HUDx, HUDy, HUDscl));
+        this.wheels.forEach(wheel => wheel.drawHUD(ctx, this, HUDx, HUDy, HUDscl, HUDforceScl));
 
         let x0 = [HUDx, HUDy]
         let xd = [[this.n.Fair.lat, this.n.Fair.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         let x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'brown')
 
         xd = [[this.n.Fres.lat, this.n.Fres.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'white')
 
@@ -577,11 +555,15 @@ class Wheel {
         this.torque = 0;
         this.brake = 0;
         this.load = 0;
-        let xl = -this.width * PPM / 2;
-        let xr = this.width * PPM / 2;
-        let yf = this.length * PPM / 2;
-        let yr = -this.length * PPM / 2;
-        this.coordMat = [[xl, yr], [xl, yf], [xr, yf], [xr, yr]];
+        let xl = -this.width / 2;
+        let xr = this.width / 2;
+        let yf = this.length / 2;
+        let yr = -this.length / 2;
+        //prescaled for drawing on track
+        this.coordMat = [[xl * PPM, yr * PPM], [xl * PPM, yf * PPM], [xr * PPM, yf * PPM], [xr * PPM, yr * PPM]];
+        //unscaled for hud
+        this.coordMatHUD = [[xl, yr], [xl, yf], [xr, yf], [xr, yr]];
+
         this.rotMat = calcRotMat(this.theta);
     }
 
@@ -612,47 +594,47 @@ class Wheel {
         this.xa = x[0][0];
         this.ya = x[0][1];
     }
-    drawHUD(ctx, car, HUDx, HUDy, HUDscl) {
+    drawHUD(ctx, car, HUDx, HUDy, HUDscl, HUDforceScl) {
 
-        let x = MatrixProd(this.coordMat, this.rotMat);
+        let x = MatrixProd(this.coordMatHUD, this.rotMat);
         x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
-        x = MatrixTrans(x, [this.x * PPM * HUDscl, this.y * PPM * HUDscl]);
+        x = MatrixTrans(x, [this.x * HUDscl, this.y * HUDscl]);
         // x = MatrixProd(x, car.rotMat);
         x = MatrixTrans(x, [HUDx, HUDy])
 
         let xd, x1;
         let x0 = [[0, 0]];
 
-        x0 = MatrixTrans(x0, [this.x * PPM * HUDscl, this.y * PPM * HUDscl]);
+        x0 = MatrixTrans(x0, [this.x * HUDscl, this.y * HUDscl]);
         x0 = MatrixTrans(x0, [HUDx, HUDy])[0]
 
         xd = [[this.n.Fthrust.lat, this.n.Fthrust.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'green')
 
         xd = [[this.n.Fbrake.lat, this.n.Fbrake.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'red')
 
         xd = [[this.n.Frollres.lat, this.n.Frollres.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'purple')
 
         xd = [[this.n.Fdrag.lat, this.n.Fdrag.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'blue')
 
         xd = [[this.n.Fcorn.lat, this.n.Fcorn.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'yellow')
 
         xd = [[this.n.Fres.lat, this.n.Fres.lon]]
-        xd = MatrixProd(xd, [[HUDscl, 0], [0, HUDscl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'white')
 
@@ -799,6 +781,122 @@ class TouchButton {
 
 
 
+}
+class LapCounter {
+    constructor(gates) {
+        this.gates = gates;
+        this.oldPoint = {};
+        this.oldPoint.x = 0;
+        this.oldPoint.y = 0;
+        this.newPoint = {};
+        this.newPoint.x = 0;
+        this.newPoint.y = 0;
+        this.intersection = false;
+        this.nextCheck = 0;
+        this.finalCheck = gates.length;
+        this.t0 = Date.now();
+        this.lapTime = 0;
+        // this.lapTimes = [];
+        this.bestLap = 0;
+        this.lastLap = 0;
+        this.tstr = {};
+        this.xPos = X / 2;
+        this.yPos = 0;
+    }
+    // formatTime(){
+    //     this.tstr.
+
+    // }
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        // ctx.font = this.fontsize + 'px sans-serif';
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
+
+        ctx.font = 15 * pixRat + 'px sans-serif'
+        ctx.fillText(formatDurationTenth(this.lapTime), this.xPos, this.yPos * pixRat);
+        // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
+        // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
+
+    }
+
+    lapComplete() {
+        // log('Complete')
+        // this.lapTimes.push(this.lapTime)
+        this.lastLap = this.lapTime;
+        if ((this.lapTime < this.bestLap) || this.bestLap == 0) {
+            this.bestLap = this.lapTime;
+        }
+        hiScores.newLap(this.lapTime);
+    }
+    gateCrossed(n) {
+        if (n == 0) {
+            if (this.nextCheck == this.finalCheck) {
+                this.lapComplete()
+            }
+            this.reset()
+        }
+        else if (n == this.nextCheck) {
+            this.nextCheck++;
+        }
+    }
+    reset() {
+        this.t0 = Date.now();
+        this.lapTime = 0
+        this.nextCheck = 1;
+    }
+    checkGates(x, y) {
+        //in track pixel coords
+        this.newPoint.x = x;
+        this.newPoint.y = y;
+        this.gates.forEach(gate => this.checkGate(gate, this.oldPoint, this.newPoint))
+        this.oldPoint.x = this.newPoint.x;
+        this.oldPoint.y = this.newPoint.y;
+        this.lapTime = Date.now() - this.t0;
+    }
+    checkGate(gate, oldPoint, newPoint) {
+        // this.intersection=doLineSegmentsIntersect(oldPoint,newPoint,gate.left,gate.right)
+        this.intersection = intersects(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, gate.left.x, gate.left.y, gate.right.x, gate.right.y)
+        // log(oldPoint.y, newPoint.y,  gate.left.y, gate.right.y);
+        if (this.intersection) {
+            this.direction = crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
+            // console.log("Gate ", gate.n, " crossed." ,this.direction);
+            if (this.direction) {
+                this.gateCrossed(gate.n);
+                // log(gate.n)
+            }
+            this.intersection = false;
+        }
+    }
+
+}
+let MatrixProd = (A, B) =>
+    A.map((row, i) =>
+        B[0].map((_, j) =>
+            row.reduce((acc, _, n) =>
+                acc + A[i][n] * B[n][j], 0
+            )
+        )
+    )
+function MatrixTrans(A, B) {
+    let ni = A.length;
+    let nj = A[0].length;
+    let C = new Array(ni);
+    for (let i = 0; i < ni; i++) {
+        C[i] = new Array(nj);
+    }
+    for (let i = 0; i < ni; i++) {
+        for (let j = 0; j < nj; j++) {
+            C[i][j] = A[i][j] + B[j];
+        }
+    }
+    // console.log(ni, nj);
+    return C;
+}
+function calcRotMat(theta) {
+    return [[Math.cos(theta), -Math.sin(theta)],
+    [Math.sin(theta), Math.cos(theta)]];
 }
 function drawHUDArrow(x0, x1, color) {
     ctx.strokeStyle = color;
@@ -1039,8 +1137,9 @@ function anim() {
         rightBtn.draw(ctx);
     }
     // drawDebug();
-    drawHUD();
+    // drawHUD();
     car.drawHUD(ctx);
+    hiScores.draw(ctx);
 
 }
 function resize() {
@@ -1058,120 +1157,30 @@ function resize() {
     yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
     isTouch = isTouchDevice();
 }
-
-let log = console.log;
-
-// import parameter object
-import { p } from './params.js'
-
 function pad(n, width, z) {
     z = z || '0';
     n = n + '';
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 function formatDuration(duration) {
-    var seconds = Math.abs(Math.ceil(duration / 1000)),
+    var seconds = Math.abs(Math.floor(duration / 1000)),
         h = (seconds - seconds % 3600) / 3600,
         m = (seconds - seconds % 60) / 60 % 60,
         s = seconds % 60,
-        ms= duration % 1000;
+        ms = duration % 1000;
     // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
     return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
 }
 function formatDurationTenth(duration) {
-    var seconds = Math.abs(Math.ceil(duration / 1000)),
+    var seconds = Math.abs(Math.floor(duration / 1000)),
         h = (seconds - seconds % 3600) / 3600,
         m = (seconds - seconds % 60) / 60 % 60,
         s = seconds % 60,
         ms = duration % 1000,
-        ts = Math.floor(ms/100);
+        ts = Math.floor(ms / 100);
     // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
     return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
 }
-class LapCounter {
-    constructor(gates) {
-        this.gates = gates;
-        this.oldPoint = {};
-        this.oldPoint.x = 0;
-        this.oldPoint.y = 0;
-        this.newPoint = {};
-        this.newPoint.x = 0;
-        this.newPoint.y = 0;
-        this.intersection = false;
-        this.nextCheck = 0;
-        this.finalCheck = gates.length;
-        this.t0 = Date.now();
-        this.lapTime = 0;
-        this.lapTimes = [];
-        this.bestLap = 0;
-        this.lastLap = 0;
-        this.tstr = {};
-        this.xPos = X / 2;
-        this.yPos = 20;
-    }
-    // formatTime(){
-    //     this.tstr.
-
-    // }
-    draw(ctx) {
-        ctx.fillStyle = "white";
-        ctx.font = 15 * pixRat + 'px sans-serif'
-        ctx.fillText(formatDurationTenth(this.lapTime), this.xPos, this.yPos*pixRat);
-        ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100*pixRat, this.yPos*pixRat)
-        ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100*pixRat, this.yPos*pixRat)
-
-    }
-
-    lapComplete() {
-        // log('Complete')
-        this.lapTimes.push(this.lapTime)
-        this.lastLap = this.lapTime;
-        if ((this.lapTime < this.bestLap) || this.bestLap==0) {
-            this.bestLap = this.lapTime;
-        }
-    }
-    gateCrossed(n) {
-        if (n == 0) {
-            if (this.nextCheck == this.finalCheck) {
-                this.lapComplete()
-            }
-            this.reset()
-        }
-        else if (n == this.nextCheck) {
-            this.nextCheck++;
-        }
-    }
-    reset() {
-        this.t0 = Date.now();
-        this.lapTime = 0
-        this.nextCheck = 1;
-    }
-    checkGates(x, y) {
-        //in track pixel coords
-        this.newPoint.x = x;
-        this.newPoint.y = y;
-        this.gates.forEach(gate => this.checkGate(gate, this.oldPoint, this.newPoint))
-        this.oldPoint.x = this.newPoint.x;
-        this.oldPoint.y = this.newPoint.y;
-        this.lapTime = Date.now() - this.t0;
-    }
-    checkGate(gate, oldPoint, newPoint) {
-        // this.intersection=doLineSegmentsIntersect(oldPoint,newPoint,gate.left,gate.right)
-        this.intersection = intersects(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, gate.left.x, gate.left.y, gate.right.x, gate.right.y)
-        // log(oldPoint.y, newPoint.y,  gate.left.y, gate.right.y);
-        if (this.intersection) {
-            this.direction = crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
-            // console.log("Gate ", gate.n, " crossed." ,this.direction);
-            if (this.direction) {
-                this.gateCrossed(gate.n);
-                // log(gate.n)
-            }
-            this.intersection = false;
-        }
-    }
-
-}
-
 // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
 function intersects(a, b, c, d, p, q, r, s) {
     var det, gamma, lambda;
@@ -1191,6 +1200,62 @@ function dotProduct(a, b, c, d) {
 function crossProduct(a, b, c, d) {
     return a * d - b * c;
 };
+
+class HiScores {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.fontsize = 15 * pixRat;
+        this.dy = 15 * pixRat;
+        this.n = 5;
+        this.last = 0;
+        this.times = Array(this.n);
+        for (let i = 0; i < this.n; i++) {
+            this.times[i] = 0;
+        }
+
+    }
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.textAlign = "left";
+        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
+
+        // ctx.fillText("Best Laps",this.x,this.y)
+
+        for (let i = 0; i < this.n; i++) {
+            ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 0) * this.dy);
+        }
+        ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+    }
+    newLap(t) {
+        this.last = t;
+        if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
+            this.times[this.n - 1] = t;
+            this.times.sort(function (a, b) {
+                if (a == 0 & b!=0) {
+                    return 1;
+                }
+                else if ((b == 0 & a != 0)){
+                    return -1;
+                }
+                else {
+                    return (a-b);
+                }
+            });
+
+            log(this.times)
+        }
+
+    }
+
+}
+
+let log = console.log;
+
+// import parameter object
+import { p } from './params.js'
 
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
@@ -1219,15 +1284,22 @@ let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
 addListeners(inputState);
 
 //track set up
-let track = new Track('tracks/square_track.png')
+let track = new Track()
 
 // car set up
 let car = new Car();
 
 //
 let lapCounter = new LapCounter(track.gates);
+let hiScores = new HiScores();
 
 // run
 let n = 0;
 let nMax = p.run.nMax;
 anim();
+
+// hiScores.newLap(5001)
+// hiScores.newLap(1000)
+// hiScores.newLap(3000)
+// hiScores.newLap(5000)
+// hiScores.newLap(2500)

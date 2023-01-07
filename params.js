@@ -29,8 +29,9 @@ export let p = {
         "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
     },
     "track": {
+        "fname": 'tracks/square_track.png',
         "startX": 200,
-        "startY": 480,
+        "startY": 200,
         "metresPerPix": 0.35,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
@@ -42,7 +43,8 @@ export let p = {
         "gates": [ // in track pixels
             { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
             { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
-            { 'n': 2, 'left': { 'x': 451, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
+            { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
+            { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
         ]
     },
     "draw": {
@@ -51,9 +53,15 @@ export let p = {
         "lookAhead": 5.0,
         "panSpeed": 0.15,
         "zoom": 1.0,
+        "HUDscl":15,
+        "HUDforceScl":.8,
+    },
+    "version":{
+        "n":"0.1",
     },
     "run": {
         "dt": 0.2,
         "nMax": 1000000,
     },
+
 }
