@@ -1209,11 +1209,37 @@ class HiScores {
         this.dy = 15 * pixRat;
         this.n = 5;
         this.last = 0;
-        this.times = Array(this.n);
-        for (let i = 0; i < this.n; i++) {
-            this.times[i] = 0;
+        this.versionTimesList;
+        this.times;
+        this.version = p.version.n;
+        if (localStorage.getItem('versionTimes')) {
+            // log('localStorage contains versionTimes')
+            this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let versionTimes = this.versionTimesList.filter(obj => { return obj.version == this.version })
+            if (versionTimes.length>0) {
+                // log('correct version loaded')
+                // log(versionTimes)
+                this.times = versionTimes[0].times;
+            }
+            else {
+                // log('no correct version, created locally')
+                this.times = Array(this.n);
+                for (let i = 0; i < this.n; i++) {
+                    this.times[i] = 0;
+                }
+                this.versionTimesList.push({ 'version': this.version, 'times': this.times })
+                // log('no correct version, created in session')
+            }
         }
-
+        else {
+            log('localStorage contains no versionTimes, create session versionTimes')
+            this.times = Array(this.n);
+            for (let i = 0; i < this.n; i++) {
+                this.times[i] = 0;
+            }
+            this.versionTimesList = [{ 'version': this.version, 'times': this.times }];
+        }
+        // log(this.times)
     }
     draw(ctx) {
         ctx.beginPath();
@@ -1234,22 +1260,30 @@ class HiScores {
         if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
             this.times[this.n - 1] = t;
             this.times.sort(function (a, b) {
-                if (a == 0 & b!=0) {
+                if (a == 0 & b != 0) {
                     return 1;
                 }
-                else if ((b == 0 & a != 0)){
+                else if ((b == 0 & a != 0)) {
                     return -1;
                 }
                 else {
-                    return (a-b);
+                    return (a - b);
                 }
             });
 
-            log(this.times)
+            // log(this.times);
+            // remove existing version entry
+            log('creating newVersionTimes')
+            log(this)
+            let newVersionTimes = this.versionTimesList.filter((obj) => {
+                log(obj,this)
+                return obj.version !== this.version;
+            });
+            //add currect version
+            newVersionTimes.push({ 'version': this.version, 'times': this.times })
+            localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
         }
-
     }
-
 }
 
 let log = console.log;
@@ -1297,9 +1331,3 @@ let hiScores = new HiScores();
 let n = 0;
 let nMax = p.run.nMax;
 anim();
-
-// hiScores.newLap(5001)
-// hiScores.newLap(1000)
-// hiScores.newLap(3000)
-// hiScores.newLap(5000)
-// hiScores.newLap(2500)
