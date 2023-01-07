@@ -1022,7 +1022,8 @@ function anim() {
     // clear screen
     ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
     ctx.drawImage(track.canvasScl, xc, yc);
-    track.drawGates(ctx, xc, yc)
+    track.drawGates(ctx, xc, yc);
+    // track.drawAllGates(ctx, xc, yc);
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.draw(ctx);
     car.draw(ctx, xc, yc);
@@ -1062,7 +1063,6 @@ let log = console.log;
 
 // import parameter object
 import { p } from './params.js'
-// import { doLineSegmentsIntersect } from './line-segments-intersect.js';
 
 function pad(n, width, z) {
     z = z || '0';
@@ -1076,8 +1076,17 @@ function formatDuration(duration) {
         s = seconds % 60,
         ms= duration % 1000;
     // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-    return pad(m.toString(), 2) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
-
+    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
+}
+function formatDurationTenth(duration) {
+    var seconds = Math.abs(Math.ceil(duration / 1000)),
+        h = (seconds - seconds % 3600) / 3600,
+        m = (seconds - seconds % 60) / 60 % 60,
+        s = seconds % 60,
+        ms = duration % 1000,
+        ts = Math.floor(ms/100);
+    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
 }
 class LapCounter {
     constructor(gates) {
@@ -1106,14 +1115,15 @@ class LapCounter {
     // }
     draw(ctx) {
         ctx.fillStyle = "white";
-        ctx.fillText(formatDuration(this.lapTime), this.xPos, this.yPos);
-        ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 150, this.yPos)
-        ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 150, this.yPos)
+        ctx.font = 15 * pixRat + 'px sans-serif'
+        ctx.fillText(formatDurationTenth(this.lapTime), this.xPos, this.yPos*pixRat);
+        ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100*pixRat, this.yPos*pixRat)
+        ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100*pixRat, this.yPos*pixRat)
 
     }
 
     lapComplete() {
-        log('Complete')
+        // log('Complete')
         this.lapTimes.push(this.lapTime)
         this.lastLap = this.lapTime;
         if ((this.lapTime < this.bestLap) || this.bestLap==0) {
@@ -1154,7 +1164,7 @@ class LapCounter {
             // console.log("Gate ", gate.n, " crossed." ,this.direction);
             if (this.direction) {
                 this.gateCrossed(gate.n);
-                log(gate.n)
+                // log(gate.n)
             }
             this.intersection = false;
         }
