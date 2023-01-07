@@ -258,6 +258,8 @@ class Car {
         this.brakeRate = p.car.brakeRate;
 
         this.steeringMax = 0; // can vary with speed.
+
+
         this.rotMat = calcRotMat(this.theta);
 
         let xl = PPM * (-this.w / 2 * (1 + this.oversize));
@@ -271,7 +273,9 @@ class Car {
             new Wheel(-this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect),
             new Wheel(this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect)
         ];
-
+        
+        this.torqueWheelHUD = this.fade > 0.5 ? this.wheels[0]:this.wheels[2];
+        this.maxTorqueHUD = Math.max(this.fade * this.torqueMax, this.fade * this.torqueMax);
 
     }
     readTrack() {
@@ -856,7 +860,7 @@ function drawHUD() {
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.rect(hudX, Y - hudY, barWidth, -car.wheels[0].torque / car.torqueMax * barHeight);
+    ctx.rect(hudX, Y - hudY, barWidth, -car.torqueWheelHUD.torque / car.maxTorqueHUD * barHeight);
     ctx.fill();
 
     ctx.beginPath();
@@ -876,7 +880,7 @@ function drawHUD() {
     ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / 100 * barHeight);
+    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / 10 * barHeight);
     ctx.fill();
 
     ctx.beginPath();
