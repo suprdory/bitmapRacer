@@ -31,6 +31,7 @@ class Track {
 
         this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
+        this.gates = p.track.gates;
         this.startX = p.track.startX / this.trackPPM;
         this.startY = p.track.startY / this.trackPPM;;
         this.canvas = document.createElement("canvas"); // draw original img here
@@ -169,6 +170,35 @@ class Track {
         this.canvasScl.width = this.Xi * this.trackScl;
         this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
     }
+    drawGates(ctx, xc, yc) {
+       let gate=this.gates[0]
+        ctx.beginPath();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        ctx.moveTo(gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
+        ctx.lineTo(gate.right.x * this.trackScl + xc, gate.right.y * this.trackScl + yc);
+        ctx.stroke();
+        ctx.beginPath();
+        // ctx.fillStyle = 'blue';
+        // ctx.fillText(gate.n, gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
+
+        };
+    
+    drawAllGates(ctx, xc, yc) {
+        this.gates.forEach(gate => {
+            ctx.beginPath();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = baseLW / zoom * pixRat;
+            ctx.moveTo(gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
+            ctx.lineTo(gate.right.x * this.trackScl + xc, gate.right.y * this.trackScl + yc);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.fillStyle = 'blue';
+            ctx.fillText(gate.n, gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
+
+        });
+    }
+
 
 }
 class Car {
@@ -252,7 +282,7 @@ class Car {
         })
     }
     draw(ctx, xc, yc) {
-       
+
 
         let x = this.coordMat;
         x = MatrixProd(x, this.rotMat);
@@ -260,7 +290,7 @@ class Car {
 
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
-        ctx.fillStyle=this.colour;
+        ctx.fillStyle = this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
         // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
@@ -425,7 +455,7 @@ class Car {
 
 
             // lateral friction
-            let maxF = F_lat * wh.sfc_mu*wh.load;
+            let maxF = F_lat * wh.sfc_mu * wh.load;
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / stiffness;
 
@@ -585,7 +615,7 @@ class Wheel {
         x = MatrixTrans(x, [this.x * PPM * HUDscl, this.y * PPM * HUDscl]);
         // x = MatrixProd(x, car.rotMat);
         x = MatrixTrans(x, [HUDx, HUDy])
-       
+
         let xd, x1;
         let x0 = [[0, 0]];
 
@@ -988,6 +1018,9 @@ function anim() {
     // clear screen
     ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
     ctx.drawImage(track.canvasScl, xc, yc);
+    track.drawGates(ctx, xc, yc)
+    lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
+    lapCounter.draw(ctx);
     car.draw(ctx, xc, yc);
 
     // draw unscaled scaled stuff
@@ -1025,15 +1058,134 @@ let log = console.log;
 
 // import parameter object
 import { p } from './params.js'
+// import { doLineSegmentsIntersect } from './line-segments-intersect.js';
+
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+function formatDuration(duration) {
+    var seconds = Math.abs(Math.ceil(duration / 1000)),
+        h = (seconds - seconds % 3600) / 3600,
+        m = (seconds - seconds % 60) / 60 % 60,
+        s = seconds % 60,
+        ms= duration % 1000;
+    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+    return pad(m.toString(), 2) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
+
+}
+class LapCounter {
+    constructor(gates) {
+        this.gates = gates;
+        this.oldPoint = {};
+        this.oldPoint.x = 0;
+        this.oldPoint.y = 0;
+        this.newPoint = {};
+        this.newPoint.x = 0;
+        this.newPoint.y = 0;
+        this.intersection = false;
+        this.nextCheck = 0;
+        this.finalCheck = gates.length;
+        this.t0 = Date.now();
+        this.lapTime = 0;
+        this.lapTimes = [];
+        this.bestLap = 0;
+        this.lastLap = 0;
+        this.tstr = {};
+        this.xPos = X / 2;
+        this.yPos = 20;
+    }
+    // formatTime(){
+    //     this.tstr.
+
+    // }
+    draw(ctx) {
+        ctx.fillStyle = "white";
+        ctx.fillText(formatDuration(this.lapTime), this.xPos, this.yPos);
+        ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 150, this.yPos)
+        ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 150, this.yPos)
+
+    }
+
+    lapComplete() {
+        log('Complete')
+        this.lapTimes.push(this.lapTime)
+        this.lastLap = this.lapTime;
+        if ((this.lapTime < this.bestLap) || this.bestLap==0) {
+            this.bestLap = this.lapTime;
+        }
+    }
+    gateCrossed(n) {
+        if (n == 0) {
+            if (this.nextCheck == this.finalCheck) {
+                this.lapComplete()
+            }
+            this.reset()
+        }
+        else if (n == this.nextCheck) {
+            this.nextCheck++;
+        }
+    }
+    reset() {
+        this.t0 = Date.now();
+        this.lapTime = 0
+        this.nextCheck = 1;
+    }
+    checkGates(x, y) {
+        //in track pixel coords
+        this.newPoint.x = x;
+        this.newPoint.y = y;
+        this.gates.forEach(gate => this.checkGate(gate, this.oldPoint, this.newPoint))
+        this.oldPoint.x = this.newPoint.x;
+        this.oldPoint.y = this.newPoint.y;
+        this.lapTime = Date.now() - this.t0;
+    }
+    checkGate(gate, oldPoint, newPoint) {
+        // this.intersection=doLineSegmentsIntersect(oldPoint,newPoint,gate.left,gate.right)
+        this.intersection = intersects(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, gate.left.x, gate.left.y, gate.right.x, gate.right.y)
+        // log(oldPoint.y, newPoint.y,  gate.left.y, gate.right.y);
+        if (this.intersection) {
+            this.direction = crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
+            // console.log("Gate ", gate.n, " crossed." ,this.direction);
+            if (this.direction) {
+                this.gateCrossed(gate.n);
+                log(gate.n)
+            }
+            this.intersection = false;
+        }
+    }
+
+}
+
+// returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+function intersects(a, b, c, d, p, q, r, s) {
+    var det, gamma, lambda;
+    det = (c - a) * (s - q) - (r - p) * (d - b);
+    // log(det)
+    if (det === 0) {
+        return false;
+    } else {
+        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+    }
+};
+function dotProduct(a, b, c, d) {
+    return a * c + b * d;
+};
+function crossProduct(a, b, c, d) {
+    return a * d - b * c;
+};
 
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
 resize();
 
 // draw constants
-const PPM = p.draw.pixPerMetre*pixRat; // init scale, screen pixels per metre - pre zoom
+const PPM = p.draw.pixPerMetre * pixRat; // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
-const lookAhead = p.draw.lookAhead/pixRat; // seconds
+const lookAhead = p.draw.lookAhead / pixRat; // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
@@ -1044,8 +1196,6 @@ const stiffness = p.phys.stiffness; // cornering stiffness
 const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
-
-
 
 //control set up
 // const forceBrake = false;
@@ -1059,6 +1209,9 @@ let track = new Track('tracks/square_track.png')
 
 // car set up
 let car = new Car();
+
+//
+let lapCounter = new LapCounter(track.gates);
 
 // run
 let n = 0;

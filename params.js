@@ -1,8 +1,8 @@
 export let p = {
     "car": {
         "width": 2,
-        "frontLength":1,
-        "rearLength":2,
+        "frontLength": 1,
+        "rearLength": 2,
         "height": 0.75,
         "wheelWidth": 0.4,
         "wheelAspect": 2,
@@ -21,10 +21,6 @@ export let p = {
         "brakeMax": 30,
         "brakeRate": 10,
     },
-    "run": {
-        "dt": 0.2,
-        "nMax": 100000000,
-    },
     "phys": {
         "CD": 100, // Surface Drag resistance
         "Crr": 2, // Rolling resistance
@@ -33,8 +29,8 @@ export let p = {
         "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
     },
     "track": {
-        "startX":200,
-        "startY":200,
+        "startX": 200,
+        "startY": 480,
         "metresPerPix": 0.35,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
@@ -42,7 +38,12 @@ export let p = {
             "grass": { "mu": 0.3, "drag": 0.02 },
             "mud": { "mu": 0.2, "drag": 0.3 },
             "unknown": { "mu": 0.8, "drag": 0.01 },
-        }
+        },
+        "gates": [ // in track pixels
+            { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
+            { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
+            { 'n': 2, 'left': { 'x': 451, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
+        ]
     },
     "draw": {
         "pixPerMetre": 8,
@@ -50,5 +51,9 @@ export let p = {
         "lookAhead": 5.0,
         "panSpeed": 0.15,
         "zoom": 1.0,
-    }
+    },
+    "run": {
+        "dt": 0.2,
+        "nMax": 1000000,
+    },
 }
