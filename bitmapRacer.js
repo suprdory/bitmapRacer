@@ -1475,7 +1475,7 @@ let apiURL ='https://bitmapRacer.eu.pythonanywhere.com'
 // draw constants
 const PPM = p.draw.pixPerMetre * (1+(pixRat-1)/2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
-const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 2); // seconds
+const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
