@@ -287,8 +287,9 @@ class Car {
     drawHUD(ctx) {
         let HUDscl = p.draw.HUDscl * pixRat;
         let HUDforceScl = p.draw.HUDforceScl * pixRat;
-        let HUDx = X - 50 * pixRat;
-        let HUDy = 50 * pixRat;
+        let HUDx = 50 * pixRat;
+        // log(yOff)
+        let HUDy = Y - (50) * pixRat - isTouch * (Y / 3);
         let x = this.coordMatHUD;
         // x = MatrixProd(x, calcRotMat(Math.PI));
         x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
@@ -829,6 +830,7 @@ class LapCounter {
             this.bestLap = this.lapTime;
         }
         hiScores.newLap(this.lapTime);
+        hiScoresWeb.newLap(this.lapTime);
     }
     gateCrossed(n) {
         if (n == 0) {
@@ -1093,54 +1095,9 @@ function addListeners(inputState) {
         addPointerListeners(leftBtn);
         addPointerListeners(rightBtn);
     }
+    addPointerListeners(name);
     addEventListener('keydown', (event) => { inputState.set(event) });
     addEventListener('keyup', (event) => { inputState.set(event) });
-}
-function anim() {
-    n++;
-    if (n < nMax) {
-        requestAnimationFrame(anim);
-    }
-
-    // requestAnimationFrame(anim);
-
-    car.control(inputState);
-    if (track.trackReady) {
-        car.readTrack();
-        car.mech2();
-    }
-    // calc screen centre coords
-    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
-    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
-    xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
-    yc = yc + (yct - yc) * panSpeed
-
-    //draw scaled stuff
-    ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
-    // clear screen
-    ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
-    ctx.drawImage(track.canvasScl, xc, yc);
-    track.drawGates(ctx, xc, yc);
-    // track.drawAllGates(ctx, xc, yc);
-    lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
-    lapCounter.draw(ctx);
-    car.draw(ctx, xc, yc);
-
-    // draw unscaled scaled stuff
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    // touchControl.draw(ctx);
-    if (inputState.touch) {
-        accBtn.draw(ctx);
-        brkBtn.draw(ctx);
-        leftBtn.draw(ctx);
-        rightBtn.draw(ctx);
-    }
-    // drawDebug();
-    // drawHUD();
-    car.drawHUD(ctx);
-    hiScores.draw(ctx);
-
 }
 function resize() {
     canvas = document.getElementById("cw");
@@ -1154,8 +1111,9 @@ function resize() {
     Y = canvas.height;
     xc = 0 // screen centre coords
     yc = 0
-    yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
     isTouch = isTouchDevice();
+    yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
+
 }
 function pad(n, width, z) {
     z = z || '0';
@@ -1200,7 +1158,134 @@ function dotProduct(a, b, c, d) {
 function crossProduct(a, b, c, d) {
     return a * d - b * c;
 };
+function anim() {
+    n++;
+    if (n < nMax) {
+        requestAnimationFrame(anim);
+    }
 
+    // requestAnimationFrame(anim);
+
+    car.control(inputState);
+    if (track.trackReady) {
+        car.readTrack();
+        car.mech2();
+    }
+    // calc screen centre coords
+    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
+    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
+    xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
+    yc = yc + (yct - yc) * panSpeed
+
+    //draw scaled stuff
+    // ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
+
+    // clear screen
+    ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
+    ctx.drawImage(track.canvasScl, xc, yc);
+    track.drawGates(ctx, xc, yc);
+    // track.drawAllGates(ctx, xc, yc);
+    lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
+    lapCounter.draw(ctx);
+    car.draw(ctx, xc, yc);
+
+    // draw unscaled scaled stuff
+    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // touchControl.draw(ctx);
+    if (inputState.touch) {
+        accBtn.draw(ctx);
+        brkBtn.draw(ctx);
+        leftBtn.draw(ctx);
+        rightBtn.draw(ctx);
+    }
+    // drawDebug();
+    // drawHUD();
+    car.drawHUD(ctx);
+    hiScores.draw(ctx);
+    hiScoresWeb.draw(ctx);
+    name.draw(ctx);
+    drawInfo(ctx);
+
+}
+class Name {
+    constructor() {
+        this.fontsize = 15 * pixRat;
+        this.h = this.fontsize + 5 * pixRat;
+        this.w = pixRat * 70;
+        this.x0 = X - this.w;
+        this.y0 = Y - isTouch * Y / 3 - this.h;
+        this.en = null;
+
+        this.name = null;
+        this.text = 'Enter Name';
+        if (localStorage.name) {
+            // log(localStorage.name)
+            this.name = localStorage.name
+            this.text = this.name;
+        }
+        this.hideNameForm()
+        document.getElementById("submit").addEventListener("click", submitName, { passive: true })
+        // log(this)
+    }
+    draw(ctx) {
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.x0, this.y0, this.w, this.h)
+        // ctx.stroke();
+
+        ctx.beginPath();
+        ctx.textAlign = "right";
+        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
+    }
+    contains(ex, ey) {
+        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    pointerDownHandler(ex, ey, en) {
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.en = null;
+            this.active = false;
+            this.showNameForm();
+        }
+    }
+
+    showNameForm() {
+        let form = document.getElementById("nameForm").style;
+        // console.log(form.visibility)
+        form.visibility = "visible"
+        // showgalleryForm = true;
+
+        // else {
+        //     form.visibility = "hidden"
+        //     // showgalleryForm = false;
+        // }
+    }
+    hideNameForm() {
+        let form = document.getElementById("nameForm").style;
+        // console.log(form.visibility)
+        form.visibility = "hidden"
+    }
+}
+function submitName() {
+    name.name = document.getElementById('name').value
+    log(name.name)
+    name.text = name.name;
+    localStorage.name = name.name;
+    name.hideNameForm();
+    log('submitting name')
+}
 class HiScores {
     constructor() {
         this.x = 0;
@@ -1216,7 +1301,7 @@ class HiScores {
             // log('localStorage contains versionTimes')
             this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
             let versionTimes = this.versionTimesList.filter(obj => { return obj.version == this.version })
-            if (versionTimes.length>0) {
+            if (versionTimes.length > 0) {
                 // log('correct version loaded')
                 // log(versionTimes)
                 this.times = versionTimes[0].times;
@@ -1249,11 +1334,12 @@ class HiScores {
         ctx.fillStyle = "white";
 
         // ctx.fillText("Best Laps",this.x,this.y)
-
+        ctx.fillText("L " + formatDuration(this.last), this.x, this.y);
+        
         for (let i = 0; i < this.n; i++) {
-            ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 0) * this.dy);
+            ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
-        ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+        
     }
     newLap(t) {
         this.last = t;
@@ -1273,10 +1359,10 @@ class HiScores {
 
             // log(this.times);
             // remove existing version entry
-            log('creating newVersionTimes')
-            log(this)
+            // log('creating newVersionTimes')
+            // log(this)
             let newVersionTimes = this.versionTimesList.filter((obj) => {
-                log(obj,this)
+                // log(obj,this)
                 return obj.version !== this.version;
             });
             //add currect version
@@ -1284,6 +1370,80 @@ class HiScores {
             localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
         }
     }
+}
+class HiScoresWeb {
+    constructor() {
+        this.x = X;
+        this.y = 0;
+        this.fontsize = 15 * pixRat;
+        this.dy = 15 * pixRat;
+        this.n = 0;
+        this.nMax=5
+
+        this.times;
+        this.version = p.version.n;
+        this.getTimes(this.version);
+    }
+
+    getTimes(version) {
+        fetch(apiURL + '/get_times?version=' + version)
+            .then(response => response.json())
+            .then(data => {
+                this.times=data
+                this.n=Math.min(this.nMax,data.length);
+                log("response:")
+                log(data)
+
+            });
+    }
+    postLap(version, name, time) {
+        let formData = new FormData();
+        formData.append('name', name);
+        formData.append('version', version);
+        formData.append('time', time);
+        console.log(formData)
+
+        fetch(apiURL + '/post_lap', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    draw(ctx) {
+        if (this.times){
+         if( this.times.length>0){
+        ctx.beginPath();
+        ctx.textAlign = "right";
+        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
+        // ctx.fillText("Best Laps",this.x,this.y)
+        for (let i = 0; i < this.n; i++) {
+            ctx.fillText((i + 1).toString() +" " + formatDuration(this.times[i].time) + " " + this.times[i].name , this.x, this.y + (i + 0) * this.dy);
+        }
+        // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+    }}}
+
+    newLap(t) {
+        this.postLap(this.version,name.name,t);
+        this.getTimes(this.version);
+    }
+}
+function drawInfo(ctx){
+    ctx.beginPath();
+    ctx.textAlign = "center";
+    ctx.font = 15*pixRat + 'px sans-serif';
+    ctx.textBaseline = "bottom";
+    ctx.fillStyle = "white";
+    // log(p.version.n)
+    ctx.fillText("v"+p.version.n,X/2,Y-isTouch*Y/3)
 }
 
 let log = console.log;
@@ -1294,6 +1454,8 @@ import { p } from './params.js'
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
 resize();
+
+let apiURL = 'http://127.0.0.1:5000'
 
 // draw constants
 const PPM = p.draw.pixPerMetre * pixRat; // init scale, screen pixels per metre - pre zoom
@@ -1310,6 +1472,12 @@ const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 
+
+
+let hiScores = new HiScores();
+let hiScoresWeb = new HiScoresWeb();
+let name = new Name();
+
 //control set up
 // const forceBrake = false;
 // const forceLeft = false;
@@ -1317,17 +1485,22 @@ let inputState = new InputState;
 let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
 addListeners(inputState);
 
-//track set up
+//track and lapCounter set up
 let track = new Track()
+let lapCounter = new LapCounter(track.gates);
 
 // car set up
 let car = new Car();
-
-//
-let lapCounter = new LapCounter(track.gates);
-let hiScores = new HiScores();
 
 // run
 let n = 0;
 let nMax = p.run.nMax;
 anim();
+
+
+
+
+// hiScoresWeb.postLap('0.1', 'NJS', 1001)
+// getTimes('vTest')
+
+// log(name)
