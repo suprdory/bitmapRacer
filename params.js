@@ -18,8 +18,8 @@ export let p = {
         "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
         "torqueRate": 2,
         "torqueMax": 50,
-        "brakeMax": 30,
         "brakeRate": 10,
+        "brakeMax": 100,
     },
     "phys": {
         "CD": 100, // Surface Drag resistance
@@ -48,7 +48,7 @@ export let p = {
         ]
     },
     "draw": {
-        "pixPerMetre": 8,
+        "pixPerMetre": 6,
         "baseLW": 2,
         "lookAhead": 5.0,
         "panSpeed": 0.15,
@@ -57,7 +57,7 @@ export let p = {
         "HUDforceScl":.8,
     },
     "version":{
-        "n":"huge track",
+        "n":"bigTrack",
     },
     "run": {
         "dt": 0.2,

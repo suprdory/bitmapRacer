@@ -1,4 +1,3 @@
-
 class Track {
     constructor() {
 
@@ -418,8 +417,8 @@ class Car {
 
             // braking
             if (Math.abs(wh.n.u.lonWheel) < .1) {
-                wh.n.Fbrake.lon = -wh.n.u.lon * wh.brake * wh.sfc_mu * cosTh;
-                wh.n.Fbrake.lat = -wh.n.u.lon * wh.brake * wh.sfc_mu * sinTh;
+                wh.n.Fbrake.lon = -wh.n.u.lon/.1 * wh.brake * wh.sfc_mu * cosTh;
+                wh.n.Fbrake.lat = -wh.n.u.lon/.1 * wh.brake * wh.sfc_mu * sinTh;
             }
             else {
                 wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * wh.brake * wh.sfc_mu * cosTh;
@@ -1390,7 +1389,7 @@ function drawInfo(ctx) {
     ctx.textBaseline = "bottom";
     ctx.fillStyle = "white";
     // log(p.version.n)
-    ctx.fillText("v" + p.version.n, X / 2, Y - isTouch * Y / 3)
+    ctx.fillText("v:" + p.version.n, X / 2, Y - isTouch * Y / 3)
 }
 function resize() {
     canvas = document.getElementById("cw");
