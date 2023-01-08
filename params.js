@@ -32,7 +32,7 @@ export let p = {
         "fname": 'tracks/square_track.png',
         "startX": 200,
         "startY": 200,
-        "metresPerPix": 0.35,
+        "metresPerPix": 0.20,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
             "tarmac": { "mu": 0.8, "drag": 0.001 },
@@ -57,7 +57,7 @@ export let p = {
         "HUDforceScl":.8,
     },
     "version":{
-        "n":"0.3",
+        "n":"0.31",
     },
     "run": {
         "dt": 0.2,
