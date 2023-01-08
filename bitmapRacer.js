@@ -883,6 +883,228 @@ class LapCounter {
     }
 
 }
+class HiScores {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.fontsize = 15 * pixRat;
+        this.dy = 15 * pixRat;
+        this.n = 5;
+        this.last = 0;
+        this.versionTimesList;
+        this.times;
+        this.version = p.version.n;
+        if (localStorage.getItem('versionTimes')) {
+            // log('localStorage contains versionTimes')
+            this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let versionTimes = this.versionTimesList.filter(obj => { return obj.version == this.version })
+            if (versionTimes.length > 0) {
+                // log('correct version loaded')
+                // log(versionTimes)
+                this.times = versionTimes[0].times;
+            }
+            else {
+                // log('no correct version, created locally')
+                this.times = Array(this.n);
+                for (let i = 0; i < this.n; i++) {
+                    this.times[i] = 0;
+                }
+                this.versionTimesList.push({ 'version': this.version, 'times': this.times })
+                // log('no correct version, created in session')
+            }
+        }
+        else {
+            log('localStorage contains no versionTimes, create session versionTimes')
+            this.times = Array(this.n);
+            for (let i = 0; i < this.n; i++) {
+                this.times[i] = 0;
+            }
+            this.versionTimesList = [{ 'version': this.version, 'times': this.times }];
+        }
+        // log(this.times)
+    }
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.textAlign = "left";
+        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
+
+        // ctx.fillText("Best Laps",this.x,this.y)
+        ctx.fillText("L " + formatDuration(this.last), this.x, this.y);
+
+        for (let i = 0; i < this.n; i++) {
+            ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
+        }
+
+    }
+    newLap(t) {
+        this.last = t;
+        if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
+            this.times[this.n - 1] = t;
+            this.times.sort(function (a, b) {
+                if (a == 0 & b != 0) {
+                    return 1;
+                }
+                else if ((b == 0 & a != 0)) {
+                    return -1;
+                }
+                else {
+                    return (a - b);
+                }
+            });
+
+            // log(this.times);
+            // remove existing version entry
+            // log('creating newVersionTimes')
+            // log(this)
+            let newVersionTimes = this.versionTimesList.filter((obj) => {
+                // log(obj,this)
+                return obj.version !== this.version;
+            });
+            //add currect version
+            newVersionTimes.push({ 'version': this.version, 'times': this.times })
+            localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+        }
+    }
+}
+class HiScoresWeb {
+    constructor() {
+        this.x = X;
+        this.y = 0;
+        this.fontsize = 15 * pixRat;
+        this.dy = 15 * pixRat;
+        this.n = 0;
+        this.nMax = 5
+
+        this.times;
+        this.version = p.version.n;
+        this.getTimes(this.version);
+    }
+
+    getTimes(version) {
+        fetch(apiURL + '/get_times?version=' + version)
+            .then(response => response.json())
+            .then(data => {
+                this.times = data
+                this.n = Math.min(this.nMax, data.length);
+                log("response:")
+                log(data)
+
+            });
+    }
+    postLap(version, name, time) {
+        let formData = new FormData();
+        formData.append('name', name);
+        formData.append('version', version);
+        formData.append('time', time);
+        console.log(formData)
+
+        fetch(apiURL + '/post_lap', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    draw(ctx) {
+        if (this.times) {
+            if (this.times.length > 0) {
+                ctx.beginPath();
+                ctx.textAlign = "right";
+                ctx.font = this.fontsize + 'px sans-serif';
+                ctx.textBaseline = "top";
+                ctx.fillStyle = "white";
+                // ctx.fillText("Best Laps",this.x,this.y)
+                for (let i = 0; i < this.n; i++) {
+                    ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i].time) + " " + this.times[i].name, this.x, this.y + (i + 0) * this.dy);
+                }
+                // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+            }
+        }
+    }
+
+    newLap(t) {
+        this.postLap(this.version, name.name, t);
+        this.getTimes(this.version);
+    }
+}
+class Name {
+    constructor() {
+        this.fontsize = 15 * pixRat;
+        this.h = this.fontsize + 5 * pixRat;
+        this.w = pixRat * 70;
+        this.x0 = X - this.w;
+        this.y0 = Y - isTouch * Y / 3 - this.h;
+        this.en = null;
+
+        this.name = null;
+        this.text = 'Enter Name';
+        if (localStorage.name) {
+            // log(localStorage.name)
+            this.name = localStorage.name
+            this.text = this.name;
+        }
+        this.hideNameForm()
+        document.getElementById("submit").addEventListener("click", submitName, { passive: true })
+        // log(this)
+    }
+    draw(ctx) {
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.x0, this.y0, this.w, this.h)
+        // ctx.stroke();
+
+        ctx.beginPath();
+        ctx.textAlign = "right";
+        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
+    }
+    contains(ex, ey) {
+        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    pointerDownHandler(ex, ey, en) {
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.en = null;
+            this.active = false;
+            this.showNameForm();
+        }
+    }
+
+    showNameForm() {
+        let form = document.getElementById("nameForm").style;
+        // console.log(form.visibility)
+        form.visibility = "visible"
+        // showgalleryForm = true;
+
+        // else {
+        //     form.visibility = "hidden"
+        //     // showgalleryForm = false;
+        // }
+    }
+    hideNameForm() {
+        let form = document.getElementById("nameForm").style;
+        // console.log(form.visibility)
+        form.visibility = "hidden"
+    }
+}
 let MatrixProd = (A, B) =>
     A.map((row, i) =>
         B[0].map((_, j) =>
@@ -1109,22 +1331,7 @@ function addListeners(inputState) {
     addEventListener('keydown', (event) => { inputState.set(event) });
     addEventListener('keyup', (event) => { inputState.set(event) });
 }
-function resize() {
-    canvas = document.getElementById("cw");
-    ctx = canvas.getContext("2d", { alpha: false });
-    pixRat = window.devicePixelRatio * 1.0;
-    canvas.height = window.innerHeight * pixRat;
-    canvas.width = window.innerWidth * pixRat;
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
-    X = canvas.width;
-    Y = canvas.height;
-    xc = 0 // screen centre coords
-    yc = 0
-    isTouch = isTouchDevice();
-    yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
 
-}
 function pad(n, width, z) {
     z = z || '0';
     n = n + '';
@@ -1168,6 +1375,39 @@ function dotProduct(a, b, c, d) {
 function crossProduct(a, b, c, d) {
     return a * d - b * c;
 };
+function submitName() {
+    name.name = document.getElementById('name').value
+    log(name.name)
+    name.text = name.name;
+    localStorage.name = name.name;
+    name.hideNameForm();
+    log('submitting name')
+}
+function drawInfo(ctx) {
+    ctx.beginPath();
+    ctx.textAlign = "center";
+    ctx.font = 15 * pixRat + 'px sans-serif';
+    ctx.textBaseline = "bottom";
+    ctx.fillStyle = "white";
+    // log(p.version.n)
+    ctx.fillText("v" + p.version.n, X / 2, Y - isTouch * Y / 3)
+}
+function resize() {
+    canvas = document.getElementById("cw");
+    ctx = canvas.getContext("2d", { alpha: false });
+    pixRat = window.devicePixelRatio * 1.0;
+    canvas.height = window.innerHeight * pixRat;
+    canvas.width = window.innerWidth * pixRat;
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    X = canvas.width;
+    Y = canvas.height;
+    xc = 0 // screen centre coords
+    yc = 0
+    isTouch = isTouchDevice();
+    yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
+
+}
 function anim() {
     n++;
     if (n < nMax) {
@@ -1218,243 +1458,7 @@ function anim() {
     drawInfo(ctx);
 
 }
-class Name {
-    constructor() {
-        this.fontsize = 15 * pixRat;
-        this.h = this.fontsize + 5 * pixRat;
-        this.w = pixRat * 70;
-        this.x0 = X - this.w;
-        this.y0 = Y - isTouch * Y / 3 - this.h;
-        this.en = null;
 
-        this.name = null;
-        this.text = 'Enter Name';
-        if (localStorage.name) {
-            // log(localStorage.name)
-            this.name = localStorage.name
-            this.text = this.name;
-        }
-        this.hideNameForm()
-        document.getElementById("submit").addEventListener("click", submitName, { passive: true })
-        // log(this)
-    }
-    draw(ctx) {
-        // ctx.beginPath()
-        // ctx.strokeStyle = "white";
-        // ctx.rect(this.x0, this.y0, this.w, this.h)
-        // ctx.stroke();
-
-        ctx.beginPath();
-        ctx.textAlign = "right";
-        ctx.font = this.fontsize + 'px sans-serif';
-        ctx.textBaseline = "bottom";
-        ctx.fillStyle = "white";
-        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
-    }
-    contains(ex, ey) {
-        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
-    }
-    pointerDownHandler(ex, ey, en) {
-        // log('PD')
-        if (this.contains(ex, ey)) {
-            // debugTxt = "PD: " + en + " " + this.action;
-            this.active = true;
-            this.en = en;
-        }
-    }
-    pointerUpHandler(en) {
-        if (en == this.en) {
-            // debugTxt = "PU: " + en + " " + this.action;
-            this.en = null;
-            this.active = false;
-            this.showNameForm();
-        }
-    }
-
-    showNameForm() {
-        let form = document.getElementById("nameForm").style;
-        // console.log(form.visibility)
-        form.visibility = "visible"
-        // showgalleryForm = true;
-
-        // else {
-        //     form.visibility = "hidden"
-        //     // showgalleryForm = false;
-        // }
-    }
-    hideNameForm() {
-        let form = document.getElementById("nameForm").style;
-        // console.log(form.visibility)
-        form.visibility = "hidden"
-    }
-}
-function submitName() {
-    name.name = document.getElementById('name').value
-    log(name.name)
-    name.text = name.name;
-    localStorage.name = name.name;
-    name.hideNameForm();
-    log('submitting name')
-}
-class HiScores {
-    constructor() {
-        this.x = 0;
-        this.y = 0;
-        this.fontsize = 15 * pixRat;
-        this.dy = 15 * pixRat;
-        this.n = 5;
-        this.last = 0;
-        this.versionTimesList;
-        this.times;
-        this.version = p.version.n;
-        if (localStorage.getItem('versionTimes')) {
-            // log('localStorage contains versionTimes')
-            this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
-            let versionTimes = this.versionTimesList.filter(obj => { return obj.version == this.version })
-            if (versionTimes.length > 0) {
-                // log('correct version loaded')
-                // log(versionTimes)
-                this.times = versionTimes[0].times;
-            }
-            else {
-                // log('no correct version, created locally')
-                this.times = Array(this.n);
-                for (let i = 0; i < this.n; i++) {
-                    this.times[i] = 0;
-                }
-                this.versionTimesList.push({ 'version': this.version, 'times': this.times })
-                // log('no correct version, created in session')
-            }
-        }
-        else {
-            log('localStorage contains no versionTimes, create session versionTimes')
-            this.times = Array(this.n);
-            for (let i = 0; i < this.n; i++) {
-                this.times[i] = 0;
-            }
-            this.versionTimesList = [{ 'version': this.version, 'times': this.times }];
-        }
-        // log(this.times)
-    }
-    draw(ctx) {
-        ctx.beginPath();
-        ctx.textAlign = "left";
-        ctx.font = this.fontsize + 'px sans-serif';
-        ctx.textBaseline = "top";
-        ctx.fillStyle = "white";
-
-        // ctx.fillText("Best Laps",this.x,this.y)
-        ctx.fillText("L " + formatDuration(this.last), this.x, this.y);
-        
-        for (let i = 0; i < this.n; i++) {
-            ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
-        }
-        
-    }
-    newLap(t) {
-        this.last = t;
-        if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
-            this.times[this.n - 1] = t;
-            this.times.sort(function (a, b) {
-                if (a == 0 & b != 0) {
-                    return 1;
-                }
-                else if ((b == 0 & a != 0)) {
-                    return -1;
-                }
-                else {
-                    return (a - b);
-                }
-            });
-
-            // log(this.times);
-            // remove existing version entry
-            // log('creating newVersionTimes')
-            // log(this)
-            let newVersionTimes = this.versionTimesList.filter((obj) => {
-                // log(obj,this)
-                return obj.version !== this.version;
-            });
-            //add currect version
-            newVersionTimes.push({ 'version': this.version, 'times': this.times })
-            localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
-        }
-    }
-}
-class HiScoresWeb {
-    constructor() {
-        this.x = X;
-        this.y = 0;
-        this.fontsize = 15 * pixRat;
-        this.dy = 15 * pixRat;
-        this.n = 0;
-        this.nMax=5
-
-        this.times;
-        this.version = p.version.n;
-        this.getTimes(this.version);
-    }
-
-    getTimes(version) {
-        fetch(apiURL + '/get_times?version=' + version)
-            .then(response => response.json())
-            .then(data => {
-                this.times=data
-                this.n=Math.min(this.nMax,data.length);
-                log("response:")
-                log(data)
-
-            });
-    }
-    postLap(version, name, time) {
-        let formData = new FormData();
-        formData.append('name', name);
-        formData.append('version', version);
-        formData.append('time', time);
-        console.log(formData)
-
-        fetch(apiURL + '/post_lap', {
-            method: 'POST',
-            body: formData,
-        })
-            .then(response => response.json())
-            .then(data => {
-                // console.log(data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-    }
-
-    draw(ctx) {
-        if (this.times){
-         if( this.times.length>0){
-        ctx.beginPath();
-        ctx.textAlign = "right";
-        ctx.font = this.fontsize + 'px sans-serif';
-        ctx.textBaseline = "top";
-        ctx.fillStyle = "white";
-        // ctx.fillText("Best Laps",this.x,this.y)
-        for (let i = 0; i < this.n; i++) {
-            ctx.fillText((i + 1).toString() +" " + formatDuration(this.times[i].time) + " " + this.times[i].name , this.x, this.y + (i + 0) * this.dy);
-        }
-        // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
-    }}}
-
-    newLap(t) {
-        this.postLap(this.version,name.name,t);
-        this.getTimes(this.version);
-    }
-}
-function drawInfo(ctx){
-    ctx.beginPath();
-    ctx.textAlign = "center";
-    ctx.font = 15*pixRat + 'px sans-serif';
-    ctx.textBaseline = "bottom";
-    ctx.fillStyle = "white";
-    // log(p.version.n)
-    ctx.fillText("v"+p.version.n,X/2,Y-isTouch*Y/3)
-}
 
 let log = console.log;
 
@@ -1469,9 +1473,9 @@ resize();
 let apiURL ='https://bitmapRacer.eu.pythonanywhere.com'
 
 // draw constants
-const PPM = p.draw.pixPerMetre * pixRat; // init scale, screen pixels per metre - pre zoom
+const PPM = p.draw.pixPerMetre * (1+(pixRat-1)/2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
-const lookAhead = p.draw.lookAhead / pixRat; // seconds
+const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 2); // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
