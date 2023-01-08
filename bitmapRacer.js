@@ -1405,7 +1405,7 @@ function resize() {
     xc = 0 // screen centre coords
     yc = 0
     isTouch = isTouchDevice();
-    yOff = isTouch ? X / 3 : 0; // Y offset if touch controls present
+    yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
 
 }
 function anim() {
