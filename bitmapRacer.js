@@ -291,7 +291,7 @@ class Car {
         // log(yOff)
         let HUDy = Y - (50) * pixRat - isTouch * (Y / 3);
         let x = this.coordMatHUD;
-        // x = MatrixProd(x, calcRotMat(Math.PI));
+        x = MatrixProd(x, calcRotMat(Math.PI));
         x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
         x = MatrixTrans(x, [HUDx, HUDy])
         ctx.beginPath();
@@ -308,11 +308,13 @@ class Car {
 
         let x0 = [HUDx, HUDy]
         let xd = [[this.n.Fair.lat, this.n.Fair.lon]]
+        xd = MatrixProd(xd, calcRotMat(Math.PI));
         xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         let x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'brown')
 
         xd = [[this.n.Fres.lat, this.n.Fres.lon]]
+        xd = MatrixProd(xd, calcRotMat(Math.PI));
         xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'white')
@@ -598,44 +600,52 @@ class Wheel {
     drawHUD(ctx, car, HUDx, HUDy, HUDscl, HUDforceScl) {
 
         let x = MatrixProd(this.coordMatHUD, this.rotMat);
+       
         x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
         x = MatrixTrans(x, [this.x * HUDscl, this.y * HUDscl]);
-        // x = MatrixProd(x, car.rotMat);
+        x = MatrixProd(x, calcRotMat(Math.PI));
         x = MatrixTrans(x, [HUDx, HUDy])
 
         let xd, x1;
         let x0 = [[0, 0]];
 
         x0 = MatrixTrans(x0, [this.x * HUDscl, this.y * HUDscl]);
+        x0 = MatrixProd(x0, calcRotMat(Math.PI));
         x0 = MatrixTrans(x0, [HUDx, HUDy])[0]
 
         xd = [[this.n.Fthrust.lat, this.n.Fthrust.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'green')
 
         xd = [[this.n.Fbrake.lat, this.n.Fbrake.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'red')
 
         xd = [[this.n.Frollres.lat, this.n.Frollres.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'purple')
 
         xd = [[this.n.Fdrag.lat, this.n.Fdrag.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'blue')
 
         xd = [[this.n.Fcorn.lat, this.n.Fcorn.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'yellow')
 
         xd = [[this.n.Fres.lat, this.n.Fres.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
         x1 = MatrixTrans([x0], xd)[0];
         drawHUDArrow(x0, x1, 'white')
 
@@ -1471,7 +1481,6 @@ const stiffness = p.phys.stiffness; // cornering stiffness
 const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
-
 
 
 let hiScores = new HiScores();
