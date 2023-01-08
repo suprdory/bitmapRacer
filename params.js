@@ -57,7 +57,7 @@ export let p = {
         "HUDforceScl":.8,
     },
     "version":{
-        "n":"0.1",
+        "n":"0.3",
     },
     "run": {
         "dt": 0.2,

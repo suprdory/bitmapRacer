@@ -1465,7 +1465,8 @@ import { p } from './params.js'
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
 resize();
 
-let apiURL = 'http://127.0.0.1:5000'
+// let apiURL = 'http://127.0.0.1:5000'
+let apiURL ='https://bitmapRacer.eu.pythonanywhere.com'
 
 // draw constants
 const PPM = p.draw.pixPerMetre * pixRat; // init scale, screen pixels per metre - pre zoom
