@@ -1510,7 +1510,7 @@ class Flash {
             ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
             ctx.textBaseline = "bottom";
             ctx.fillStyle = "white";
-            log(Y,this.y)
+            // log(Y,this.y)
 
             ctx.fillText(this.message, this.x, this.y)
         }
