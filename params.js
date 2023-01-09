@@ -30,10 +30,10 @@ export let p = {
     },
     "track": {
         "fname": 'tracks/square_track.png',
-        "reverse": true,
-        "startTheta": Math.PI,
+        "reverse": false,
+        "startTheta": 0,
         "startX": 180,
-        "startY": 720,
+        "startY": 220,
         "metresPerPix": 0.35,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
@@ -59,7 +59,7 @@ export let p = {
         "HUDforceScl": .8,
     },
     "version": {
-        "n": "20230109.1",
+        "n": "b1",
     },
     "run": {
         "dt": 0.2,
