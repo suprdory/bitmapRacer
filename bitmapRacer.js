@@ -898,6 +898,9 @@ class LapCounter {
                 this.gateCrossed(nGate);
                 // log(nGate)
             }
+            else {
+                flash.flash("Wrong way!")
+            }
             this.intersection = false;
         }
     }
