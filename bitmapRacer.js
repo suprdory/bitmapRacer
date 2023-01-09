@@ -1493,7 +1493,7 @@ function anim() {
 class Flash {
     constructor() {
         this.x = X / 2;
-        this.y = Y * pixRat - isTouch * Y / 3;
+        this.y = Y  - isTouch * Y / 3;
         this.displayPeriod = 1500;
         this.message = "Testing"
         this.mTime = Date.now();
@@ -1510,7 +1510,8 @@ class Flash {
             ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
             ctx.textBaseline = "bottom";
             ctx.fillStyle = "white";
-            // log(p.version.n)
+            log(Y,this.y)
+
             ctx.fillText(this.message, this.x, this.y)
         }
     }
