@@ -30,7 +30,7 @@ export let p = {
     },
     "track": {
         "fname": 'tracks/square_track.png',
-        "reverse": false,
+        "reverse": true,
         "startTheta": 0,
         "startX": 180,
         "startY": 220,
@@ -59,7 +59,7 @@ export let p = {
         "HUDforceScl": .8,
     },
     "version": {
-        "n": "b1",
+        "n": "b6",
     },
     "run": {
         "dt": 0.2,
