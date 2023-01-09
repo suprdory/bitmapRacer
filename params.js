@@ -34,7 +34,7 @@ export let p = {
         "startTheta": 0,
         "startX": 180,
         "startY": 220,
-        "metresPerPix": 0.20,
+        "metresPerPix": 0.60,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
             "tarmac": { "mu": 0.8, "drag": 0.001 },
@@ -59,7 +59,7 @@ export let p = {
         "HUDforceScl": .8,
     },
     "version": {
-        "n": "b2",
+        "n": "b4",
     },
     "run": {
         "dt": 0.2,
