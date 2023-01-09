@@ -31,9 +31,9 @@ export let p = {
     "track": {
         "fname": 'tracks/square_track.png',
         "reverse": true,
-        "startTheta": 0,
+        "startTheta": Math.PI,
         "startX": 180,
-        "startY": 220,
+        "startY": 720,
         "metresPerPix": 0.35,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
