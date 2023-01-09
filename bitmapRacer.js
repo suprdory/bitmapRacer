@@ -738,7 +738,7 @@ class TouchButton {
         this.en = null; // touch number
         this.action = action; // action to update in inputState
         this.txt = txt // display text
-        this.fontFamily=fontFamily;
+        this.fontFamily = fontFamily;
     }
     draw(ctx) {
         ctx.beginPath()
@@ -754,7 +754,7 @@ class TouchButton {
         // ctx.fillStyle = uiTextColor;
         ctx.beginPath()
         ctx.textAlign = "center";
-        ctx.font = 20 * pixRat + 'px ' +this.fontFamily;
+        ctx.font = 20 * pixRat + 'px ' + this.fontFamily;
         ctx.textBaseline = "middle";
         ctx.fillStyle = "white";
         ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
@@ -820,7 +820,7 @@ class LapCounter {
         this.tstr = {};
         this.xPos = X / 2;
         this.yPos = 0;
-        this.fontFamily=fontFamily;
+        this.fontFamily = fontFamily;
     }
 
     draw(ctx) {
@@ -828,7 +828,7 @@ class LapCounter {
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
-        ctx.font = 15 * pixRat + 'px ' +this.fontFamily;
+        ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
         ctx.fillText(formatDurationTenth(this.lapTime), this.xPos, this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
@@ -908,7 +908,7 @@ class HiScores {
         this.x = 0;
         this.y = 0;
         this.fontsize = 15 * pixRat;
-        this.fontFamily=fontFamily;
+        this.fontFamily = fontFamily;
         this.dy = 15 * pixRat;
         this.n = 5;
         this.last = 0;
@@ -947,7 +947,7 @@ class HiScores {
     draw(ctx) {
         ctx.beginPath();
         ctx.textAlign = "left";
-        ctx.font = this.fontsize + 'px '+this.fontFamily;
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
 
@@ -994,7 +994,7 @@ class HiScoresWeb {
         this.x = X;
         this.y = 0;
         this.fontsize = 15 * pixRat;
-        this.fontFamily=fontFamily;
+        this.fontFamily = fontFamily;
         this.dy = 15 * pixRat;
         this.n = 0;
         this.nMax = 5
@@ -1040,7 +1040,7 @@ class HiScoresWeb {
             if (this.times.length > 0) {
                 ctx.beginPath();
                 ctx.textAlign = "right";
-                ctx.font = this.fontsize + 'px ' +this.fontFamily;
+                ctx.font = this.fontsize + 'px ' + this.fontFamily;
                 ctx.textBaseline = "top";
                 ctx.fillStyle = "white";
                 // ctx.fillText("Best Laps",this.x,this.y)
@@ -1060,7 +1060,7 @@ class HiScoresWeb {
 class Name {
     constructor() {
         this.fontsize = 15 * pixRat;
-        this.fontFamily=fontFamily;
+        this.fontFamily = fontFamily;
         this.h = this.fontsize + 5 * pixRat;
         this.w = pixRat * 70;
         this.x0 = X - this.w;
@@ -1086,7 +1086,7 @@ class Name {
 
         ctx.beginPath();
         ctx.textAlign = "right";
-        ctx.font = this.fontsize + 'px '+this.fontFamily;
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
         ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
@@ -1171,7 +1171,7 @@ function drawDebug() {
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
-    ctx.font = 10 * pixRat + 'px '+ fontFamily;
+    ctx.font = 10 * pixRat + 'px ' + fontFamily;
     // nX = img.width;
     // nY = img.height;
     // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
@@ -1480,27 +1480,28 @@ function anim() {
 }
 
 class Flash {
-    constructor(){
-        this.x=X/2;
-        this.y=Y*pixRat-isTouch*Y/3;
-        this.displayPeriod=1500;
-        this.message="Testing"
-        this.mTime=Date.now();
-        this.fontFamily=fontFamily;
+    constructor() {
+        this.x = X / 2;
+        this.y = Y * pixRat - isTouch * Y / 3;
+        this.displayPeriod = 1500;
+        this.message = "Testing"
+        this.mTime = Date.now();
+        this.fontFamily = fontFamily;
     }
-    flash(message){
-        this.message=message;
-        this.mTime=Date.now();
+    flash(message) {
+        this.message = message;
+        this.mTime = Date.now();
     }
-    draw(ctx){
-        if((Date.now()-this.mTime)<this.displayPeriod){
-        ctx.beginPath();
-        ctx.textAlign = "center";
-        ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.textBaseline = "bottom";
-        ctx.fillStyle = "white";
-        // log(p.version.n)
-        ctx.fillText(this.message, this.x, this.y)}
+    draw(ctx) {
+        if ((Date.now() - this.mTime) < this.displayPeriod) {
+            ctx.beginPath();
+            ctx.textAlign = "center";
+            ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
+            ctx.textBaseline = "bottom";
+            ctx.fillStyle = "white";
+            // log(p.version.n)
+            ctx.fillText(this.message, this.x, this.y)
+        }
     }
 }
 
@@ -1514,8 +1515,14 @@ import { p } from './params.js'
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
 resize();
 
-// let apiURL = 'http://127.0.0.1:5000'
-let apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
+let apiURL;
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") {
+    apiURL = 'http://127.0.0.1:5000'
+}
+else {
+    apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
+}
+
 
 // draw constants
 const fontFamily = 'monospace';
@@ -1558,7 +1565,8 @@ let car = new Car();
 let n = 0;
 let nMax = p.run.nMax;
 anim();
-flash.flash("v: " + p.version.n)
+// flash.flash("v: " + p.version.n)
+flash.flash("v:" + p.version.n+" "+ location.hostname);
 
 
 
