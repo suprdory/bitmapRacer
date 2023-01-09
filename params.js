@@ -50,7 +50,7 @@ export let p = {
         ]
     },
     "draw": {
-        "pixPerMetre": 8,
+        "pixPerMetre": 6,
         "baseLW": 2,
         "lookAhead": 5.0,
         "panSpeed": 0.15,
