@@ -738,6 +738,7 @@ class TouchButton {
         this.en = null; // touch number
         this.action = action; // action to update in inputState
         this.txt = txt // display text
+        this.fontFamily=fontFamily;
     }
     draw(ctx) {
         ctx.beginPath()
@@ -753,7 +754,7 @@ class TouchButton {
         // ctx.fillStyle = uiTextColor;
         ctx.beginPath()
         ctx.textAlign = "center";
-        ctx.font = 20 * pixRat + 'px sans-serif';
+        ctx.font = 20 * pixRat + 'px ' +this.fontFamily;
         ctx.textBaseline = "middle";
         ctx.fillStyle = "white";
         ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
@@ -819,16 +820,15 @@ class LapCounter {
         this.tstr = {};
         this.xPos = X / 2;
         this.yPos = 0;
+        this.fontFamily=fontFamily;
     }
 
     draw(ctx) {
         ctx.beginPath();
         ctx.textAlign = "center";
-        // ctx.font = this.fontsize + 'px sans-serif';
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
-
-        ctx.font = 15 * pixRat + 'px sans-serif'
+        ctx.font = 15 * pixRat + 'px ' +this.fontFamily;
         ctx.fillText(formatDurationTenth(this.lapTime), this.xPos, this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
@@ -908,6 +908,7 @@ class HiScores {
         this.x = 0;
         this.y = 0;
         this.fontsize = 15 * pixRat;
+        this.fontFamily=fontFamily;
         this.dy = 15 * pixRat;
         this.n = 5;
         this.last = 0;
@@ -946,7 +947,7 @@ class HiScores {
     draw(ctx) {
         ctx.beginPath();
         ctx.textAlign = "left";
-        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.font = this.fontsize + 'px '+this.fontFamily;
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
 
@@ -993,6 +994,7 @@ class HiScoresWeb {
         this.x = X;
         this.y = 0;
         this.fontsize = 15 * pixRat;
+        this.fontFamily=fontFamily;
         this.dy = 15 * pixRat;
         this.n = 0;
         this.nMax = 5
@@ -1038,7 +1040,7 @@ class HiScoresWeb {
             if (this.times.length > 0) {
                 ctx.beginPath();
                 ctx.textAlign = "right";
-                ctx.font = this.fontsize + 'px sans-serif';
+                ctx.font = this.fontsize + 'px ' +this.fontFamily;
                 ctx.textBaseline = "top";
                 ctx.fillStyle = "white";
                 // ctx.fillText("Best Laps",this.x,this.y)
@@ -1058,6 +1060,7 @@ class HiScoresWeb {
 class Name {
     constructor() {
         this.fontsize = 15 * pixRat;
+        this.fontFamily=fontFamily;
         this.h = this.fontsize + 5 * pixRat;
         this.w = pixRat * 70;
         this.x0 = X - this.w;
@@ -1083,7 +1086,7 @@ class Name {
 
         ctx.beginPath();
         ctx.textAlign = "right";
-        ctx.font = this.fontsize + 'px sans-serif';
+        ctx.font = this.fontsize + 'px '+this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
         ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
@@ -1168,7 +1171,7 @@ function drawDebug() {
 
     ctx.fillStyle = "white"
     ctx.textAlign = "left"
-    ctx.font = 10 * pixRat + 'px sans-serif'
+    ctx.font = 10 * pixRat + 'px '+ fontFamily;
     // nX = img.width;
     // nY = img.height;
     // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
@@ -1262,7 +1265,7 @@ function drawHUD() {
         ctx.fillStyle = "white";
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
-        ctx.font = "15px arial";
+        ctx.font = "15px " + fontFamily;
         ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
     }
 
@@ -1409,15 +1412,6 @@ function submitName() {
     name.hideNameForm();
     log('submitting name')
 }
-// function drawInfo(ctx) {
-//     ctx.beginPath();
-//     ctx.textAlign = "center";
-//     ctx.font = 15 * pixRat + 'px sans-serif';
-//     ctx.textBaseline = "bottom";
-//     ctx.fillStyle = "white";
-//     // log(p.version.n)
-//     ctx.fillText("v:" + p.version.n, X / 2, Y - isTouch * Y / 3)
-// }
 function resize() {
     canvas = document.getElementById("cw");
     ctx = canvas.getContext("2d", { alpha: false });
@@ -1492,6 +1486,7 @@ class Flash {
         this.displayPeriod=1500;
         this.message="Testing"
         this.mTime=Date.now();
+        this.fontFamily=fontFamily;
     }
     flash(message){
         this.message=message;
@@ -1501,7 +1496,7 @@ class Flash {
         if((Date.now()-this.mTime)<this.displayPeriod){
         ctx.beginPath();
         ctx.textAlign = "center";
-        ctx.font = 15 * pixRat + 'px sans-serif';
+        ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
         // log(p.version.n)
@@ -1523,6 +1518,8 @@ resize();
 let apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
 
 // draw constants
+const fontFamily = 'monospace';
+// const fontFamily = 'terminus';
 const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
