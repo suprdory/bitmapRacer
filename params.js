@@ -30,9 +30,11 @@ export let p = {
     },
     "track": {
         "fname": 'tracks/square_track.png',
-        "startX": 200,
-        "startY": 200,
-        "metresPerPix": 0.60,
+        "reverse": true,
+        "startTheta": Math.PI,
+        "startX": 180,
+        "startY": 720,
+        "metresPerPix": 0.35,
         "sfcTypes": {
             "outOfBounds": { "mu": 1.0, "drag": 0.2 },
             "tarmac": { "mu": 0.8, "drag": 0.001 },
@@ -48,16 +50,16 @@ export let p = {
         ]
     },
     "draw": {
-        "pixPerMetre": 6,
+        "pixPerMetre": 8,
         "baseLW": 2,
         "lookAhead": 5.0,
         "panSpeed": 0.15,
         "zoom": 1.0,
-        "HUDscl":15,
-        "HUDforceScl":.8,
+        "HUDscl": 15,
+        "HUDforceScl": .8,
     },
-    "version":{
-        "n":"bigTrack",
+    "version": {
+        "n": "20230109.1",
     },
     "run": {
         "dt": 0.2,

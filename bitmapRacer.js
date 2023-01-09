@@ -202,7 +202,7 @@ class Car {
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
-        this.theta = 0; // heading angle
+        this.theta = p.track.startTheta; // heading angle
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
@@ -417,8 +417,8 @@ class Car {
 
             // braking
             if (Math.abs(wh.n.u.lonWheel) < .1) {
-                wh.n.Fbrake.lon = -wh.n.u.lon/.1 * wh.brake * wh.sfc_mu * cosTh;
-                wh.n.Fbrake.lat = -wh.n.u.lon/.1 * wh.brake * wh.sfc_mu * sinTh;
+                wh.n.Fbrake.lon = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * cosTh;
+                wh.n.Fbrake.lat = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * sinTh;
             }
             else {
                 wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * wh.brake * wh.sfc_mu * cosTh;
@@ -599,7 +599,7 @@ class Wheel {
     drawHUD(ctx, car, HUDx, HUDy, HUDscl, HUDforceScl) {
 
         let x = MatrixProd(this.coordMatHUD, this.rotMat);
-       
+
         x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
         x = MatrixTrans(x, [this.x * HUDscl, this.y * HUDscl]);
         x = MatrixProd(x, calcRotMat(Math.PI));
@@ -794,7 +794,15 @@ class TouchButton {
 }
 class LapCounter {
     constructor(gates) {
+        this.reverse = p.track.reverse;
         this.gates = gates;
+        if (this.reverse) {
+            this.gates.reverse();
+            this.gates.unshift(this.gates.pop())
+        }
+        // log('gates',this.gates)
+        this.nGates = gates.length;
+        this.directionSign = this.reverse ? -1 : 1;
         this.oldPoint = {};
         this.oldPoint.x = 0;
         this.oldPoint.y = 0;
@@ -806,17 +814,13 @@ class LapCounter {
         this.finalCheck = gates.length;
         this.t0 = Date.now();
         this.lapTime = 0;
-        // this.lapTimes = [];
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
         this.xPos = X / 2;
         this.yPos = 0;
     }
-    // formatTime(){
-    //     this.tstr.
 
-    // }
     draw(ctx) {
         ctx.beginPath();
         ctx.textAlign = "center";
@@ -832,25 +836,35 @@ class LapCounter {
     }
 
     lapComplete() {
-        // log('Complete')
+        log('Complete')
         // this.lapTimes.push(this.lapTime)
         this.lastLap = this.lapTime;
         if ((this.lapTime < this.bestLap) || this.bestLap == 0) {
             this.bestLap = this.lapTime;
         }
         hiScores.newLap(this.lapTime);
-        hiScoresWeb.newLap(this.lapTime);
+        if (name.name) {
+            hiScoresWeb.newLap(this.lapTime);
+        }
+        else {
+            flash.flash("Please enter name to submit lap times");
+        }
     }
     gateCrossed(n) {
+        // log("gate", n, "next", this.nextCheck, "final", this.finalCheck)
         if (n == 0) {
+
             if (this.nextCheck == this.finalCheck) {
                 this.lapComplete()
             }
             this.reset()
         }
         else if (n == this.nextCheck) {
+            // log('forward next')
             this.nextCheck++;
+
         }
+        // log("newNext", this.nextCheck)
     }
     reset() {
         this.t0 = Date.now();
@@ -861,21 +875,28 @@ class LapCounter {
         //in track pixel coords
         this.newPoint.x = x;
         this.newPoint.y = y;
-        this.gates.forEach(gate => this.checkGate(gate, this.oldPoint, this.newPoint))
+        // this.gates.forEach(gate => this.checkGate(gate, this.oldPoint, this.newPoint))
+
+        for (let i = 0; i < this.nGates; i++) {
+            // let gate = this.gates[i];
+            this.checkGate(i, this.gates[i], this.oldPoint, this.newPoint)
+        }
         this.oldPoint.x = this.newPoint.x;
         this.oldPoint.y = this.newPoint.y;
         this.lapTime = Date.now() - this.t0;
+
+
     }
-    checkGate(gate, oldPoint, newPoint) {
+    checkGate(nGate, gate, oldPoint, newPoint) {
         // this.intersection=doLineSegmentsIntersect(oldPoint,newPoint,gate.left,gate.right)
         this.intersection = intersects(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, gate.left.x, gate.left.y, gate.right.x, gate.right.y)
         // log(oldPoint.y, newPoint.y,  gate.left.y, gate.right.y);
         if (this.intersection) {
-            this.direction = crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
-            // console.log("Gate ", gate.n, " crossed." ,this.direction);
+            this.direction = this.directionSign * crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
+            // log("Gate ", nGate, " crossed.", this.direction);
             if (this.direction) {
-                this.gateCrossed(gate.n);
-                // log(gate.n)
+                this.gateCrossed(nGate);
+                // log(nGate)
             }
             this.intersection = false;
         }
@@ -987,8 +1008,8 @@ class HiScoresWeb {
             .then(data => {
                 this.times = data
                 this.n = Math.min(this.nMax, data.length);
-                log("response:")
-                log(data)
+                // log("response:")
+                // log(data)
 
             });
     }
@@ -1375,22 +1396,28 @@ function crossProduct(a, b, c, d) {
     return a * d - b * c;
 };
 function submitName() {
-    name.name = document.getElementById('name').value
-    log(name.name)
-    name.text = name.name;
-    localStorage.name = name.name;
+    let newName = document.getElementById('name').value
+
+    if (newName.trim().length === 0) {
+        flash.flash("Empty name, try again")
+    }
+    else {
+        name.name = newName;
+        name.text = name.name;
+        localStorage.name = name.name;
+    }
     name.hideNameForm();
     log('submitting name')
 }
-function drawInfo(ctx) {
-    ctx.beginPath();
-    ctx.textAlign = "center";
-    ctx.font = 15 * pixRat + 'px sans-serif';
-    ctx.textBaseline = "bottom";
-    ctx.fillStyle = "white";
-    // log(p.version.n)
-    ctx.fillText("v:" + p.version.n, X / 2, Y - isTouch * Y / 3)
-}
+// function drawInfo(ctx) {
+//     ctx.beginPath();
+//     ctx.textAlign = "center";
+//     ctx.font = 15 * pixRat + 'px sans-serif';
+//     ctx.textBaseline = "bottom";
+//     ctx.fillStyle = "white";
+//     // log(p.version.n)
+//     ctx.fillText("v:" + p.version.n, X / 2, Y - isTouch * Y / 3)
+// }
 function resize() {
     canvas = document.getElementById("cw");
     ctx = canvas.getContext("2d", { alpha: false });
@@ -1454,8 +1481,32 @@ function anim() {
     hiScores.draw(ctx);
     hiScoresWeb.draw(ctx);
     name.draw(ctx);
-    drawInfo(ctx);
+    // drawInfo(ctx);
+    flash.draw(ctx);
+}
 
+class Flash {
+    constructor(){
+        this.x=X/2;
+        this.y=Y*pixRat-isTouch*Y/3;
+        this.displayPeriod=1500;
+        this.message="Testing"
+        this.mTime=Date.now();
+    }
+    flash(message){
+        this.message=message;
+        this.mTime=Date.now();
+    }
+    draw(ctx){
+        if((Date.now()-this.mTime)<this.displayPeriod){
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.font = 15 * pixRat + 'px sans-serif';
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        // log(p.version.n)
+        ctx.fillText(this.message, this.x, this.y)}
+    }
 }
 
 
@@ -1469,10 +1520,10 @@ let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
 resize();
 
 // let apiURL = 'http://127.0.0.1:5000'
-let apiURL ='https://bitmapRacer.eu.pythonanywhere.com'
+let apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
 
 // draw constants
-const PPM = p.draw.pixPerMetre * (1+(pixRat-1)/2); // init scale, screen pixels per metre - pre zoom
+const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
@@ -1490,6 +1541,7 @@ const CA = p.phys.CA; //air drag coefficient
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 let name = new Name();
+let flash = new Flash();
 
 //control set up
 // const forceBrake = false;
@@ -1509,6 +1561,7 @@ let car = new Car();
 let n = 0;
 let nMax = p.run.nMax;
 anim();
+flash.flash("v: " + p.version.n)
 
 
 

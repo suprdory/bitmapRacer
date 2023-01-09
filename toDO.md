@@ -1,7 +1,7 @@
-- web hiScores shows best lap ranking, player ranking (by initials or maybe ip address?)
+- web hiScores shows best lap ranking, player ranking (by initials or (and!) maybe ip address? it's visible on the flask access log)
 - schedule problems, countdown etc - wordle style
+- shareable bets lap, ranking etc.
 - find track drawing solution on safari 
-- give track reverse property, switched gate activation direction and gate order.
 - max speed calc
 
 
@@ -17,3 +17,4 @@
 - lap timer
 - lap scoreboard
 - acc and brake meter fade fix
+- give track reverse property, switched gate activation direction and gate order.
