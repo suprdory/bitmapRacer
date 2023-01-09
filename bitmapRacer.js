@@ -964,7 +964,15 @@ class HiScores {
     }
     newLap(t) {
         this.last = t;
+        if (t < this.times[0] || this.times[0] == 0) {
+            flash.flash("Best Lap!")
+        }
+
         if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
+            if (t > this.times[0] & this.times[0] != 0) {
+                flash.flash("Good Lap")
+            }
+            
             this.times[this.n - 1] = t;
             this.times.sort(function (a, b) {
                 if (a == 0 & b != 0) {
