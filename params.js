@@ -59,7 +59,7 @@ export let p = {
         "HUDforceScl": .8,
     },
     "version": {
-        "n": "b1",
+        "n": "b2",
     },
     "run": {
         "dt": 0.2,
