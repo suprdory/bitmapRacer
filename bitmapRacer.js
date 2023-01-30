@@ -680,28 +680,28 @@ class InputState {
     }
     set(event) {
         // console.log(event)
-        if (event['type'] == "keydown" & event['key'] == "ArrowUp") {
+        if (event['type'] == "keydown" & (event['key'] == "ArrowUp" || event['key'] == "w")) {
             this.up = true;
         }
-        if (event['type'] == "keyup" & event['key'] == "ArrowUp") {
+        if (event['type'] == "keyup" & (event['key'] == "ArrowUp" || event['key'] == "w")) {
             this.up = false;
         }
-        if (event['type'] == "keydown" & event['key'] == "ArrowDown") {
+        if (event['type'] == "keydown" & (event['key'] == "ArrowDown" || event['key'] == "s")) {
             this.down = true;
         }
-        if (event['type'] == "keyup" & event['key'] == "ArrowDown") {
+        if (event['type'] == "keyup" & (event['key'] == "ArrowDown" || event['key'] == "s")) {
             this.down = false;
         }
-        if (event['type'] == "keydown" & event['key'] == "ArrowLeft") {
+        if (event['type'] == "keydown" & (event['key'] == "ArrowLeft" || event['key'] == "a")) {
             this.left = true;
         }
-        if (event['type'] == "keyup" & event['key'] == "ArrowLeft") {
+        if (event['type'] == "keyup" & (event['key'] == "ArrowLeft" || event['key'] == "a")) {
             this.left = false;
         }
-        if (event['type'] == "keydown" & event['key'] == "ArrowRight") {
+        if (event['type'] == "keydown" & (event['key'] == "ArrowRight" || event['key'] == "d")) {
             this.right = true;
         }
-        if (event['type'] == "keyup" & event['key'] == "ArrowRight") {
+        if (event['type'] == "keyup" & (event['key'] == "ArrowRight" || event['key'] == "d")) {
             this.right = false;
         }
         // console.log(this.left, this.right, this.up, this.down);
