@@ -818,7 +818,6 @@ class LapCounter {
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
-        this.xPos = X / 2;
         this.yPos = 0;
         this.fontFamily = fontFamily;
     }
@@ -829,7 +828,7 @@ class LapCounter {
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(formatDurationTenth(this.lapTime), this.xPos, this.yPos * pixRat);
+        ctx.fillText(formatDurationTenth(this.lapTime), X/2, this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
 
@@ -1002,7 +1001,7 @@ class HiScores {
 }
 class HiScoresWeb {
     constructor() {
-        this.x = X;
+    
         this.y = 0;
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
@@ -1056,7 +1055,7 @@ class HiScoresWeb {
                 ctx.fillStyle = "white";
                 // ctx.fillText("Best Laps",this.x,this.y)
                 for (let i = 0; i < this.n; i++) {
-                    ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i].time) + " " + this.times[i].name, this.x, this.y + (i + 0) * this.dy);
+                    ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i].time) + " " + pad(this.times[i].name,3,' '), X, this.y + (i + 0) * this.dy);
                 }
                 // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
             }
@@ -1523,9 +1522,7 @@ let log = console.log;
 // import parameter object
 import { p } from './params.js'
 
-// screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
-resize();
+
 
 let apiURL;
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") {
@@ -1535,6 +1532,9 @@ else {
     apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
 }
 
+// screen set up
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
+resize();
 
 // draw constants
 const fontFamily = 'monospace';
@@ -1558,6 +1558,8 @@ let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 let name = new Name();
 let flash = new Flash();
+
+
 
 //control set up
 // const forceBrake = false;
