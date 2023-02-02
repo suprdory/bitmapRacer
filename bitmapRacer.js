@@ -1492,7 +1492,7 @@ function anim() {
 class Flash {
     constructor() {
         this.x = X / 2;
-        this.y = Y  - isTouch * Y / 3;
+        this.y = Y - isTouch * Y / 3;
         this.displayPeriod = 1500;
         this.message = "Testing"
         this.mTime = Date.now();
