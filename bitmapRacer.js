@@ -187,7 +187,7 @@ class Car {
         this.bodyAspect = p.car.bodyAspect;
         this.m = p.car.mass; // mass
         this.momI = p.car.momIfac * this.m; // moment of inertia
-        this.colour = "red";
+        this.colour = "skyblue";
 
         // mech + kin
         this.x = track.startX; // x pos 
