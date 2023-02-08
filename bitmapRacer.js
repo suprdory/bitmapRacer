@@ -813,6 +813,7 @@ class LapCounter {
         this.intersection = false;
         this.nextCheck = 0;
         this.finalCheck = gates.length;
+        this.nWrongWay = 0;
         this.t0 = Date.now();
         this.lapTime = 0;
         this.bestLap = 0;
@@ -828,7 +829,7 @@ class LapCounter {
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(formatDurationTenth(this.lapTime), X/2, this.yPos * pixRat);
+        ctx.fillText(formatDurationTenth(this.lapTime), X / 2, this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
 
@@ -855,6 +856,10 @@ class LapCounter {
 
             if (this.nextCheck == this.finalCheck) {
                 this.lapComplete()
+            }
+            else {
+                this.lastLap = 0;
+                hiScores.badLap();
             }
             this.reset()
         }
@@ -895,10 +900,15 @@ class LapCounter {
             // log("Gate ", nGate, " crossed.", this.direction);
             if (this.direction) {
                 this.gateCrossed(nGate);
+                this.nWrongWay = 0;
                 // log(nGate)
             }
             else {
-                flash.flash("Wrong way!")
+                this.nWrongWay++;
+                if (this.nWrongWay > 3) {
+                    flash.flash("Wrong way!")
+                    this.nWrongWay = 0;
+                }
             }
             this.intersection = false;
         }
@@ -961,6 +971,9 @@ class HiScores {
         }
 
     }
+    badLap() {
+        this.last = 0;
+    }
     newLap(t) {
         this.last = t;
         if (t < this.times[0] || this.times[0] == 0) {
@@ -971,7 +984,7 @@ class HiScores {
             if (t > this.times[0] & this.times[0] != 0) {
                 flash.flash("Good Lap")
             }
-            
+
             this.times[this.n - 1] = t;
             this.times.sort(function (a, b) {
                 if (a == 0 & b != 0) {
@@ -1001,17 +1014,25 @@ class HiScores {
 }
 class HiScoresWeb {
     constructor() {
-    
+
         this.y = 0;
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.dy = 15 * pixRat;
         this.n = 0;
-        this.nMax = 5
-
+        this.nMax = 5;
         this.times;
+
+
+        this.nMaxLapCounts = 5;
+        this.nLapCounts = 0
+        this.lapCounts = [];
+        this.showLapCounts = true;
+
+
         this.version = p.version.n;
         this.getTimes(this.version);
+        this.getLaps(this.version, name.name);
     }
 
     getTimes(version) {
@@ -1020,8 +1041,18 @@ class HiScoresWeb {
             .then(data => {
                 this.times = data
                 this.n = Math.min(this.nMax, data.length);
-                // log("response:")
-                // log(data)
+                log("response:")
+                log(data)
+            });
+    }
+    getLaps(version, name) {
+        fetch(apiURL + '/get_nlaps?version=' + version + '&name=' + name)
+            .then(response => response.json())
+            .then(data => {
+                this.lapCounts = data
+                this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
+                log("response:")
+                log(data)
 
             });
     }
@@ -1038,6 +1069,8 @@ class HiScoresWeb {
         })
             .then(response => response.json())
             .then(data => {
+                this.getTimes(this.version);
+                this.getLaps(this.version);
                 // console.log(data);
             })
             .catch((error) => {
@@ -1055,16 +1088,35 @@ class HiScoresWeb {
                 ctx.fillStyle = "white";
                 // ctx.fillText("Best Laps",this.x,this.y)
                 for (let i = 0; i < this.n; i++) {
-                    ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i].time) + " " + pad(this.times[i].name,3,' '), X, this.y + (i + 0) * this.dy);
+                    ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i].time) + " " + pad(this.times[i].name, 3, ' '), X, this.y + (i + 0) * this.dy);
                 }
                 // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+            }
+        }
+        if (this.showLapCounts) {
+            if (this.lapCounts.length > 0) {
+                ctx.beginPath();
+                ctx.textAlign = "right";
+                ctx.font = this.fontsize + 'px ' + this.fontFamily;
+                ctx.textBaseline = "top";
+                ctx.fillStyle = "white";
+                for (let i = 0; i < this.nLapCounts; i++) {
+                    ctx.fillText(
+                        // pad((this.lapCounts[i][1]).toString(),5,' ') + " " + // lap count
+                        // (this.lapCounts[i][1]).toString() + " " +
+                        (i + 1).toString() + " " + //position
+                        pad(this.lapCounts[i][2], 3, ' ')+" " +//name
+                        formatDuration(this.lapCounts[i][0])   //best lap time
+
+                        , X, this.y + Y - (this.nMaxLapCounts+2-i) * this.dy); 
+                }
             }
         }
     }
 
     newLap(t) {
         this.postLap(this.version, name.name, t);
-        this.getTimes(this.version);
+        // this.getTimes(this.version);
     }
 }
 class Name {
@@ -1082,6 +1134,7 @@ class Name {
         if (localStorage.name) {
             // log(localStorage.name)
             this.name = localStorage.name
+            // hiScoresWeb.name=this.name;
             this.text = this.name;
         }
         this.hideNameForm()
@@ -1418,6 +1471,7 @@ function submitName() {
         name.name = newName;
         name.text = name.name;
         localStorage.name = name.name;
+        hiScoresWeb.name = name.name;
     }
     name.hideNameForm();
     log('submitting name')
@@ -1553,10 +1607,10 @@ const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 
-
+let name = new Name();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
-let name = new Name();
+
 let flash = new Flash();
 
 
@@ -1580,7 +1634,7 @@ let n = 0;
 let nMax = p.run.nMax;
 anim();
 // flash.flash("v: " + p.version.n)
-flash.flash("v:" + p.version.n+" "+ location.hostname);
+flash.flash("v:" + p.version.n + " " + location.hostname);
 
 
 
