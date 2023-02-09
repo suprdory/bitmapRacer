@@ -20,6 +20,7 @@ export let p = {
         "torqueMax": 50,
         "brakeRate": 10,
         "brakeMax": 100,
+        "colour": 'gold',
     },
     "phys": {
         "CD": 100, // Surface Drag resistance
@@ -59,11 +60,12 @@ export let p = {
         "HUDforceScl": .8,
     },
     "version": {
-        "n": "b6",
+        "n": "phys-clock",
     },
     "run": {
         "dt": 0.2,
         "nMax": 1000000,
+        "fps":60,
     },
 
 }

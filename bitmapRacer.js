@@ -187,7 +187,7 @@ class Car {
         this.bodyAspect = p.car.bodyAspect;
         this.m = p.car.mass; // mass
         this.momI = p.car.momIfac * this.m; // moment of inertia
-        this.colour = "skyblue";
+        this.colour = p.car.colour;
 
         // mech + kin
         this.x = track.startX; // x pos 
@@ -811,11 +811,15 @@ class LapCounter {
         this.newPoint.x = 0;
         this.newPoint.y = 0;
         this.intersection = false;
+        this.bez=0; // bezier parameter, fraction through last frame when gate crossing occurs
         this.nextCheck = 0;
         this.finalCheck = gates.length;
         this.nWrongWay = 0;
         this.t0 = Date.now();
-        this.lapTime = 0;
+        this.n0 = 0;
+        // this.lapTime = 0;
+        this.lapTimePh = 0;
+        this.completeLapTimePh=0;
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
@@ -829,7 +833,8 @@ class LapCounter {
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(formatDurationTenth(this.lapTime), X / 2, this.yPos * pixRat);
+        ctx.fillText(formatDurationTenth(this.lapTimePh), X / 2, this.yPos * pixRat);
+        // ctx.fillText(formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
 
@@ -838,13 +843,14 @@ class LapCounter {
     lapComplete() {
         log('Complete')
         // this.lapTimes.push(this.lapTime)
-        this.lastLap = this.lapTime;
-        if ((this.lapTime < this.bestLap) || this.bestLap == 0) {
+        this.completeLapTimePh = Math.round((n-(1-this.bez) - this.n0) * 1000 / p.run.fps);
+        this.lastLap = this.completeLapTimePh;
+        if ((this.lastLap < this.bestLap) || this.bestLap == 0) {
             this.bestLap = this.lapTime;
         }
-        hiScores.newLap(this.lapTime);
+        hiScores.newLap(this.lastLap);
         if (name.name) {
-            hiScoresWeb.newLap(this.lapTime);
+            hiScoresWeb.newLap(this.lastLap);
         }
         else {
             flash.flash("Please enter name to submit lap times");
@@ -872,8 +878,13 @@ class LapCounter {
     }
     reset() {
         this.t0 = Date.now();
-        this.lapTime = 0
+        this.n0 = n - (1-this.bez);
+        // this.lapTime = 0
         this.nextCheck = 1;
+    }
+    updateLapTime() {
+        // this.lapTime = Date.now() - this.t0;
+        this.lapTimePh = (n - this.n0) * 1000 / p.run.fps;
     }
     checkGates(x, y) {
         //in track pixel coords
@@ -887,7 +898,7 @@ class LapCounter {
         }
         this.oldPoint.x = this.newPoint.x;
         this.oldPoint.y = this.newPoint.y;
-        this.lapTime = Date.now() - this.t0;
+
 
 
     }
@@ -899,7 +910,14 @@ class LapCounter {
             this.direction = this.directionSign * crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
             // log("Gate ", nGate, " crossed.", this.direction);
             if (this.direction) {
+                this.bez = secondBezier(
+                    gate.left.x, gate.left.y, gate.right.x, gate.right.y,
+                    oldPoint.x, oldPoint.y, newPoint.x, newPoint.y
+                )
+                log('bez:', this.bez)
+
                 this.gateCrossed(nGate);
+
                 this.nWrongWay = 0;
                 // log(nGate)
             }
@@ -969,8 +987,9 @@ class HiScores {
         for (let i = 0; i < this.n; i++) {
             ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
-
-    }
+        // ctx.fillText("P " + formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
+        // ctx.fillText("L: " + this.last + " P: " + lapCounter.completeLapTimePh, this.x, this.y + (7 + 1.2) * this.dy);
+    } 
     badLap() {
         this.last = 0;
     }
@@ -1106,7 +1125,7 @@ class HiScoresWeb {
                 ctx.textBaseline = "top";
                 ctx.fillStyle = "white";
                 for (let i = 0; i < this.nLapCounts; i++) {
-                    if (showLapCount==1) {
+                    if (showLapCount == 1) {
                         this.countStr = pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
                     }
                     else {
@@ -1465,6 +1484,9 @@ function intersects(a, b, c, d, p, q, r, s) {
         return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
     }
 };
+function secondBezier(x1, y1, x2, y2, x3, y3, x4, y4) {
+    return ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+};
 function dotProduct(a, b, c, d) {
     return a * c + b * d;
 };
@@ -1530,6 +1552,7 @@ function anim() {
     track.drawGates(ctx, xc, yc);
     // track.drawAllGates(ctx, xc, yc);
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
+    lapCounter.updateLapTime();
     lapCounter.draw(ctx);
     car.draw(ctx, xc, yc);
 
