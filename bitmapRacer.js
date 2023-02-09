@@ -1088,7 +1088,11 @@ class HiScoresWeb {
                 ctx.fillStyle = "white";
                 // ctx.fillText("Best Laps",this.x,this.y)
                 for (let i = 0; i < this.n; i++) {
-                    ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i].time) + " " + pad(this.times[i].name, 3, ' '), X, this.y + (i + 0) * this.dy);
+                    ctx.fillText(
+                        (i + 1).toString() + " " +
+                        formatDuration(this.times[i].time) + " " +
+                        pad(this.times[i].name, 3, ' ')
+                        , X, this.y + (i + 0) * this.dy);
                 }
                 // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
             }
@@ -1105,10 +1109,10 @@ class HiScoresWeb {
                         // pad((this.lapCounts[i][1]).toString(),5,' ') + " " + // lap count
                         // (this.lapCounts[i][1]).toString() + " " +
                         (i + 1).toString() + " " + //position
-                        pad(this.lapCounts[i][2], 3, ' ')+" " +//name
+                        pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                         formatDuration(this.lapCounts[i][0])   //best lap time
 
-                        , X, this.y + Y - (this.nMaxLapCounts+2-i) * this.dy); 
+                        , X, this.y + Y-isTouch * Y / 3 - (this.nMaxLapCounts + 2 - i) * this.dy);
                 }
             }
         }
