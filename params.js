@@ -16,9 +16,9 @@ export let p = {
         "steeringCentreRate": 1,
         "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
         "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-        "torqueRate": 2,
+        "torqueRate": 4,
         "torqueMax": 50,
-        "brakeRate": 10,
+        "brakeRate": 20,
         "brakeMax": 100,
         "colour": 'gold',
     },

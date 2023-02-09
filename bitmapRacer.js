@@ -354,17 +354,17 @@ class Car {
             this.wheels[3].torque = Math.min(this.torqueMax * (this.fade), this.wheels[3].torque + this.torqueRate * dt);
         }
         else {
-            this.wheels[0].torque = 0;
-            this.wheels[1].torque = 0;
-            this.wheels[2].torque = 0;
-            this.wheels[3].torque = 0;
+            this.wheels[0].torque = Math.max(0, this.wheels[0].torque - this.torqueRate * dt);
+            this.wheels[1].torque = Math.max(0, this.wheels[1].torque - this.torqueRate * dt);
+            this.wheels[2].torque = Math.max(0, this.wheels[2].torque - this.torqueRate * dt);
+            this.wheels[3].torque = Math.max(0, this.wheels[3].torque - this.torqueRate * dt);
 
         }
         if (inputState.down) {
-            this.wheels[0].torque = 0;
-            this.wheels[1].torque = 0;
-            this.wheels[2].torque = 0;
-            this.wheels[3].torque = 0;
+            // this.wheels[0].torque = 0;
+            // this.wheels[1].torque = 0;
+            // this.wheels[2].torque = 0;
+            // this.wheels[3].torque = 0;
             // 4 wheel braking
             this.wheels[0].brake = Math.min(this.brakeMax, this.wheels[0].brake + this.brakeRate * dt);
             this.wheels[1].brake = Math.min(this.brakeMax, this.wheels[1].brake + this.brakeRate * dt);
@@ -372,10 +372,10 @@ class Car {
             this.wheels[3].brake = Math.min(this.brakeMax, this.wheels[3].brake + this.brakeRate * dt);
         }
         else {
-            this.wheels[0].brake = 0;
-            this.wheels[1].brake = 0;
-            this.wheels[2].brake = 0;
-            this.wheels[3].brake = 0;
+            this.wheels[0].brake = Math.max(0, this.wheels[0].brake - this.brakeRate * dt);
+            this.wheels[1].brake = Math.max(0, this.wheels[1].brake - this.brakeRate * dt);;
+            this.wheels[2].brake = Math.max(0, this.wheels[2].brake - this.brakeRate * dt);;
+            this.wheels[3].brake = Math.max(0, this.wheels[3].brake - this.brakeRate * dt);;
         }
     }
     mech2() {
@@ -918,7 +918,7 @@ class LapCounter {
                     gate.left.x, gate.left.y, gate.right.x, gate.right.y,
                     oldPoint.x, oldPoint.y, newPoint.x, newPoint.y
                 )
-                log('bez:', this.bez)
+                // log('bez:', this.bez)
 
                 this.gateCrossed(nGate);
 
