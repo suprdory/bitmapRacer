@@ -231,6 +231,9 @@ class Car {
 
         this.steeringMax = 0; // can vary with speed.
 
+        this.maxUth=(2*this.torqueMax/p.phys.CA)**0.5 // approx theroretical max speed
+        log('max speed:',this.maxUth)
+
 
         this.rotMat = calcRotMat(this.theta);
 
@@ -286,7 +289,8 @@ class Car {
     drawHUD(ctx) {
         let HUDscl = p.draw.HUDscl * pixRat;
         let HUDforceScl = p.draw.HUDforceScl * pixRat;
-        let HUDx = 50 * pixRat;
+        // let HUDx = 50 * pixRat;
+        let HUDx = X / 2;
         // log(yOff)
         let HUDy = Y - (50) * pixRat - isTouch * (Y / 3);
         let x = this.coordMatHUD;
@@ -811,7 +815,7 @@ class LapCounter {
         this.newPoint.x = 0;
         this.newPoint.y = 0;
         this.intersection = false;
-        this.bez=0; // bezier parameter, fraction through last frame when gate crossing occurs
+        this.bez = 0; // bezier parameter, fraction through last frame when gate crossing occurs
         this.nextCheck = 0;
         this.finalCheck = gates.length;
         this.nWrongWay = 0;
@@ -819,7 +823,7 @@ class LapCounter {
         this.n0 = 0;
         // this.lapTime = 0;
         this.lapTimePh = 0;
-        this.completeLapTimePh=0;
+        this.completeLapTimePh = 0;
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
@@ -843,7 +847,7 @@ class LapCounter {
     lapComplete() {
         log('Complete')
         // this.lapTimes.push(this.lapTime)
-        this.completeLapTimePh = Math.round((n-(1-this.bez) - this.n0) * 1000 / p.run.fps);
+        this.completeLapTimePh = Math.round((n - (1 - this.bez) - this.n0) * 1000 / p.run.fps);
         this.lastLap = this.completeLapTimePh;
         if ((this.lastLap < this.bestLap) || this.bestLap == 0) {
             this.bestLap = this.lapTime;
@@ -878,7 +882,7 @@ class LapCounter {
     }
     reset() {
         this.t0 = Date.now();
-        this.n0 = n - (1-this.bez);
+        this.n0 = n - (1 - this.bez);
         // this.lapTime = 0
         this.nextCheck = 1;
     }
@@ -989,7 +993,7 @@ class HiScores {
         }
         // ctx.fillText("P " + formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
         // ctx.fillText("L: " + this.last + " P: " + lapCounter.completeLapTimePh, this.x, this.y + (7 + 1.2) * this.dy);
-    } 
+    }
     badLap() {
         this.last = 0;
     }
@@ -1295,11 +1299,11 @@ function showImage(fileReader) {
 }
 function drawHUD() {
     let hudX = 10;
-    let hudY = Y - 160;
-    let barHeight = 50;
-    let barWidthSpace = 5;
-    let barWidth = 20;
-    ctx.lineWidth = baseLW;
+    let hudY = 10 + isTouch * Y / 3;
+    let barHeight = 50 * pixRat;
+    let barWidthSpace = 5 * pixRat;
+    let barWidth = 20 * pixRat;
+    ctx.lineWidth = baseLW * pixRat;
     ctx.strokeStyle = "green";
     ctx.fillStyle = "green";
     ctx.beginPath();
@@ -1327,7 +1331,7 @@ function drawHUD() {
     ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / 10 * barHeight);
+    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / car.maxUth * barHeight);
     ctx.fill();
 
     ctx.beginPath();
@@ -1342,24 +1346,24 @@ function drawHUD() {
     ctx.fill();
 
 
-    let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
-    let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
-    for (let i = 0; i < 4; i++) {
-        ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
-        ctx.beginPath();
-        ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
-        ctx.fill();
-        ctx.strokeStyle = "white";
-        ctx.beginPath();
-        ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
-        ctx.stroke();
+    // let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
+    // let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
+    // for (let i = 0; i < 4; i++) {
+    //     ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
+    //     ctx.beginPath();
+    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
+    //     ctx.fill();
+    //     ctx.strokeStyle = "white";
+    //     ctx.beginPath();
+    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
+    //     ctx.stroke();
 
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center"
-        ctx.textBaseline = "middle"
-        ctx.font = "15px " + fontFamily;
-        ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
-    }
+    //     ctx.fillStyle = "white";
+    //     ctx.textAlign = "center"
+    //     ctx.textBaseline = "middle"
+    //     ctx.font = "15px " + fontFamily;
+    //     ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
+    // }
 
 
 
@@ -1574,6 +1578,7 @@ function anim() {
     name.draw(ctx);
     // drawInfo(ctx);
     flash.draw(ctx);
+    drawHUD();
 }
 
 class Flash {
@@ -1608,7 +1613,7 @@ let log = console.log;
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const showLapCount = urlParams.get('nLaps');
-log(showLapCount)
+// log(showLapCount)
 
 
 // import parameter object
