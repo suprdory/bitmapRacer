@@ -1028,6 +1028,7 @@ class HiScoresWeb {
         this.nLapCounts = 0
         this.lapCounts = [];
         this.showLapCounts = true;
+        this.countStr = '';
 
 
         this.version = p.version.n;
@@ -1041,8 +1042,8 @@ class HiScoresWeb {
             .then(data => {
                 this.times = data
                 this.n = Math.min(this.nMax, data.length);
-                log("response:")
-                log(data)
+                // log("response:")
+                // log(data)
             });
     }
     getLaps(version, name) {
@@ -1051,8 +1052,8 @@ class HiScoresWeb {
             .then(data => {
                 this.lapCounts = data
                 this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-                log("response:")
-                log(data)
+                // log("response:")
+                // log(data)
 
             });
     }
@@ -1061,7 +1062,7 @@ class HiScoresWeb {
         formData.append('name', name);
         formData.append('version', version);
         formData.append('time', time);
-        console.log(formData)
+        // log(formData)
 
         fetch(apiURL + '/post_lap', {
             method: 'POST',
@@ -1105,14 +1106,19 @@ class HiScoresWeb {
                 ctx.textBaseline = "top";
                 ctx.fillStyle = "white";
                 for (let i = 0; i < this.nLapCounts; i++) {
+                    if (showLapCount==1) {
+                        this.countStr = pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
+                    }
+                    else {
+                        this.countStr = '';
+                    }
+
                     ctx.fillText(
-                        // pad((this.lapCounts[i][1]).toString(),5,' ') + " " + // lap count
-                        // (this.lapCounts[i][1]).toString() + " " +
+                        this.countStr + " " + // nLaps
                         (i + 1).toString() + " " + //position
                         pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                         formatDuration(this.lapCounts[i][0])   //best lap time
-
-                        , X, this.y + Y-isTouch * Y / 3 - (this.nMaxLapCounts + 2 - i) * this.dy);
+                        , X, this.y + Y - isTouch * Y / 3 - (this.nMaxLapCounts + 2 - i) * this.dy);
                 }
             }
         }
@@ -1573,9 +1579,14 @@ class Flash {
         }
     }
 }
-
-
 let log = console.log;
+
+
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const showLapCount = urlParams.get('nLaps');
+log(showLapCount)
+
 
 // import parameter object
 import { p } from './params.js'
@@ -1639,8 +1650,6 @@ let nMax = p.run.nMax;
 anim();
 // flash.flash("v: " + p.version.n)
 flash.flash("v:" + p.version.n + " " + location.hostname);
-
-
 
 
 // hiScoresWeb.postLap('0.1', 'NJS', 1001)
