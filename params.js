@@ -60,7 +60,7 @@ export let p = {
         "HUDforceScl": .8,
     },
     "version": {
-        "n": "phys-clock",
+        "n": "sesh 01",
     },
     "run": {
         "dt": 0.2,

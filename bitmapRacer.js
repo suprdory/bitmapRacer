@@ -949,6 +949,9 @@ class HiScores {
         this.versionTimesList;
         this.times;
         this.version = p.version.n;
+        this.nLaps=0;
+        this.nQual=10;
+        this.qText='';
         if (localStorage.getItem('versionTimes')) {
             // log('localStorage contains versionTimes')
             this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
@@ -957,6 +960,7 @@ class HiScores {
                 // log('correct version loaded')
                 // log(versionTimes)
                 this.times = versionTimes[0].times;
+                this.nLaps = versionTimes[0].nLaps;
             }
             else {
                 // log('no correct version, created locally')
@@ -991,6 +995,14 @@ class HiScores {
         for (let i = 0; i < this.n; i++) {
             ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
+        if (this.nLaps>this.nQual){
+            this.qText='Qualified';
+        }
+        else{
+            this.qText='Laps to go: ' +(this.nQual-this.nLaps);
+
+        }
+        ctx.fillText(this.qText, this.x, this.y + (5 + 1.4) * this.dy);
         // ctx.fillText("P " + formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
         // ctx.fillText("L: " + this.last + " P: " + lapCounter.completeLapTimePh, this.x, this.y + (7 + 1.2) * this.dy);
     }
@@ -998,15 +1010,19 @@ class HiScores {
         this.last = 0;
     }
     newLap(t) {
+        this.nLaps++;
         this.last = t;
-        if (t < this.times[0] || this.times[0] == 0) {
+        if (this.times[0]==0){
+            flash.flash("First Lap")
+        }
+        else if (t < this.times[0]){
             flash.flash("Best Lap!")
+        }
+        else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
+            flash.flash("Good Lap")
         }
 
         if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
-            if (t > this.times[0] & this.times[0] != 0) {
-                flash.flash("Good Lap")
-            }
 
             this.times[this.n - 1] = t;
             this.times.sort(function (a, b) {
@@ -1030,8 +1046,9 @@ class HiScores {
                 return obj.version !== this.version;
             });
             //add currect version
-            newVersionTimes.push({ 'version': this.version, 'times': this.times })
+            newVersionTimes.push({ 'version': this.version, 'times': this.times,'nLaps':this.nLaps })
             localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+
         }
     }
 }
@@ -1141,7 +1158,7 @@ class HiScoresWeb {
                         (i + 1).toString() + " " + //position
                         pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                         formatDuration(this.lapCounts[i][0])   //best lap time
-                        , X, this.y + Y - isTouch * Y / 3 - (this.nMaxLapCounts + 2 - i) * this.dy);
+                        , X, this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy);
                 }
             }
         }
@@ -1584,7 +1601,8 @@ function anim() {
 class Flash {
     constructor() {
         this.x = X / 2;
-        this.y = Y - isTouch * Y / 3;
+        // this.y = Y - isTouch * Y / 3;
+        this.y = 15 * pixRat*2.1
         this.displayPeriod = 1500;
         this.message = "Testing"
         this.mTime = Date.now();
