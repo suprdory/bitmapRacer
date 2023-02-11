@@ -6,7 +6,7 @@ export let p = {
         "height": 0.75,
         "wheelWidth": 0.4,
         "wheelAspect": 2,
-        "oversize": 0.2,
+        "oversize": 0.15,
         "bodyAspect": 0.25,
         "mass": 200,
         "momIfac": 5, // moment of intertia over mass

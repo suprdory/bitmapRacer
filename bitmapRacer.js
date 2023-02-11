@@ -231,20 +231,45 @@ class Car {
 
         this.steeringMax = 0; // can vary with speed.
 
-        this.maxUth=(2*this.torqueMax/p.phys.CA)**0.5 // approx theroretical max speed
-        log('max speed:',this.maxUth)
+        this.maxUth = (2 * this.torqueMax / p.phys.CA) ** 0.5 // approx theroretical max speed
+        log('max speed:', this.maxUth)
 
 
         this.rotMat = calcRotMat(this.theta);
 
-        let xl = (-this.w / 2 * (1 + this.oversize));
-        let xr = (+this.w / 2 * (1 + this.oversize));
-        let yf = (this.frontLength + this.l / 2 * (this.oversize + this.bodyAspect));
-        let yr = (-this.rearLength - this.l / 2 * (this.oversize + this.bodyAspect));
+        // let xl = (-this.w / 2 * (1 + this.oversize));
+        // let xr = (+this.w / 2 * (1 + this.oversize));
+        // let yf = (this.frontLength + this.l / 2 * (this.oversize + this.bodyAspect));
+        // let yr = (-this.rearLength - this.l / 2 * (this.oversize + this.bodyAspect));
+
+        // corners in normalized units relative to centre line and rear wheel
+        let xl = (-1 / 2 * (1 + this.oversize));
+        let xr = (+1 / 2 * (1 + this.oversize));
+        let yf = (1 + 1 / 2 * (this.oversize + this.bodyAspect));
+        let yr = (0 - 1 / 2 * (this.oversize + this.bodyAspect));
+
+        // car body coords in normalized units relative to centre line and rear wheel
+        // this.coordsRel = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+        this.coordsRel = [ //main body
+            [0, -0.2], [-.20, -.15], [-0.30, 0], [-0.30, .7], [-0.14, 1.3],
+            [0.14, 1.3], [0.30, .7], [0.30, 0], [.20, -.15],
+        ]
+
+        //unscaled for HUD - coords in metres, relative to CoM
+        this.coordMatHUD = this.coordsRel.map(x => [x[0] * this.w, x[1] * this.l - this.rearLength])
+        // this.coordMatHUD = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
         //scaled for drawing on track
-        this.coordMat = [[PPM * xl, PPM * yr], [PPM * xl, PPM * yf], [0, PPM * yf * 1.1], [PPM * xr, PPM * yf], [PPM * xr, PPM * yr]];
-        //unscaled for HUD
-        this.coordMatHUD = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+        this.coordMat = this.coordMatHUD.map(x => x.map(x => x * PPM))
+
+        // cockpit
+        this.coordsRel2 = [[0, .15], [-.1, .17], [-.2, .25], [-.2, .5],
+        [.2, .5], [.2, .25], [.1, .17],
+        ]
+        this.coordMat2 = this.coordsRel2.map(x => [PPM*x[0] * this.w, PPM*( x[1] * this.l - this.rearLength)])
+
+        //axels
+        this.coordsRel3 = [[-.5, 0], [0.5, 0], [], [-.5, 1], [0.5, 1]]
+        this.coordMat3 = this.coordsRel3.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         this.wheels = [
             new Wheel(-this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
@@ -265,10 +290,25 @@ class Car {
         })
     }
     draw(ctx, xc, yc) {
+        // let x = this.coordMat;
+        let x = MatrixProd(this.coordMat3, this.rotMat);
+        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
+        ctx.beginPath();
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = this.colour;
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < x.length; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        ctx.stroke();
+        // ctx.fill();
 
-        let x = this.coordMat;
-        x = MatrixProd(x, this.rotMat);
+        // let x = this.coordMat;
+        x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
@@ -283,6 +323,23 @@ class Car {
         ctx.lineTo(x[0][0], x[0][1]);
         // ctx.stroke();
         ctx.fill();
+
+        x = MatrixProd(this.coordMat2, this.rotMat);
+        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+
+        ctx.beginPath();
+        ctx.strokeStyle = this.colour;
+        ctx.fillStyle = 'black';
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < x.length; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        // ctx.stroke();
+        ctx.fill();
+
         this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
 
     }
@@ -949,9 +1006,9 @@ class HiScores {
         this.versionTimesList;
         this.times;
         this.version = p.version.n;
-        this.nLaps=0;
-        this.nQual=10;
-        this.qText='';
+        this.nLaps = 0;
+        this.nQual = 10;
+        this.qText = '';
         if (localStorage.getItem('versionTimes')) {
             // log('localStorage contains versionTimes')
             this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
@@ -995,11 +1052,11 @@ class HiScores {
         for (let i = 0; i < this.n; i++) {
             ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
-        if (this.nLaps>this.nQual){
-            this.qText='Qualified';
+        if (this.nLaps > this.nQual) {
+            this.qText = 'Qualified';
         }
-        else{
-            this.qText='Laps to go: ' +(this.nQual-this.nLaps);
+        else {
+            this.qText = 'Laps to go: ' + (this.nQual - this.nLaps);
 
         }
         ctx.fillText(this.qText, this.x, this.y + (5 + 1.4) * this.dy);
@@ -1012,10 +1069,10 @@ class HiScores {
     newLap(t) {
         this.nLaps++;
         this.last = t;
-        if (this.times[0]==0){
+        if (this.times[0] == 0) {
             flash.flash("First Lap")
         }
-        else if (t < this.times[0]){
+        else if (t < this.times[0]) {
             flash.flash("Best Lap!")
         }
         else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
@@ -1046,7 +1103,7 @@ class HiScores {
                 return obj.version !== this.version;
             });
             //add currect version
-            newVersionTimes.push({ 'version': this.version, 'times': this.times,'nLaps':this.nLaps })
+            newVersionTimes.push({ 'version': this.version, 'times': this.times, 'nLaps': this.nLaps })
             localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
 
         }
@@ -1602,7 +1659,7 @@ class Flash {
     constructor() {
         this.x = X / 2;
         // this.y = Y - isTouch * Y / 3;
-        this.y = 15 * pixRat*2.1
+        this.y = 15 * pixRat * 2.1
         this.displayPeriod = 1500;
         this.message = "Testing"
         this.mTime = Date.now();
