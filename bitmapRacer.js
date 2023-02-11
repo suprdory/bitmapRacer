@@ -1626,6 +1626,13 @@ function anim() {
 
     // clear screen
     ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
+    
+    // flat background for icon making
+    // ctx.beginPath()
+    // ctx.fillStyle='grey'
+    // ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
+    // ctx.fill()
+
     ctx.drawImage(track.canvasScl, xc, yc);
     track.drawGates(ctx, xc, yc);
     // track.drawAllGates(ctx, xc, yc);
