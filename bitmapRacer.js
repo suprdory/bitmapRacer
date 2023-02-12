@@ -1830,7 +1830,7 @@ class SessionLogger {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
-        this.nLaps2Qualify = 1;
+        this.nLaps2Qualify = 10;
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + 0 //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
