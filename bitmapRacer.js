@@ -33,7 +33,7 @@ class Track {
         let xw = Math.round(x * PPM / this.trackScl);
         let yw = Math.round(y * PPM / this.trackScl);
         if (xw < 0 | xw > (this.Xi - 1) | yw < 0 | yw > (this.Yi - 1)) {
-            console.log('OOB')
+            // console.log('OOB')
             return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
         }
         else {
@@ -531,7 +531,7 @@ class Car {
             this.n.Fres.lat += wh.n.Fres.lat
 
             this.n.Mres += wh.n.Mres
-            console.log()
+            // console.log()
         }
 
         this.Fxy = MatrixProd([[this.n.Fres.lat, this.n.Fres.lon]], calcRotMat(this.theta))[0]
@@ -902,7 +902,7 @@ class LapCounter {
     }
 
     lapComplete() {
-        log('Complete')
+        // log('Complete')
         // this.lapTimes.push(this.lapTime)
         this.completeLapTimePh = Math.round((n - (1 - this.bez) - this.n0) * 1000 / p.run.fps);
         this.lastLap = this.completeLapTimePh;
@@ -1763,7 +1763,7 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 1;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + 49
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24)+0 //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
@@ -1775,26 +1775,26 @@ class SessionLogger {
 
         let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
         this.timeTillNextString = secsToString(timeTillNext);
-        console.log("current sesh:", this.currentSesh, this.timeTillNextString);
+        // console.log("current sesh:", this.currentSesh, this.timeTillNextString);
         this.yesterStreak = this.getLocalStreak(this.yesterVersion);
         this.yesterQual = this.getLocalQual(this.yesterVersion);
         // streak coming into current session, 0 if no qual yesterday
         this.inStreak = this.yesterQual ? this.yesterStreak : 0;
-        // out streak, 0 unless qual in which case this.inStreak+1
+        // out streak, 0 unless qual in which case this.inStreak+1 - saved to localStorage versionTimes when updated
         this.outStreak = this.qualified ? this.inStreak + 1 : 0
         this.setLocalStreak(this.version, this.currentStreak);
-        log("yesterstreak:", this.yesterStreak,
-            "yesterqual:", this.yesterQual,
-            "current streak:", this.outStreak,);
+        // log("yesterstreak:", this.yesterStreak,
+        //     "yesterqual:", this.yesterQual,
+        //     "current streak:", this.outStreak,);
     }
 
     setLocalQual(version, stat) {
         if (localStorage.getItem('versionTimes')) {
-            log("Setting local qual status")
+            // log("Setting local qual status")
             // log('localStorage contains versionTimes')
             let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
 
-            log(versionTimesList)
+            // log(versionTimesList)
             let newVersionTimes = versionTimesList.filter((obj) => {
                 // log(obj,this)
                 return obj.version !== version;
@@ -1802,14 +1802,14 @@ class SessionLogger {
 
             let versionTimes = versionTimesList.filter(obj => { return obj.version == version })
             if (versionTimes.length > 0) {
-                log('correct version loaded')
+                // log('correct version loaded')
                 versionTimes[0].qualified = stat;
                 newVersionTimes.push(versionTimes[0]);
-                log("q updated:", newVersionTimes)
+                // log("q updated:", newVersionTimes)
                 localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
-                log("q saved:", localStorage.versionTimes)
+                // log("q saved:", localStorage.versionTimes)
             }
-            log(newVersionTimes)
+            // log(newVersionTimes)
         }
     }
     setLocalStreak(version, streak) {
@@ -1912,14 +1912,14 @@ class SessionLogger {
             this.setLocalQual(this.version, this.qualified);
             this.setLocalStreak(this.version, this.outStreak);
         }
-        log("qtest: yStreak", this.yesterStreak, "outStreak:", this.outStreak, "cQual:", this.qualified)
+        // log("qtest: yStreak", this.yesterStreak, "outStreak:", this.outStreak, "cQual:", this.qualified)
     }
     updateRank() {
         fetch(apiURL + '/get_rank?version=' + this.version + '&time=' + this.currentBestLap)
             .then(response => response.json())
             .then(data => {
                 this.currentRank = data
-                log('current rank:' + data)
+                // log('current rank:' + data)
             });
     }
     updateYesterRank() {
@@ -1943,12 +1943,12 @@ class SessionLogger {
             this.yesterBestLap = 0;
         }
 
-        log("yesterlog", this.yesterVersion, this.yesterBestLap, this.yesterQual)
+        // log("yesterlog", this.yesterVersion, this.yesterBestLap, this.yesterQual)
         fetch(apiURL + '/get_rank?version=' + this.yesterVersion + '&time=' + this.yesterBestLap)
             .then(response => response.json())
             .then(data => {
                 this.yesterRank = data
-                log('yester rank:' + data)
+                // log('yester rank:' + data)
                 this.setLocalRank(this.yesterVersion, data)
             });
     }
@@ -2054,7 +2054,7 @@ anim();
 flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
-log(localStorage.versionTimes)
+// log(localStorage.versionTimes)
 
 // hiScoresWeb.postLap('0.1', 'NJS', 1001)
 // getTimes('vTest')
