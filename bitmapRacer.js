@@ -232,7 +232,7 @@ class Car {
         this.steeringMax = 0; // can vary with speed.
 
         this.maxUth = (2 * this.torqueMax / p.phys.CA) ** 0.5 // approx theroretical max speed
-        log('max speed:', this.maxUth)
+        // log('max speed:', this.maxUth)
 
 
         this.rotMat = calcRotMat(this.theta);
@@ -1019,7 +1019,7 @@ class HiScores {
                 // log(versionTimes)
                 this.times = versionTimes[0].times;
                 this.nLaps = versionTimes[0].nLaps;
-                sessionLogger.currentnLaps = this.nLaps;
+                sessionLogger.setnLaps(this.nLaps);
                 sessionLogger.currentBestLap = this.times[0];
             }
             else {
@@ -1028,8 +1028,15 @@ class HiScores {
                 for (let i = 0; i < this.n; i++) {
                     this.times[i] = 0;
                 }
-                this.versionTimesList.push({ 'version': this.version, 'times': this.times })
-                sessionLogger.currentnLaps = 0;
+                this.versionTimesList.push({
+                    'version': this.version,
+                    'times': this.times,
+                    'nLaps': 0,
+                    'qualified': false,
+                    'streak': 0,
+                    'rank': [0, 0]
+                })
+                // sessionLogger.currentnLaps = 0;
                 // log('no correct version, created in session')
             }
         }
@@ -1039,8 +1046,14 @@ class HiScores {
             for (let i = 0; i < this.n; i++) {
                 this.times[i] = 0;
             }
-            this.versionTimesList = [{ 'version': this.version, 'times': this.times }];
-            sessionLogger.currentnLaps = 0;
+            this.versionTimesList = [{
+                'version': this.version,
+                'times': this.times,
+                'nLaps': 0,
+                'qualified': false,
+                'streak': 0,
+                'rank': [0, 0]
+            }];
         }
         // log(this.times)
     }
@@ -1068,7 +1081,8 @@ class HiScores {
     }
     newLap(t) {
         this.nLaps++;
-        sessionLogger.currentnLaps++;
+        // sessionLogger.currentnLaps++;
+
         this.last = t;
         if (this.times[0] == 0) {
             flash.flash("First Lap")
@@ -1109,10 +1123,18 @@ class HiScores {
                 return obj.version !== this.version;
             });
             //add currect version
-            newVersionTimes.push({ 'version': this.version, 'times': this.times, 'nLaps': this.nLaps })
+            newVersionTimes.push({
+                'version': this.version,
+                'times': this.times,
+                'nLaps': this.nLaps,
+                'qualified': false,
+                'streak': 0,
+                'rank': [0, 0]
+            })
             localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
 
         }
+        sessionLogger.newLap(t);
     }
 }
 class HiScoresWeb {
@@ -1740,24 +1762,158 @@ class SessionLogger {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
-        this.nLaps2Qualify = 10;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24)
+        this.nLaps2Qualify = 1;
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + 49
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
         this.currentBestLap = 0;
-        log(this.version)
+        this.currentnLaps = 0;
+        this.qualified = this.getLocalQual(this.version);
 
         let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
         this.timeTillNextString = secsToString(timeTillNext);
-        console.log(this.currentSesh, this.timeTillNextString);
-        this.streak = 0;
-
-
+        console.log("current sesh:", this.currentSesh, this.timeTillNextString);
+        this.yesterStreak = this.getLocalStreak(this.yesterVersion);
+        this.yesterQual = this.getLocalQual(this.yesterVersion);
+        // streak coming into current session, 0 if no qual yesterday
+        this.inStreak = this.yesterQual ? this.yesterStreak : 0;
+        // out streak, 0 unless qual in which case this.inStreak+1
+        this.outStreak = this.qualified ? this.inStreak + 1 : 0
+        this.setLocalStreak(this.version, this.currentStreak);
+        log("yesterstreak:", this.yesterStreak,
+            "yesterqual:", this.yesterQual,
+            "current streak:", this.outStreak,);
     }
 
+    setLocalQual(version, stat) {
+        if (localStorage.getItem('versionTimes')) {
+            log("Setting local qual status")
+            // log('localStorage contains versionTimes')
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+
+            log(versionTimesList)
+            let newVersionTimes = versionTimesList.filter((obj) => {
+                // log(obj,this)
+                return obj.version !== version;
+            });
+
+            let versionTimes = versionTimesList.filter(obj => { return obj.version == version })
+            if (versionTimes.length > 0) {
+                log('correct version loaded')
+                versionTimes[0].qualified = stat;
+                newVersionTimes.push(versionTimes[0]);
+                log("q updated:", newVersionTimes)
+                localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+                log("q saved:", localStorage.versionTimes)
+            }
+            log(newVersionTimes)
+        }
+    }
+    setLocalStreak(version, streak) {
+        if (localStorage.getItem('versionTimes')) {
+            // log("Setting local qual status")
+            // log('localStorage contains versionTimes')
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+
+            // log(versionTimesList)
+            let newVersionTimes = versionTimesList.filter((obj) => {
+                // log(obj,this)
+                return obj.version !== version;
+            });
+
+            let versionTimes = versionTimesList.filter(obj => { return obj.version == version })
+            if (versionTimes.length > 0) {
+                // log('correct version loaded')
+                versionTimes[0].streak = streak;
+                newVersionTimes.push(versionTimes[0]);
+                // log("q updated:", newVersionTimes)
+                localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+                // log("q saved:", localStorage.versionTimes)
+            }
+            // log(newVersionTimes)
+        }
+    }
+    setLocalRank(version, rank) {
+        if (localStorage.getItem('versionTimes')) {
+            // log("Setting local rank status")
+            // log('localStorage contains versionTimes')
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+
+            // log(versionTimesList)
+            let newVersionTimes = versionTimesList.filter((obj) => {
+                // log(obj,this)
+                return obj.version !== version;
+            });
+
+            let versionTimes = versionTimesList.filter(obj => { return obj.version == version })
+            if (versionTimes.length > 0) {
+                // log('correct version loaded')
+                versionTimes[0].rank = rank;
+                newVersionTimes.push(versionTimes[0]);
+                // log("q updated:", newVersionTimes)
+                localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+                // log("q saved:", localStorage.versionTimes)
+            }
+            // log(newVersionTimes)
+        }
+    }
+    getLocalStreak(version) {
+        // log("getting streak")
+        if (localStorage.getItem('versionTimes')) {
+            // log('localStorage contains versionTimes')
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let versionTimes = versionTimesList.filter(
+                obj => { return obj.version == version })
+            // log(versionTimes)
+            if (versionTimes.length > 0) {
+                // log('correct version loaded')
+                return (versionTimes[0].streak)
+            }
+            else { return 0; }
+        }
+        else { return 0; }
+    }
+    getLocalQual(version) {
+        // log("getting streak")
+        if (localStorage.getItem('versionTimes')) {
+            // log('localStorage contains versionTimes')
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let versionTimes = versionTimesList.filter(
+                obj => { return obj.version == version })
+            // log(versionTimes)
+            if (versionTimes.length > 0) {
+                // log('correct version loaded')
+                return (versionTimes[0].qualified)
+            }
+            else { return 0; }
+        } else { return 0; }
+    }
+    newLap(t) {
+        this.currentnLaps++;
+        if (t < this.currentBestLap) { this.currentBestLap = t }
+        this.qualTest();
+    }
+    setnLaps(n) {
+        this.currentnLaps = n;
+        this.qualTest();
+    }
+    qualTest() {
+        if (this.currentnLaps == this.nLaps2Qualify) {
+            flash.flash("Q-streak extended!");
+            this.qualified = true;
+            this.outStreak = this.inStreak + 1;
+        }
+        if (this.currentnLaps >= this.nLaps2Qualify) {
+            this.qualified = true;
+            this.outStreak = this.inStreak + 1;
+            this.setLocalQual(this.version, this.qualified);
+            this.setLocalStreak(this.version, this.outStreak);
+        }
+        log("qtest: yStreak", this.yesterStreak, "outStreak:", this.outStreak, "cQual:", this.qualified)
+    }
     updateRank() {
         fetch(apiURL + '/get_rank?version=' + this.version + '&time=' + this.currentBestLap)
             .then(response => response.json())
@@ -1766,7 +1922,6 @@ class SessionLogger {
                 log('current rank:' + data)
             });
     }
-
     updateYesterRank() {
         if (localStorage.getItem('versionTimes')) {
             // log('localStorage contains versionTimes')
@@ -1788,15 +1943,15 @@ class SessionLogger {
             this.yesterBestLap = 0;
         }
 
-        log("yesterlog", this.yesterVersion, this.yesterBestLap)
+        log("yesterlog", this.yesterVersion, this.yesterBestLap, this.yesterQual)
         fetch(apiURL + '/get_rank?version=' + this.yesterVersion + '&time=' + this.yesterBestLap)
             .then(response => response.json())
             .then(data => {
                 this.yesterRank = data
                 log('yester rank:' + data)
+                this.setLocalRank(this.yesterVersion, data)
             });
     }
-
     draw(ctx) {
         if (this.currentnLaps >= this.nLaps2Qualify) {
             this.qText = 'Qualified!';
@@ -1810,13 +1965,22 @@ class SessionLogger {
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
         ctx.fillText(this.qText, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize);
-        ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
+        ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
         // ctx.fillText("Streak: " + this.streak + " days", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
-        ctx.fillText("Current Rank " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
+        if (this.currentRank) {
+            ctx.fillText("Current Rank " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
+        }
         if (this.yesterRank) {
-            ctx.fillText("Last Rank " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
+            ctx.fillText("Last Rank " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
 
         }
+        if (this.qualified) {
+            ctx.fillStyle = "white";
+        }
+        else {
+            ctx.fillStyle = "darkRed";
+        }
+        ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
     }
 }
 
@@ -1859,15 +2023,13 @@ const stiffness = p.phys.stiffness; // cornering stiffness
 const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
-
+let flash = new Flash();
 let sessionLogger = new SessionLogger();
 let name = new Name();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
-let flash = new Flash();
-
 
 
 //control set up
@@ -1892,7 +2054,7 @@ anim();
 flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
-
+log(localStorage.versionTimes)
 
 // hiScoresWeb.postLap('0.1', 'NJS', 1001)
 // getTimes('vTest')
@@ -1902,6 +2064,3 @@ flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 // log(t,tloc)
 
 // let date = new Date();
-
-
-
