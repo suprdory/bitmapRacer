@@ -3,9 +3,18 @@ class Track {
 
         this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
+        this.flipX = p.track.flipX;
+        this.flipY = p.track.flipY;
         this.gates = p.track.gates;
-        this.startX = p.track.startX / this.trackPPM;
-        this.startY = p.track.startY / this.trackPPM;;
+        this.reverse=p.track.reverse;
+        if (!this.reverse) {
+            this.startX = this.flipX ? (p.track.x - p.track.startX) / this.trackPPM : p.track.startX / this.trackPPM;
+            this.startY = this.flipY ? (p.track.x - p.track.startY) / this.trackPPM : p.track.startY / this.trackPPM;
+        }
+        else {
+            this.startX = this.flipX ? (p.track.x - p.track.startXRev) / this.trackPPM : p.track.startXRev / this.trackPPM;
+            this.startY = this.flipY ? (p.track.x - p.track.startYRev) / this.trackPPM : p.track.startYRev / this.trackPPM;
+        }
         this.canvas = document.createElement("canvas"); // draw original img here
         this.ctx = this.canvas.getContext("2d", { alpha: false });
         this.canvasScl = document.createElement("canvas"); // draw prescaled track imgh here
@@ -25,6 +34,38 @@ class Track {
         this.img.src = p.track.fname;
         this.Xi = 0; //img dimensions, obtained after load.
         this.Yi = 0;
+        this.flipGates();
+    }
+
+    flipGates() {
+        log(this.gates)
+
+        if (this.flipY) {
+            this.gates = this.gates.map(g => ({
+                'n': g.n,
+                'right': { 'x': g.left.x, 'y': p.track.y - g.left.y },
+                'left': { 'x': g.right.x, 'y': p.track.y - g.right.y }
+            }));
+            log(this.gates);
+        }
+        if (this.flipX) {
+            this.gates = this.gates.map(g => ({
+                'n': g.n,
+                'right': { 'x': p.track.x - g.left.x, 'y': g.left.y },
+                'left': { 'x': p.track.x - g.right.x, 'y': g.right.y }
+            }));
+        }
+
+
+        //     log(this.startY)
+        //     this.startY = (this.Yi-p.track.startY) / this.trackPPM;
+        //     log(this.startY)
+        // }
+        // if (this.flipX) {
+        //     log(this.startX)
+        //     this.startX = (this.Xi - p.track.startX) / this.trackPPM;
+        //     log(this.startX)
+        // }
     }
     get_sfc_params(x, y) {
         // returns drag and mu at x,y (metres)
@@ -40,7 +81,6 @@ class Track {
             return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
         }
     }
-
     image2trackDat() {
         //turn imageData into track variables this.sfc_mu and sfc_drag
 
@@ -133,6 +173,12 @@ class Track {
         this.canvas.width = this.Xi;
 
         // console.log(this.Xi,this.Yi)
+
+        let xFlip = this.flipX ? -1 : 1;
+        let yFlip = this.flipY ? -1 : 1;
+        this.ctx.translate(0 + this.Xi * 1 / 2, 0 + this.Yi * 1 / 2);
+        this.ctx.scale(xFlip, yFlip);
+        this.ctx.translate(-(0 + this.Xi * 1 / 2), -(0 + this.Yi * 1 / 2));
         this.ctx.drawImage(this.img, 0, 0);
         this.imageData = this.ctx.getImageData(0, 0, this.img.width, this.img.height).data;
 
@@ -140,6 +186,11 @@ class Track {
         this.image2trackDat()
         this.canvasScl.height = this.Yi * this.trackScl;
         this.canvasScl.width = this.Xi * this.trackScl;
+
+        this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
+        this.ctxScl.scale(xFlip, yFlip);
+        this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
+
         this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
     }
     drawGates(ctx, xc, yc) {
@@ -191,7 +242,9 @@ class Car {
 
         // mech + kin
         this.x = track.startX; // x pos 
-        this.y = track.startY;; // y pos
+        this.y = track.startY; // y pos
+
+
 
         this.Fxy = [0, 0]; //resultant Force on car as column vector;
         this.ax = 0; // x accel
@@ -202,7 +255,23 @@ class Car {
         this.U = 0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
-        this.theta = p.track.startTheta; // heading angle
+
+
+       
+        if (!track.reverse){
+            this.theta = p.track.startTheta; // heading angle
+        }
+        else{
+            this.theta = p.track.startThetaRev; // heading angle
+        }
+        if (track.flipX) {
+            this.theta = -this.theta;
+        }
+        if (track.flipY){
+            this.theta=Math.PI-this.theta;
+        }
+
+
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
@@ -1763,7 +1832,7 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 1;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24)+0 //it offset for testing session changes
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + 0 //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
