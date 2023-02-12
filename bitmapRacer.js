@@ -6,7 +6,7 @@ class Track {
         this.flipX = p.track.flipX;
         this.flipY = p.track.flipY;
         this.gates = p.track.gates;
-        this.reverse=p.track.reverse;
+        this.reverse = p.track.reverse;
         if (!this.reverse) {
             this.startX = this.flipX ? (p.track.x - p.track.startX) / this.trackPPM : p.track.startX / this.trackPPM;
             this.startY = this.flipY ? (p.track.x - p.track.startY) / this.trackPPM : p.track.startY / this.trackPPM;
@@ -257,18 +257,18 @@ class Car {
         this.headOff = 0; // heading - velocity angle
 
 
-       
-        if (!track.reverse){
+
+        if (!track.reverse) {
             this.theta = p.track.startTheta; // heading angle
         }
-        else{
+        else {
             this.theta = p.track.startThetaRev; // heading angle
         }
         if (track.flipX) {
             this.theta = -this.theta;
         }
-        if (track.flipY){
-            this.theta=Math.PI-this.theta;
+        if (track.flipY) {
+            this.theta = Math.PI - this.theta;
         }
 
 
@@ -2051,16 +2051,76 @@ class SessionLogger {
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
     }
 }
-class Randomizer {
-    constructor(){
-        this.colours=['red','gold','darkgreen','darkred','white','darkgrey','darkblue']
-        this.flips=[false,true]
-        this.scales=[{}]
+function cyrb128(str) {
+    //string to numeric hash for seeding
+    let h1 = 1779033703, h2 = 3144134277,
+        h3 = 1013904242, h4 = 2773480762;
+    for (let i = 0, k; i < str.length; i++) {
+        k = str.charCodeAt(i);
+        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    }
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+}
+function mulberry32(a) {
+    //seeded rng
+    return function () {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
 }
 
-let log = console.log;
+class Randomizer {
+    constructor(seed) {
+        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'darkblue']
+        this.xflips = [false, true]
+        this.yflips = [false, true]
+        this.reverses = [false, true]
+        this.scales = [
+            { ppm: 10, mpp: 0.2 },
+            { ppm: 8, mpp: 0.35 },
+            { ppm: 6, mpp: 0.6 }
+        ]
 
+        this.colour = null;
+        this.xflip = null;
+        this.yflip = null
+        this.scale = null;
+        this.reverse = null;
+        this.seed=seed;
+        this.rand = mulberry32(this.seed);
+    }
+    randomElement(array) {
+        return array[Math.floor(this.rand() * array.length)];
+    }
+
+    gen() {
+        this.scale = this.randomElement(this.scales);
+        this.yflip = this.randomElement(this.yflips);
+        this.xflip = this.randomElement(this.xflips);
+        this.reverse = this.randomElement(this.reverses);
+        this.colour = this.randomElement(this.colours);
+    }
+    apply(p) {
+        p.car.colour = this.colour;
+        p.track.reverse = this.reverse;
+        p.track.flipX = this.xflip;
+        p.track.flipY = this.yflip;
+        p.track.metresPerPix = this.scale.mpp;
+        p.draw.pixPerMetre = this.scale.ppm;
+    }
+
+}
+
+let log = console.log;
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const showLapCount = urlParams.get('nLaps');
@@ -2104,6 +2164,12 @@ let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
+
+// randomize parameters, seeded with daily session name.
+let seed = cyrb128(sessionLogger.version)[2]
+let randomizer = new Randomizer(seed);
+randomizer.gen();
+randomizer.apply(p);
 
 
 //control set up
