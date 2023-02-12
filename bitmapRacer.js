@@ -265,7 +265,7 @@ class Car {
         this.coordsRel2 = [[0, .15], [-.1, .17], [-.2, .25], [-.2, .5],
         [.2, .5], [.2, .25], [.1, .17],
         ]
-        this.coordMat2 = this.coordsRel2.map(x => [PPM*x[0] * this.w, PPM*( x[1] * this.l - this.rearLength)])
+        this.coordMat2 = this.coordsRel2.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         //axels
         this.coordsRel3 = [[-.5, 0], [0.5, 0], [], [-.5, 1], [0.5, 1]]
@@ -1005,7 +1005,8 @@ class HiScores {
         this.last = 0;
         this.versionTimesList;
         this.times;
-        this.version = p.version.n;
+        // this.version = p.version.n;
+        this.version = sessionLogger.version;
         this.nLaps = 0;
         this.nQual = 10;
         this.qText = '';
@@ -1018,6 +1019,8 @@ class HiScores {
                 // log(versionTimes)
                 this.times = versionTimes[0].times;
                 this.nLaps = versionTimes[0].nLaps;
+                sessionLogger.currentnLaps = this.nLaps;
+                sessionLogger.currentBestLap = this.times[0];
             }
             else {
                 // log('no correct version, created locally')
@@ -1026,6 +1029,7 @@ class HiScores {
                     this.times[i] = 0;
                 }
                 this.versionTimesList.push({ 'version': this.version, 'times': this.times })
+                sessionLogger.currentnLaps = 0;
                 // log('no correct version, created in session')
             }
         }
@@ -1036,6 +1040,7 @@ class HiScores {
                 this.times[i] = 0;
             }
             this.versionTimesList = [{ 'version': this.version, 'times': this.times }];
+            sessionLogger.currentnLaps = 0;
         }
         // log(this.times)
     }
@@ -1052,14 +1057,9 @@ class HiScores {
         for (let i = 0; i < this.n; i++) {
             ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
-        if (this.nLaps > this.nQual) {
-            this.qText = 'Qualified';
-        }
-        else {
-            this.qText = 'Laps to go: ' + (this.nQual - this.nLaps);
 
-        }
-        ctx.fillText(this.qText, this.x, this.y + (5 + 1.4) * this.dy);
+
+
         // ctx.fillText("P " + formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
         // ctx.fillText("L: " + this.last + " P: " + lapCounter.completeLapTimePh, this.x, this.y + (7 + 1.2) * this.dy);
     }
@@ -1068,12 +1068,18 @@ class HiScores {
     }
     newLap(t) {
         this.nLaps++;
+        sessionLogger.currentnLaps++;
         this.last = t;
         if (this.times[0] == 0) {
             flash.flash("First Lap")
+
+            sessionLogger.currentBestLap = t;
+            sessionLogger.updateRank();
         }
         else if (t < this.times[0]) {
             flash.flash("Best Lap!")
+            sessionLogger.currentBestLap = t;
+            sessionLogger.updateRank();
         }
         else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
             flash.flash("Good Lap")
@@ -1128,7 +1134,8 @@ class HiScoresWeb {
         this.countStr = '';
 
 
-        this.version = p.version.n;
+        // this.version = p.version.n;
+        this.version = sessionLogger.version;
         this.getTimes(this.version);
         this.getLaps(this.version, name.name);
     }
@@ -1169,6 +1176,7 @@ class HiScoresWeb {
             .then(data => {
                 this.getTimes(this.version);
                 this.getLaps(this.version);
+                sessionLogger.updateRank();
                 // console.log(data);
             })
             .catch((error) => {
@@ -1177,24 +1185,24 @@ class HiScoresWeb {
     }
 
     draw(ctx) {
-        if (this.times) {
-            if (this.times.length > 0) {
-                ctx.beginPath();
-                ctx.textAlign = "right";
-                ctx.font = this.fontsize + 'px ' + this.fontFamily;
-                ctx.textBaseline = "top";
-                ctx.fillStyle = "white";
-                // ctx.fillText("Best Laps",this.x,this.y)
-                for (let i = 0; i < this.n; i++) {
-                    ctx.fillText(
-                        (i + 1).toString() + " " +
-                        formatDuration(this.times[i].time) + " " +
-                        pad(this.times[i].name, 3, ' ')
-                        , X, this.y + (i + 0) * this.dy);
-                }
-                // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
-            }
-        }
+        // if (this.times) {
+        //     if (this.times.length > 0) {
+        //         ctx.beginPath();
+        //         ctx.textAlign = "right";
+        //         ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        //         ctx.textBaseline = "top";
+        //         ctx.fillStyle = "white";
+        //         // ctx.fillText("Best Laps",this.x,this.y)
+        //         for (let i = 0; i < this.n; i++) {
+        //             ctx.fillText(
+        //                 (i + 1).toString() + " " +
+        //                 formatDuration(this.times[i].time) + " " +
+        //                 pad(this.times[i].name, 3, ' ')
+        //                 , X, this.y + (i + 0) * this.dy);
+        //         }
+        //         // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+        //     }
+        // }
         if (this.showLapCounts) {
             if (this.lapCounts.length > 0) {
                 ctx.beginPath();
@@ -1215,7 +1223,10 @@ class HiScoresWeb {
                         (i + 1).toString() + " " + //position
                         pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                         formatDuration(this.lapCounts[i][0])   //best lap time
-                        , X, this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy);
+
+                        , X,
+                        this.y + (i + 0) * this.dy//this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
+                    );
                 }
             }
         }
@@ -1571,6 +1582,40 @@ function dotProduct(a, b, c, d) {
 function crossProduct(a, b, c, d) {
     return a * d - b * c;
 };
+function secsToString(seconds) {
+
+    // var seconds = Math.floor((new Date() - date) / 1000);
+
+    var interval = seconds / 31536000;
+
+    if (interval > 1) {
+        return Math.floor(interval) + " years";
+    }
+    interval = seconds / 2592000;
+    if (interval > 1) {
+        return Math.floor(interval) + " months";
+    }
+    interval = seconds / 86400;
+    if (interval > 1) {
+        return Math.floor(interval) + " days";
+    }
+    interval = seconds / 3600;
+    if (interval > 1.5) {
+        return Math.round(interval) + " hours";
+    }
+    if (interval > 10) {
+        return Math.round(interval) + " hour";
+    }
+    // if (interval > 1) {
+    //     return Math.floor(interval) + " hours " +
+    //         Math.round(60 * (interval - Math.floor(interval))) + " minutes";
+    // }
+    interval = seconds / 60;
+    if (interval > 1) {
+        return Math.floor(interval) + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
+}
 function submitName() {
     let newName = document.getElementById('name').value
 
@@ -1626,7 +1671,7 @@ function anim() {
 
     // clear screen
     ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
-    
+
     // flat background for icon making
     // ctx.beginPath()
     // ctx.fillStyle='grey'
@@ -1653,15 +1698,16 @@ function anim() {
     }
     // drawDebug();
     // drawHUD();
-    car.drawHUD(ctx);
+
+    // car.drawHUD(ctx);
     hiScores.draw(ctx);
     hiScoresWeb.draw(ctx);
+    sessionLogger.draw(ctx);
     name.draw(ctx);
     // drawInfo(ctx);
     flash.draw(ctx);
     drawHUD();
 }
-
 class Flash {
     constructor() {
         this.x = X / 2;
@@ -1689,19 +1735,101 @@ class Flash {
         }
     }
 }
-let log = console.log;
+class SessionLogger {
+    constructor() {
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+        this.qText = '';
+        this.nLaps2Qualify = 10;
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24)
+        this.currentSesh = Math.floor(currentTime); //integer, days since 1970
+        this.yesterSesh = this.currentSesh - 1;
+        this.version = sessionPrefix + '-' + this.currentSesh;
+        this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
+        this.currentRank = 0;
+        this.currentBestLap = 0;
+        log(this.version)
 
+        let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
+        this.timeTillNextString = secsToString(timeTillNext);
+        console.log(this.currentSesh, this.timeTillNextString);
+        this.streak = 0;
+
+
+    }
+
+    updateRank() {
+        fetch(apiURL + '/get_rank?version=' + this.version + '&time=' + this.currentBestLap)
+            .then(response => response.json())
+            .then(data => {
+                this.currentRank = data
+                log('current rank:' + data)
+            });
+    }
+
+    updateYesterRank() {
+        if (localStorage.getItem('versionTimes')) {
+            // log('localStorage contains versionTimes')
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let versionTimes = versionTimesList.filter(obj => { return obj.version == this.yesterVersion })
+            if (versionTimes.length > 0) {
+                // log('correct version loaded')
+                // log(versionTimes)
+                // this.times = versionTimes[0].times;
+                // this.nLaps = versionTimes[0].nLaps;
+                // sessionLogger.currentnLaps = this.nLaps;
+                this.yesterBestLap = versionTimes[0].times[0];
+            }
+            else {
+                this.yesterBestLap = 0;
+            }
+        }
+        else {
+            this.yesterBestLap = 0;
+        }
+
+        log("yesterlog", this.yesterVersion, this.yesterBestLap)
+        fetch(apiURL + '/get_rank?version=' + this.yesterVersion + '&time=' + this.yesterBestLap)
+            .then(response => response.json())
+            .then(data => {
+                this.yesterRank = data
+                log('yester rank:' + data)
+            });
+    }
+
+    draw(ctx) {
+        if (this.currentnLaps >= this.nLaps2Qualify) {
+            this.qText = 'Qualified!';
+        }
+        else {
+            this.qText = 'Laps to go: ' + (this.nLaps2Qualify - this.currentnLaps);
+        }
+        ctx.beginPath();
+        ctx.textAlign = "right";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.qText, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize);
+        ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
+        // ctx.fillText("Streak: " + this.streak + " days", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
+        ctx.fillText("Current Rank " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
+        if (this.yesterRank) {
+            ctx.fillText("Last Rank " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
+
+        }
+    }
+}
+
+
+let log = console.log;
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const showLapCount = urlParams.get('nLaps');
-// log(showLapCount)
-
 
 // import parameter object
 import { p } from './params.js'
-
-
+const sessionPrefix = p.version.n
 
 let apiURL;
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") {
@@ -1732,10 +1860,12 @@ const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 
+let sessionLogger = new SessionLogger();
 let name = new Name();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
-
+sessionLogger.updateRank();
+sessionLogger.updateYesterRank();
 let flash = new Flash();
 
 
@@ -1759,10 +1889,19 @@ let n = 0;
 let nMax = p.run.nMax;
 anim();
 // flash.flash("v: " + p.version.n)
-flash.flash("v:" + p.version.n + " " + location.hostname);
+flash.flash("v:" + sessionLogger.version + " " + location.hostname);
+
+
 
 
 // hiScoresWeb.postLap('0.1', 'NJS', 1001)
 // getTimes('vTest')
-
 // log(name)
+// let t=Date.now()
+// let tloc=t.getTimezoneOffset()
+// log(t,tloc)
+
+// let date = new Date();
+
+
+
