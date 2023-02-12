@@ -1626,7 +1626,6 @@ function addListeners(inputState) {
     addEventListener('keydown', (event) => { inputState.set(event) });
     addEventListener('keyup', (event) => { inputState.set(event) });
 }
-
 function pad(n, width, z) {
     z = z || '0';
     n = n + '';
@@ -1651,8 +1650,8 @@ function formatDurationTenth(duration) {
     // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
     return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
 }
-// returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
 function intersects(a, b, c, d, p, q, r, s) {
+    // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
     var det, gamma, lambda;
     det = (c - a) * (s - q) - (r - p) * (d - b);
     // log(det)
@@ -2052,7 +2051,13 @@ class SessionLogger {
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
     }
 }
-
+class Randomizer {
+    constructor(){
+        this.colours=['red','gold','darkgreen','darkred','white','darkgrey','darkblue']
+        this.flips=[false,true]
+        this.scales=[{}]
+    }
+}
 
 let log = console.log;
 
