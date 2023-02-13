@@ -2144,7 +2144,7 @@ resize();
 // draw constants
 const fontFamily = 'monospace';
 // const fontFamily = 'terminus';
-const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
@@ -2170,7 +2170,7 @@ let seed = cyrb128(sessionLogger.version)[2]
 let randomizer = new Randomizer(seed);
 randomizer.gen();
 randomizer.apply(p);
-
+const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 
 //control set up
 // const forceBrake = false;
