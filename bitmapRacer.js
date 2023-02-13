@@ -1,19 +1,19 @@
 class Track {
     constructor() {
 
-        this.trackPPM = 1 / p.track.metresPerPix; // track image pixels per metre
+        this.trackPPM = 1 / p.trackSetup.metresPerPix; // track image pixels per metre
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
-        this.flipX = p.track.flipX;
-        this.flipY = p.track.flipY;
-        this.gates = p.track.gates;
-        this.reverse = p.track.reverse;
+        this.flipX = p.trackSetup.flipX;
+        this.flipY = p.trackSetup.flipY;
+        this.gates = p.ctrack.gates;
+        this.reverse = p.trackSetup.reverse;
         if (!this.reverse) {
-            this.startX = this.flipX ? (p.track.x - p.track.startX) / this.trackPPM : p.track.startX / this.trackPPM;
-            this.startY = this.flipY ? (p.track.x - p.track.startY) / this.trackPPM : p.track.startY / this.trackPPM;
+            this.startX = this.flipX ? (p.ctrack.x - p.ctrack.startX) / this.trackPPM : p.ctrack.startX / this.trackPPM;
+            this.startY = this.flipY ? (p.ctrack.x - p.ctrack.startY) / this.trackPPM : p.ctrack.startY / this.trackPPM;
         }
         else {
-            this.startX = this.flipX ? (p.track.x - p.track.startXRev) / this.trackPPM : p.track.startXRev / this.trackPPM;
-            this.startY = this.flipY ? (p.track.x - p.track.startYRev) / this.trackPPM : p.track.startYRev / this.trackPPM;
+            this.startX = this.flipX ? (p.ctrack.x - p.ctrack.startXRev) / this.trackPPM : p.ctrack.startXRev / this.trackPPM;
+            this.startY = this.flipY ? (p.ctrack.x - p.ctrack.startYRev) / this.trackPPM : p.ctrack.startYRev / this.trackPPM;
         }
         this.canvas = document.createElement("canvas"); // draw original img here
         this.ctx = this.canvas.getContext("2d", { alpha: false });
@@ -23,7 +23,7 @@ class Track {
         this.imageData; // extracted on img load;
         this.sfc_mu; // derived after img load by image2trackDat();
         this.sfc_drag; // derived after img load by image2trackDat();
-        this.sfcTypes = p.track.sfcTypes;
+        this.sfcTypes = p.ctrack.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
             // console.log("track object img loaded")
@@ -31,7 +31,7 @@ class Track {
             this.trackReady = 1;
             // console.log("track ready", this)
         }
-        this.img.src = p.track.fname;
+        this.img.src = p.ctrack.fname;
         this.Xi = 0; //img dimensions, obtained after load.
         this.Yi = 0;
         this.flipGates();
@@ -43,16 +43,16 @@ class Track {
         if (this.flipY) {
             this.gates = this.gates.map(g => ({
                 'n': g.n,
-                'right': { 'x': g.left.x, 'y': p.track.y - g.left.y },
-                'left': { 'x': g.right.x, 'y': p.track.y - g.right.y }
+                'right': { 'x': g.left.x, 'y': p.ctrack.y - g.left.y },
+                'left': { 'x': g.right.x, 'y': p.ctrack.y - g.right.y }
             }));
             log(this.gates);
         }
         if (this.flipX) {
             this.gates = this.gates.map(g => ({
                 'n': g.n,
-                'right': { 'x': p.track.x - g.left.x, 'y': g.left.y },
-                'left': { 'x': p.track.x - g.right.x, 'y': g.right.y }
+                'right': { 'x': p.ctrack.x - g.left.x, 'y': g.left.y },
+                'left': { 'x': p.ctrack.x - g.right.x, 'y': g.right.y }
             }));
         }
 
@@ -260,10 +260,10 @@ class Car {
 
 
         if (!track.reverse) {
-            this.theta = p.track.startTheta; // heading angle
+            this.theta = p.ctrack.startTheta; // heading angle
         }
         else {
-            this.theta = p.track.startThetaRev; // heading angle
+            this.theta = p.ctrack.startThetaRev; // heading angle
         }
         if (track.flipX) {
             this.theta = -this.theta;
@@ -925,7 +925,7 @@ class TouchButton {
 }
 class LapCounter {
     constructor(gates) {
-        this.reverse = p.track.reverse;
+        this.reverse = p.trackSetup.reverse;
         this.gates = gates;
         if (this.reverse) {
             this.gates.reverse();
@@ -2108,14 +2108,18 @@ class Randomizer {
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
+        this.track = this.randomElement(p.track);
     }
     apply(p) {
+        p.ctrack = this.track;
+
         p.car.colour = this.colour;
-        p.track.reverse = this.reverse;
-        p.track.flipX = this.xflip;
-        p.track.flipY = this.yflip;
-        p.track.metresPerPix = this.scale.mpp;
+        p.trackSetup.reverse = this.reverse;
+        p.trackSetup.flipX = this.xflip;
+        p.trackSetup.flipY = this.yflip;
+        p.trackSetup.metresPerPix = this.scale.mpp;
         p.draw.pixPerMetre = this.scale.ppm;
+        
     }
 
 }
@@ -2172,6 +2176,7 @@ let randomizer = new Randomizer(seed);
 randomizer.gen();
 randomizer.apply(p);
 const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+
 
 //control set up
 // const forceBrake = false;

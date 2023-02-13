@@ -29,38 +29,15 @@ export let p = {
         "F_lat": 1.2, // Max lateral friction multiplier, above 1.0 gives "superweight" force.
         "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
     },
-    "track": {
-        "fname": 'tracks/square_track.png',
-        "x": 1000, // size, helpful for setting params before img loaded
-        "y": 1000,
-        "reverse":false,
+
+    "trackSetup": {
+        "metresPerPix": 0.35,
+        "reverse": false,
         "flipX": false,
         "flipY": false,
-
-        "startTheta": -.10,
-        "startX": 180,
-        "startY": 260,
-
-        "startThetaRev": Math.PI,
-        "startXRev": 180,
-        "startYRev": 720,
-
-
-        "metresPerPix": 0.35,
-        "sfcTypes": {
-            "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-            "tarmac": { "mu": 0.8, "drag": 0.001 },
-            "grass": { "mu": 0.3, "drag": 0.02 },
-            "mud": { "mu": 0.2, "drag": 0.3 },
-            "unknown": { "mu": 0.8, "drag": 0.01 },
-        },
-        "gates": [ // in track pixels
-            { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
-            { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
-            { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
-            { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
-        ]
     },
+
+
     "draw": {
         "pixPerMetre": 8,
         "baseLW": 2,
@@ -76,7 +53,65 @@ export let p = {
     "run": {
         "dt": 0.2,
         "nMax": 1000000,
-        "fps":60,
+        "fps": 60,
     },
 
+    "track": [{
+        "fname": 'tracks/square_track.png',
+        
+        "x": 1000, // size, helpful for setting params before img loaded
+        "y": 1000,
+
+        "startTheta": -.10,
+        "startX": 180,
+        "startY": 260,
+
+        "startThetaRev": Math.PI,
+        "startXRev": 180,
+        "startYRev": 720,
+
+        "sfcTypes": {
+            "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+            "tarmac": { "mu": 0.8, "drag": 0.001 },
+            "grass": { "mu": 0.3, "drag": 0.02 },
+            "mud": { "mu": 0.2, "drag": 0.3 },
+            "unknown": { "mu": 0.8, "drag": 0.01 },
+        },
+        "gates": [ // in track pixels
+            { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
+            { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
+            { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
+            { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
+        ]
+    },
+        {
+            "fname": 'tracks/square_track2.png',
+
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
+
+            "startTheta": -.10,
+            "startX": 180,
+            "startY": 260,
+
+            "startThetaRev": Math.PI,
+            "startXRev": 180,
+            "startYRev": 720,
+
+            "sfcTypes": {
+                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "unknown": { "mu": 0.8, "drag": 0.01 },
+            },
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
+                { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
+                { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
+                { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
+            ]
+        },
+
+],
 }
