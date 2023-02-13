@@ -90,13 +90,13 @@ export let p = {
             "x": 1000, // size, helpful for setting params before img loaded
             "y": 1000,
 
-            "startTheta": -.10,
-            "startX": 180,
-            "startY": 260,
+            "startTheta": 3.3,
+            "startX": 140,
+            "startY": 840,
 
-            "startThetaRev": Math.PI,
+            "startThetaRev":-0.4,
             "startXRev": 180,
-            "startYRev": 720,
+            "startYRev": 200,
 
             "sfcTypes": {
                 "outOfBounds": { "mu": 1.0, "drag": 0.2 },
@@ -106,10 +106,11 @@ export let p = {
                 "unknown": { "mu": 0.8, "drag": 0.01 },
             },
             "gates": [ // in track pixels
-                { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
-                { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
-                { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
-                { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
+                { 'n': 0, 'left': { 'x': 20, 'y': 500 }, 'right': { 'x': 165, 'y': 500 } },
+                { 'n': 1, 'left': { 'x': 580, 'y': 145 }, 'right': { 'x': 459, 'y': 240 } },
+                { 'n': 2, 'left': { 'x': 825, 'y': 252 }, 'right': { 'x': 961, 'y': 237 } },
+                { 'n': 3, 'left': { 'x': 373, 'y': 531 }, 'right': { 'x': 208, 'y': 529 } },
+                { 'n': 4, 'left': { 'x': 952, 'y': 783 }, 'right': { 'x': 774, 'y': 787 } },
             ]
         },
 

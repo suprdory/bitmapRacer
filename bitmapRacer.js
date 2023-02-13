@@ -2080,7 +2080,7 @@ function mulberry32(a) {
 
 class Randomizer {
     constructor(seed) {
-        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'darkblue']
+        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue']
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
@@ -2101,7 +2101,14 @@ class Randomizer {
     randomElement(array) {
         return array[Math.floor(this.rand() * array.length)];
     }
-
+    setDefaults(){
+        this.scale = { ppm: 3, mpp: 0.2 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = true;
+        this.colour = 'red';
+        this.track = p.track[1];
+    }
     gen() {
         this.scale = this.randomElement(this.scales);
         this.yflip = this.randomElement(this.yflips);
@@ -2134,6 +2141,7 @@ import { p } from './params.js'
 const sessionPrefix = p.version.n
 
 let serverOveride=false;
+// serverOveride=true;
 let apiURL;
 if ((location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -2174,6 +2182,7 @@ sessionLogger.updateYesterRank();
 let seed = cyrb128(sessionLogger.version)[2]
 let randomizer = new Randomizer(seed);
 randomizer.gen();
+// randomizer.setDefaults();
 randomizer.apply(p);
 const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 
