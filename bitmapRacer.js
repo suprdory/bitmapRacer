@@ -187,6 +187,7 @@ class Track {
         this.canvasScl.height = this.Yi * this.trackScl;
         this.canvasScl.width = this.Xi * this.trackScl;
 
+        this.ctxScl.imageSmoothingEnabled = false;
         this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
         this.ctxScl.scale(xFlip, yFlip);
         this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
@@ -337,7 +338,7 @@ class Car {
         this.coordMat2 = this.coordsRel2.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         //axels
-        this.coordsRel3 = [[-.5, 0], [0.5, 0], [], [-.5, 1], [0.5, 1]]
+        this.coordsRel3 = [[0,0],[-.5, 0], [0.5, 0],[0,0],[0,1.0], [-.5, 1], [0.5, 1],[0,1.0]]
         this.coordMat3 = this.coordsRel3.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         this.wheels = [
@@ -359,25 +360,25 @@ class Car {
         })
     }
     draw(ctx, xc, yc) {
-        // // let x = this.coordMat;
-        // let x = MatrixProd(this.coordMat3, this.rotMat);
-        // x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+        // let x = this.coordMat;
+        let x = MatrixProd(this.coordMat3, this.rotMat);
+        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
-        // ctx.beginPath();
-        // ctx.strokeStyle = 'black';
-        // ctx.fillStyle = this.colour;
-        // ctx.lineWidth = baseLW / zoom * pixRat;
-        // // console.table(this.coordMat)
-        // ctx.moveTo(x[0][0], x[0][1])
-        // for (let i = 1; i < x.length; i++) {
-        //     ctx.lineTo(x[i][0], x[i][1]);
-        // }
-        // ctx.lineTo(x[0][0], x[0][1]);
-        // ctx.stroke();
-        // // ctx.fill();
+        ctx.beginPath();
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = this.colour;
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < x.length; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        ctx.stroke();
+        // ctx.fill();
 
         // let x = this.coordMat;
-        let x = MatrixProd(this.coordMat, this.rotMat);
+       x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
@@ -713,12 +714,11 @@ class Wheel {
         for (let i = 1; i < 4; i++) {
             ctx.lineTo(x[i][0], x[i][1]);
         }
-        ctx.lineTo(x[0][0], x[0][1]);
+       
         ctx.stroke();
+        ctx.lineTo(x[0][0], x[0][1]);
         ctx.fillStyle = this.colour;
         ctx.fill();
-
-
 
         //wheel centre abs coords
         x = MatrixProd([[this.x, this.y]], car.rotMat);
@@ -2129,8 +2129,9 @@ const showLapCount = urlParams.get('nLaps');
 import { p } from './params.js'
 const sessionPrefix = p.version.n
 
+let serverOveride=false;
 let apiURL;
-if (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") {
+if ((location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
 }
 else {
