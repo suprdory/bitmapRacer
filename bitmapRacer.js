@@ -359,25 +359,25 @@ class Car {
         })
     }
     draw(ctx, xc, yc) {
-        // let x = this.coordMat;
-        let x = MatrixProd(this.coordMat3, this.rotMat);
-        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+        // // let x = this.coordMat;
+        // let x = MatrixProd(this.coordMat3, this.rotMat);
+        // x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
-        ctx.beginPath();
-        ctx.strokeStyle = 'black';
-        ctx.fillStyle = this.colour;
-        ctx.lineWidth = baseLW / zoom * pixRat;
-        // console.table(this.coordMat)
-        ctx.moveTo(x[0][0], x[0][1])
-        for (let i = 1; i < x.length; i++) {
-            ctx.lineTo(x[i][0], x[i][1]);
-        }
-        ctx.lineTo(x[0][0], x[0][1]);
-        ctx.stroke();
-        // ctx.fill();
+        // ctx.beginPath();
+        // ctx.strokeStyle = 'black';
+        // ctx.fillStyle = this.colour;
+        // ctx.lineWidth = baseLW / zoom * pixRat;
+        // // console.table(this.coordMat)
+        // ctx.moveTo(x[0][0], x[0][1])
+        // for (let i = 1; i < x.length; i++) {
+        //     ctx.lineTo(x[i][0], x[i][1]);
+        // }
+        // ctx.lineTo(x[0][0], x[0][1]);
+        // ctx.stroke();
+        // // ctx.fill();
 
         // let x = this.coordMat;
-        x = MatrixProd(this.coordMat, this.rotMat);
+        let x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
