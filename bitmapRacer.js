@@ -1770,7 +1770,7 @@ function anim() {
 
     ctx.drawImage(track.canvasScl, xc, yc);
     track.drawGates(ctx, xc, yc);
-    // track.drawAllGates(ctx, xc, yc);
+    // track.drawAllGwwates(ctx, xc, yc);
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.updateLapTime();
     lapCounter.draw(ctx);
@@ -2080,7 +2080,7 @@ function mulberry32(a) {
 
 class Randomizer {
     constructor(seed) {
-        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue']
+        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue','hotpink']
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
@@ -2102,11 +2102,11 @@ class Randomizer {
         return array[Math.floor(this.rand() * array.length)];
     }
     setDefaults(){
-        this.scale = { ppm: 3, mpp: 0.2 };
+        this.scale = { ppm: 10, mpp: 0.2 };
         this.yflip = false;
         this.xflip = false;
-        this.reverse = true;
-        this.colour = 'red';
+        this.reverse = false;
+        this.colour = 'hotpink';
         this.track = p.track[1];
     }
     gen() {

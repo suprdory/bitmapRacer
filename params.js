@@ -85,7 +85,7 @@ export let p = {
         ]
     },
         {
-            "fname": 'tracks/square_track2.png',
+            "fname": 'tracks/square_track2_allpath.png',
 
             "x": 1000, // size, helpful for setting params before img loaded
             "y": 1000,
@@ -106,11 +106,11 @@ export let p = {
                 "unknown": { "mu": 0.8, "drag": 0.01 },
             },
             "gates": [ // in track pixels
-                { 'n': 0, 'left': { 'x': 20, 'y': 500 }, 'right': { 'x': 165, 'y': 500 } },
-                { 'n': 1, 'left': { 'x': 580, 'y': 145 }, 'right': { 'x': 459, 'y': 240 } },
-                { 'n': 2, 'left': { 'x': 825, 'y': 252 }, 'right': { 'x': 961, 'y': 237 } },
-                { 'n': 3, 'left': { 'x': 373, 'y': 531 }, 'right': { 'x': 208, 'y': 529 } },
-                { 'n': 4, 'left': { 'x': 952, 'y': 783 }, 'right': { 'x': 774, 'y': 787 } },
+                { 'n': 0, 'left': { 'x': 16, 'y': 500 }, 'right': { 'x': 187, 'y': 500 } },
+                { 'n': 1, 'left': { 'x': 580, 'y': 150 }, 'right': { 'x': 438, 'y': 250 } },
+                { 'n': 2, 'left': { 'x': 805, 'y': 252 }, 'right': { 'x': 975, 'y': 237 } },
+                { 'n': 3, 'left': { 'x': 365, 'y': 531 }, 'right': { 'x': 195, 'y': 529 } },
+                { 'n': 4, 'left': { 'x': 940, 'y': 783 }, 'right': { 'x': 767, 'y': 794 } },
             ]
         },
 
