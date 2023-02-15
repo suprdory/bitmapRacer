@@ -46,7 +46,7 @@ class Track {
                 'right': { 'x': g.left.x, 'y': p.ctrack.y - g.left.y },
                 'left': { 'x': g.right.x, 'y': p.ctrack.y - g.right.y }
             }));
-            log(this.gates);
+            // log(this.gates);
         }
         if (this.flipX) {
             this.gates = this.gates.map(g => ({
@@ -1731,15 +1731,17 @@ class Ghost {
         this.loadFromLocal();
 
         // toggle
-        this.drawGhost = true;
-        this.dispText = 'On'
+        this.drawGhost = JSON.parse(localStorage.getItem('drawGhost'));
+        this.dispText = this.drawGhost ? "On" : "Off";
+        // log(this.drawGhost,this.dispText)
+
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.ch = this.fontsize + 10 * pixRat;
         this.cw = pixRat * 80;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 90 * pixRat - this.ch;
-        log(Y, isTouch,pixRat)
+        this.cy0 = Y - isTouch * Y / 3 - 80 * pixRat-this.ch;
+        // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
 
@@ -1895,7 +1897,7 @@ class Ghost {
     loadFromLocal() {
         let localGhostVersion = JSON.parse(localStorage.getItem('ghostVersion'))
         if (localGhostVersion == sessionLogger.version) {
-            log(typeof (localStorage.getItem('ghost')))
+            // log(typeof (localStorage.getItem('ghost')))
             let localGhost = JSON.parse(localStorage.getItem('ghost'));
             this.savedLap.x = JSON.parse(localGhost.x)
             this.savedLap.y = JSON.parse(localGhost.y)
@@ -1903,6 +1905,18 @@ class Ghost {
             this.ghostAvail = true;
         }
     }
+
+    toggleDraw(){
+        this.drawGhost = !this.drawGhost;
+        if (this.drawGhost) {
+            this.dispText = 'On';
+        }
+        else {
+            this.dispText = 'Off';
+        }
+        localStorage.setItem('drawGhost',this.drawGhost)
+    }
+
     drawToggle() {
         ctx.beginPath();
         ctx.textAlign = "left";
@@ -1912,8 +1926,8 @@ class Ghost {
         ctx.fillText('Ghost: ' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 80 * pixRat)
     }
     contains(ex, ey) {
-        log(ex,ey)
-        log(this.cy0,this.cy0 + this.ch)
+        // log(ex,ey)
+        // log(this.cy0,this.cy0 + this.ch)
         return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
     }
     pointerDownHandler(ex, ey, en) {
@@ -1923,7 +1937,7 @@ class Ghost {
             // debugTxt = "PD: " + en + " " + this.action;
             this.active = true;
             this.en = en;
-            log('PD in box')
+            // log('PD in box')
         }
     }
     pointerUpHandler(en) {
@@ -1932,14 +1946,9 @@ class Ghost {
 
             this.en = null;
             this.active = false;
-            this.drawGhost = !this.drawGhost;
-            if (this.drawGhost) {
-                this.dispText = 'On';
-            }
-            else {
-                this.dispText = 'Off';
-            }
-            log('PU',this.drawGhost,this.dispText)
+            this.toggleDraw();
+
+            // log('PU',this.drawGhost,this.dispText)
         }
     }
 
