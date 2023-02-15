@@ -38,7 +38,7 @@ class Track {
     }
 
     flipGates() {
-        log(this.gates)
+        // log(this.gates)
 
         if (this.flipY) {
             this.gates = this.gates.map(g => ({
@@ -338,7 +338,7 @@ class Car {
         this.coordMat2 = this.coordsRel2.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         //axels
-        this.coordsRel3 = [[0,0],[-.5, 0], [0.5, 0],[0,0],[0,1.0], [-.5, 1], [0.5, 1],[0,1.0]]
+        this.coordsRel3 = [[0, 0], [-.5, 0], [0.5, 0], [0, 0], [0, 1.0], [-.5, 1], [0.5, 1], [0, 1.0]]
         this.coordMat3 = this.coordsRel3.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         this.wheels = [
@@ -378,7 +378,7 @@ class Car {
         // ctx.fill();
 
         // let x = this.coordMat;
-       x = MatrixProd(this.coordMat, this.rotMat);
+        x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
@@ -410,7 +410,7 @@ class Car {
         // ctx.stroke();
         ctx.fill();
 
-        this.wheels.forEach(wheel => wheel.draw(ctx, this, xc, yc));
+        this.wheels.forEach(wheel => wheel.draw(ctx, this.rotMat, this.x, this.y, xc, yc));
 
     }
     drawHUD(ctx) {
@@ -700,12 +700,12 @@ class Wheel {
         this.rotMat = calcRotMat(this.theta);
     }
 
-    draw(ctx, car, xc, yc) {
+    draw(ctx, carrot, carx, cary, xc, yc) {
         // let x=this.coordMat;
         let x = MatrixProd(this.coordMat, this.rotMat);
         x = MatrixTrans(x, [this.x * PPM, this.y * PPM]);
-        x = MatrixProd(x, car.rotMat);
-        x = MatrixTrans(x, [car.x * PPM + xc, car.y * PPM + yc])
+        x = MatrixProd(x, carrot);
+        x = MatrixTrans(x, [carx * PPM + xc, cary * PPM + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
@@ -714,15 +714,15 @@ class Wheel {
         for (let i = 1; i < 4; i++) {
             ctx.lineTo(x[i][0], x[i][1]);
         }
-       
+
         ctx.stroke();
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.fillStyle = this.colour;
         ctx.fill();
 
         //wheel centre abs coords
-        x = MatrixProd([[this.x, this.y]], car.rotMat);
-        x = MatrixTrans(x, [car.x, car.y]);
+        x = MatrixProd([[this.x, this.y]], carrot);
+        x = MatrixTrans(x, [carx, cary]);
         this.xa = x[0][0];
         this.ya = x[0][1];
     }
@@ -977,6 +977,7 @@ class LapCounter {
         this.lastLap = this.completeLapTimePh;
         if ((this.lastLap < this.bestLap) || this.bestLap == 0) {
             this.bestLap = this.lapTime;
+            // ghost.saveLap();
         }
         hiScores.newLap(this.lastLap);
         if (name.name) {
@@ -1011,6 +1012,9 @@ class LapCounter {
         this.n0 = n - (1 - this.bez);
         // this.lapTime = 0
         this.nextCheck = 1;
+
+        ghost.started = true;
+        ghost.newLap();
     }
     updateLapTime() {
         // this.lapTime = Date.now() - this.t0;
@@ -1155,11 +1159,13 @@ class HiScores {
         this.last = t;
         if (this.times[0] == 0) {
             flash.flash("First Lap")
+            ghost.saveLap();
 
             sessionLogger.currentBestLap = t;
             sessionLogger.updateRank();
         }
         else if (t < this.times[0]) {
+            ghost.saveLap();
             flash.flash("Best Lap!")
             sessionLogger.currentBestLap = t;
             sessionLogger.updateRank();
@@ -1399,404 +1405,6 @@ class Name {
         // console.log(form.visibility)
         form.visibility = "hidden"
     }
-}
-let MatrixProd = (A, B) =>
-    A.map((row, i) =>
-        B[0].map((_, j) =>
-            row.reduce((acc, _, n) =>
-                acc + A[i][n] * B[n][j], 0
-            )
-        )
-    )
-function MatrixTrans(A, B) {
-    let ni = A.length;
-    let nj = A[0].length;
-    let C = new Array(ni);
-    for (let i = 0; i < ni; i++) {
-        C[i] = new Array(nj);
-    }
-    for (let i = 0; i < ni; i++) {
-        for (let j = 0; j < nj; j++) {
-            C[i][j] = A[i][j] + B[j];
-        }
-    }
-    // console.log(ni, nj);
-    return C;
-}
-function calcRotMat(theta) {
-    return [[Math.cos(theta), -Math.sin(theta)],
-    [Math.sin(theta), Math.cos(theta)]];
-}
-function drawHUDArrow(x0, x1, color) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = baseLW / zoom * pixRat;
-    ctx.beginPath();
-    ctx.moveTo(x0[0], x0[1]);
-    ctx.lineTo(x1[0], x1[1]);
-    ctx.stroke();
-}
-function drawDebug() {
-    // xw0 = Math.round(car.wheels[0].xa / scl);
-    // yw0 = Math.round(car.wheels[0].ya / scl);
-    // xw1 = Math.round(car.wheels[1].xa / scl);
-    // yw1 = Math.round(car.wheels[1].ya / scl);
-
-    ctx.fillStyle = "white"
-    ctx.textAlign = "left"
-    ctx.font = 10 * pixRat + 'px ' + fontFamily;
-    // nX = img.width;
-    // nY = img.height;
-    // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
-    // g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
-    // b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
-    // a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
-    // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
-
-    // show hsl
-    // ctx.fillText([
-    //     Math.round(car.wheels[0].h),
-    //     Math.round(car.wheels[0].s),
-    //     Math.round(car.wheels[0].l)
-    // ], 100, 100)
-    ctx.fillText(debugTxt, X - 500, 20, 500)
-
-    // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
-    // ctx.fillText(nX + " " + nY, 100, 140);
-    // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
-    // ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
-    // ctx.fillText("headOff " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
-    // ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
-}
-function showImage(fileReader) {
-    var img = document.getElementById("myImage");
-    img.onload = () => getImageData(img);
-    img.src = fileReader.result;
-
-}
-function drawHUD() {
-    let hudX = 10;
-    let hudY = 10 + isTouch * Y / 3;
-    let barHeight = 50 * pixRat;
-    let barWidthSpace = 5 * pixRat;
-    let barWidth = 20 * pixRat;
-    ctx.lineWidth = baseLW * pixRat;
-    ctx.strokeStyle = "green";
-    ctx.fillStyle = "green";
-    ctx.beginPath();
-    ctx.rect(hudX, Y - hudY, barWidth, -barHeight);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.rect(hudX, Y - hudY, barWidth, -car.torqueWheelHUD.torque / car.maxTorqueHUD * barHeight);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.strokeStyle = "red";
-    ctx.fillStyle = "red";
-    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -barHeight);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -car.wheels[0].brake / car.brakeMax * barHeight);
-    ctx.fill()
-
-
-    ctx.beginPath();
-    ctx.strokeStyle = "blue";
-    ctx.fillStyle = "blue"
-    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / car.maxUth * barHeight);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.strokeStyle = "yellow";
-    ctx.fillStyle = "yellow";
-    ctx.rect(hudX, Y - hudY - barHeight - barWidthSpace, barWidth * 3 + barWidthSpace * 2, -barWidth);
-    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, 0, -barWidth);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, -(barWidth * 3 + barWidthSpace * 2) / 2 * car.wheels[0].theta / car.steeringMax, -barWidth);
-    ctx.fill();
-
-
-    // let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
-    // let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
-    // for (let i = 0; i < 4; i++) {
-    //     ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
-    //     ctx.beginPath();
-    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
-    //     ctx.fill();
-    //     ctx.strokeStyle = "white";
-    //     ctx.beginPath();
-    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
-    //     ctx.stroke();
-
-    //     ctx.fillStyle = "white";
-    //     ctx.textAlign = "center"
-    //     ctx.textBaseline = "middle"
-    //     ctx.font = "15px " + fontFamily;
-    //     ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
-    // }
-
-
-
-}
-const RGBToHSL = (r, g, b) => {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    const l = Math.max(r, g, b);
-    const s = l - Math.min(r, g, b);
-    const h = s
-        ? l === r
-            ? (g - b) / s
-            : l === g
-                ? 2 + (b - r) / s
-                : 4 + (r - g) / s
-        : 0;
-    return [
-        60 * h < 0 ? 60 * h + 360 : 60 * h,
-        100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
-        (100 * (2 * l - s)) / 2,
-    ];
-};
-function isTouchDevice() {
-    return (('ontouchstart' in window) ||
-        (navigator.maxTouchPoints > 0) ||
-        (navigator.msMaxTouchPoints > 0));
-}
-function addPointerListeners(touchControl) {
-    // window.addEventListener("resize", () => {
-    //     setSize()
-    // }
-    // );
-
-    if (isTouchDevice()) {
-        canvas.addEventListener("touchstart", e => {
-            e.preventDefault();
-            touchControl.pointerDownHandler(
-                e.changedTouches[0].clientX * pixRat,
-                e.changedTouches[0].clientY * pixRat,
-                e.changedTouches[0].identifier);
-        },
-            { passive: false }
-        );
-
-        canvas.addEventListener("touchend", e => {
-            e.preventDefault();
-            touchControl.pointerUpHandler(e.changedTouches[0].identifier);
-        },
-            { passive: false }
-        );
-    }
-    else {
-        addEventListener("mousedown", e => {
-            // e.preventDefault();
-            // pointerDownHandler(e.offsetX, e.offsetY);
-            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat, 0)
-        },
-        );
-        addEventListener('mouseup', e => {
-            touchControl.pointerUpHandler(0);
-        });
-
-    }
-}
-function addListeners(inputState) {
-
-    window.addEventListener("resize", () => {
-        resize();
-    }
-    );
-
-    if (inputState.touch) {
-        accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
-        brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
-        leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
-        rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
-        addPointerListeners(accBtn);
-        addPointerListeners(brkBtn);
-        addPointerListeners(leftBtn);
-        addPointerListeners(rightBtn);
-    }
-    addPointerListeners(name);
-    addEventListener('keydown', (event) => { inputState.set(event) });
-    addEventListener('keyup', (event) => { inputState.set(event) });
-}
-function pad(n, width, z) {
-    z = z || '0';
-    n = n + '';
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-function formatDuration(duration) {
-    var seconds = Math.abs(Math.floor(duration / 1000)),
-        h = (seconds - seconds % 3600) / 3600,
-        m = (seconds - seconds % 60) / 60 % 60,
-        s = seconds % 60,
-        ms = duration % 1000;
-    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
-}
-function formatDurationTenth(duration) {
-    var seconds = Math.abs(Math.floor(duration / 1000)),
-        h = (seconds - seconds % 3600) / 3600,
-        m = (seconds - seconds % 60) / 60 % 60,
-        s = seconds % 60,
-        ms = duration % 1000,
-        ts = Math.floor(ms / 100);
-    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
-}
-function intersects(a, b, c, d, p, q, r, s) {
-    // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
-    var det, gamma, lambda;
-    det = (c - a) * (s - q) - (r - p) * (d - b);
-    // log(det)
-    if (det === 0) {
-        return false;
-    } else {
-        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
-        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
-    }
-};
-function secondBezier(x1, y1, x2, y2, x3, y3, x4, y4) {
-    return ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
-};
-function dotProduct(a, b, c, d) {
-    return a * c + b * d;
-};
-function crossProduct(a, b, c, d) {
-    return a * d - b * c;
-};
-function secsToString(seconds) {
-
-    // var seconds = Math.floor((new Date() - date) / 1000);
-
-    var interval = seconds / 31536000;
-
-    if (interval > 1) {
-        return Math.floor(interval) + " years";
-    }
-    interval = seconds / 2592000;
-    if (interval > 1) {
-        return Math.floor(interval) + " months";
-    }
-    interval = seconds / 86400;
-    if (interval > 1) {
-        return Math.floor(interval) + " days";
-    }
-    interval = seconds / 3600;
-    if (interval > 1.5) {
-        return Math.round(interval) + " hours";
-    }
-    if (interval > 10) {
-        return Math.round(interval) + " hour";
-    }
-    // if (interval > 1) {
-    //     return Math.floor(interval) + " hours " +
-    //         Math.round(60 * (interval - Math.floor(interval))) + " minutes";
-    // }
-    interval = seconds / 60;
-    if (interval > 1) {
-        return Math.floor(interval) + " minutes";
-    }
-    return Math.floor(seconds) + " seconds";
-}
-function submitName() {
-    let newName = document.getElementById('name').value
-
-    if (newName.trim().length === 0) {
-        flash.flash("Empty name, try again")
-    }
-    else {
-        name.name = newName;
-        name.text = name.name;
-        localStorage.name = name.name;
-        hiScoresWeb.name = name.name;
-    }
-    name.hideNameForm();
-    log('submitting name')
-}
-function resize() {
-    canvas = document.getElementById("cw");
-    ctx = canvas.getContext("2d", { alpha: false });
-    pixRat = window.devicePixelRatio * 1.0;
-    canvas.height = window.innerHeight * pixRat;
-    canvas.width = window.innerWidth * pixRat;
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
-    X = canvas.width;
-    Y = canvas.height;
-    xc = 0 // screen centre coords
-    yc = 0
-    isTouch = isTouchDevice();
-    yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
-
-}
-function anim() {
-    n++;
-    if (n < nMax) {
-        requestAnimationFrame(anim);
-    }
-
-    // requestAnimationFrame(anim);
-
-    car.control(inputState);
-    if (track.trackReady) {
-        car.readTrack();
-        car.mech2();
-    }
-    // calc screen centre coords
-    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
-    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
-    xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
-    yc = yc + (yct - yc) * panSpeed
-
-    //draw scaled stuff
-    // ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
-
-    // clear screen
-    ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
-
-    // flat background for icon making
-    // ctx.beginPath()
-    // ctx.fillStyle='grey'
-    // ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
-    // ctx.fill()
-
-    ctx.drawImage(track.canvasScl, xc, yc);
-    track.drawGates(ctx, xc, yc);
-    // track.drawAllGwwates(ctx, xc, yc);
-    lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
-    lapCounter.updateLapTime();
-    lapCounter.draw(ctx);
-    car.draw(ctx, xc, yc);
-
-    // draw unscaled scaled stuff
-    // ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    // touchControl.draw(ctx);
-    if (inputState.touch) {
-        accBtn.draw(ctx);
-        brkBtn.draw(ctx);
-        leftBtn.draw(ctx);
-        rightBtn.draw(ctx);
-    }
-    // drawDebug();
-    // drawHUD();
-
-    // car.drawHUD(ctx);
-    hiScores.draw(ctx);
-    hiScoresWeb.draw(ctx);
-    sessionLogger.draw(ctx);
-    name.draw(ctx);
-    // drawInfo(ctx);
-    flash.draw(ctx);
-    drawHUD();
 }
 class Flash {
     constructor() {
@@ -2051,6 +1659,696 @@ class SessionLogger {
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
     }
 }
+class Randomizer {
+    constructor(seed) {
+        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue', 'hotpink']
+        this.xflips = [false, true]
+        this.yflips = [false, true]
+        this.reverses = [false, true]
+        this.scales = [
+            { ppm: 10, mpp: 0.2 },
+            { ppm: 8, mpp: 0.35 },
+            { ppm: 6, mpp: 0.6 }
+        ]
+
+        this.colour = null;
+        this.xflip = null;
+        this.yflip = null
+        this.scale = null;
+        this.reverse = null;
+        this.seed = seed;
+        this.rand = mulberry32(this.seed);
+    }
+    randomElement(array) {
+        return array[Math.floor(this.rand() * array.length)];
+    }
+    setDefaults() {
+        this.scale = { ppm: 10, mpp: 0.2 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = false;
+        this.colour = 'hotpink';
+        this.track = p.track[1];
+    }
+    gen() {
+        this.scale = this.randomElement(this.scales);
+        this.yflip = this.randomElement(this.yflips);
+        this.xflip = this.randomElement(this.xflips);
+        this.reverse = this.randomElement(this.reverses);
+        this.colour = this.randomElement(this.colours);
+        this.track = this.randomElement(p.track);
+    }
+    apply(p) {
+        p.ctrack = this.track;
+
+        p.car.colour = this.colour;
+        p.trackSetup.reverse = this.reverse;
+        p.trackSetup.flipX = this.xflip;
+        p.trackSetup.flipY = this.yflip;
+        p.trackSetup.metresPerPix = this.scale.mpp;
+        p.draw.pixPerMetre = this.scale.ppm;
+
+    }
+
+}
+class Ghost {
+    constructor() {
+        //current recording
+        this.n = 0; // current frame index
+        this.recLap = [];
+        this.recLap.n0 = 0;
+        this.recLap.x = [];
+        this.recLap.y = [];
+        this.recLap.th = [];
+        
+        //playback ghost
+        this.savedLap = [];
+    
+        this.started = false; // set true once start line crossed
+        this.ghostAvail = false; // set true when first ghost created, or when loaded from local
+
+        // this.oldLap.y=[];
+        this.loadFromLocal();
+
+        // toggle
+        this.drawGhost = true;
+        this.dispText = 'On'
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+        this.ch = this.fontsize + 10 * pixRat;
+        this.cw = pixRat * 80;
+        this.cx0 = 0;
+        this.cy0 = Y - isTouch * Y / 3 - 90 * pixRat - this.ch;
+        log(Y, isTouch,pixRat)
+        this.en = null;
+        this.active = false;
+
+
+        // drawing, same as car
+        this.w = p.car.width; //width
+        this.frontLength = p.car.frontLength; //longitudinal distance to front wheel axis from COM
+        this.rearLength = p.car.rearLength; //longitudinal distance to rear wheel axis from COM
+        this.l = this.frontLength + this.rearLength // longitudinal distant from front to rear wheel axis
+        this.height = p.car.height; //height of CoM
+        this.wheelWidth = p.car.wheelWidth;
+        this.wheelAspect = p.car.wheelAspect;
+        this.oversize = p.car.oversize;
+        this.bodyAspect = p.car.bodyAspect;
+        this.colour = p.car.colour;
+        // this.colour='green';
+
+        this.rotMat = calcRotMat(0);
+
+        // car body coords in normalized units relative to centre line and rear wheel
+        // this.coordsRel = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+        this.coordsRel = [ //main body
+            [0, -0.2], [-.20, -.15], [-0.30, 0], [-0.30, .7], [-0.14, 1.3],
+            [0.14, 1.3], [0.30, .7], [0.30, 0], [.20, -.15],
+        ]
+
+        //unscaled for HUD - coords in metres, relative to CoM
+        this.coordMatHUD = this.coordsRel.map(x => [x[0] * this.w, x[1] * this.l - this.rearLength])
+        // this.coordMatHUD = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+        //scaled for drawing on track
+        this.coordMat = this.coordMatHUD.map(x => x.map(x => x * PPM))
+
+        // cockpit
+        this.coordsRel2 = [[0, .15], [-.1, .17], [-.2, .25], [-.2, .5],
+        [.2, .5], [.2, .25], [.1, .17],
+        ]
+        this.coordMat2 = this.coordsRel2.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
+
+        //axels
+        this.coordsRel3 = [[0, 0], [-.5, 0], [0.5, 0], [0, 0], [0, 1.0], [-.5, 1], [0.5, 1], [0, 1.0]]
+        this.coordMat3 = this.coordsRel3.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
+
+        this.wheels = [
+            new Wheel(-this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
+            new Wheel(this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
+            new Wheel(-this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect),
+            new Wheel(this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect)
+        ];
+
+
+    }
+    addState(x, y, th) {
+        if (this.started) {
+            this.n++;
+            this.recLap.x.push(x);
+            this.recLap.y.push(y);
+            this.recLap.th.push(th);
+        }
+    }
+    newLap() {
+        this.n = 0;
+        // log(this.recLap)
+        // this.saveLap();
+        this.recLap.x = [];
+        this.recLap.y = [];
+        this.recLap.th = [];
+
+        // log(this.recLap)
+        // log(this.savedLap)
+
+    }
+    saveLap() {
+        log('saving ghost')
+        this.savedLap.x = this.recLap.x.slice();
+        this.savedLap.y = this.recLap.y.slice();
+        this.savedLap.th = this.recLap.th.slice();
+        this.ghostAvail = true;
+
+        localStorage.setItem('ghostVersion', JSON.stringify(sessionLogger.version));
+        localStorage.setItem('ghost', JSON.stringify({
+            'x': JSON.stringify(this.savedLap.x, function (key, val) {
+                return val.toFixed ? Number(val.toFixed(3)) : val;
+            }),
+            'y': JSON.stringify(this.savedLap.y, function (key, val) {
+                return val.toFixed ? Number(val.toFixed(3)) : val;
+            }),
+            'th': JSON.stringify(this.savedLap.th, function (key, val) {
+                return val.toFixed ? Number(val.toFixed(3)) : val;
+            })
+        }));
+
+    }
+    draw(ctx, xc, yc) {
+        // log(this.n)
+        if (this.ghostAvail & this.started & this.drawGhost) {
+            if (this.n < this.savedLap.x.length) {
+
+                ctx.globalAlpha = 0.5;
+                this.rotMat = calcRotMat(this.savedLap.th[this.n]);
+
+
+                let x = MatrixProd(this.coordMat3, this.rotMat);
+                x = MatrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'black';
+                ctx.fillStyle = this.colour;
+                ctx.lineWidth = baseLW / zoom * pixRat;
+                ctx.moveTo(x[0][0], x[0][1])
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo(x[i][0], x[i][1]);
+                }
+                ctx.lineTo(x[0][0], x[0][1]);
+                ctx.stroke();
+
+                x = MatrixProd(this.coordMat, this.rotMat);
+                x = MatrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
+
+                ctx.beginPath();
+                ctx.strokeStyle = this.colour;
+                ctx.fillStyle = this.colour;
+                ctx.lineWidth = baseLW / zoom * pixRat;
+                // console.table(this.coordMat)
+                ctx.moveTo(x[0][0], x[0][1])
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo(x[i][0], x[i][1]);
+                }
+                ctx.lineTo(x[0][0], x[0][1]);
+                // ctx.stroke();
+                ctx.fill();
+
+                x = MatrixProd(this.coordMat2, this.rotMat);
+                x = MatrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
+
+                ctx.beginPath();
+                ctx.strokeStyle = this.colour;
+                ctx.fillStyle = 'black';
+                ctx.lineWidth = baseLW / zoom * pixRat;
+                // console.table(this.coordMat)
+                ctx.moveTo(x[0][0], x[0][1])
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo(x[i][0], x[i][1]);
+                }
+                ctx.lineTo(x[0][0], x[0][1]);
+                // ctx.stroke();
+                ctx.fill();
+
+                this.wheels.forEach(wheel => wheel.draw(ctx, this.rotMat, this.savedLap.x[this.n], this.savedLap.y[this.n], xc, yc));
+                ctx.globalAlpha = 1.0;
+            }
+        }
+    }
+    loadFromLocal() {
+        let localGhostVersion = JSON.parse(localStorage.getItem('ghostVersion'))
+        if (localGhostVersion == sessionLogger.version) {
+            log(typeof (localStorage.getItem('ghost')))
+            let localGhost = JSON.parse(localStorage.getItem('ghost'));
+            this.savedLap.x = JSON.parse(localGhost.x)
+            this.savedLap.y = JSON.parse(localGhost.y)
+            this.savedLap.th = JSON.parse(localGhost.th)
+            this.ghostAvail = true;
+        }
+    }
+    drawToggle() {
+        ctx.beginPath();
+        ctx.textAlign = "left";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText('Ghost: ' + this.dispText, + 5 * pixRat, Y - isTouch * Y / 3 - 85 * pixRat)
+    }
+    contains(ex, ey) {
+        log(ex,ey)
+        log(this.cy0,this.cy0 + this.ch)
+        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
+    }
+    pointerDownHandler(ex, ey, en) {
+
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+            log('PD in box')
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "PU: " + en + " " + this.action;
+
+            this.en = null;
+            this.active = false;
+            this.drawGhost = !this.drawGhost;
+            if (this.drawGhost) {
+                this.dispText = 'On';
+            }
+            else {
+                this.dispText = 'Off';
+            }
+            log('PU',this.drawGhost,this.dispText)
+        }
+    }
+
+}
+
+let MatrixProd = (A, B) =>
+    A.map((row, i) =>
+        B[0].map((_, j) =>
+            row.reduce((acc, _, n) =>
+                acc + A[i][n] * B[n][j], 0
+            )
+        )
+    )
+function MatrixTrans(A, B) {
+    let ni = A.length;
+    let nj = A[0].length;
+    let C = new Array(ni);
+    for (let i = 0; i < ni; i++) {
+        C[i] = new Array(nj);
+    }
+    for (let i = 0; i < ni; i++) {
+        for (let j = 0; j < nj; j++) {
+            C[i][j] = A[i][j] + B[j];
+        }
+    }
+    // console.log(ni, nj);
+    return C;
+}
+function calcRotMat(theta) {
+    return [[Math.cos(theta), -Math.sin(theta)],
+    [Math.sin(theta), Math.cos(theta)]];
+}
+function drawHUDArrow(x0, x1, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = baseLW / zoom * pixRat;
+    ctx.beginPath();
+    ctx.moveTo(x0[0], x0[1]);
+    ctx.lineTo(x1[0], x1[1]);
+    ctx.stroke();
+}
+function drawDebug() {
+    // xw0 = Math.round(car.wheels[0].xa / scl);
+    // yw0 = Math.round(car.wheels[0].ya / scl);
+    // xw1 = Math.round(car.wheels[1].xa / scl);
+    // yw1 = Math.round(car.wheels[1].ya / scl);
+
+    ctx.fillStyle = "white"
+    ctx.textAlign = "left"
+    ctx.font = 10 * pixRat + 'px ' + fontFamily;
+    // nX = img.width;
+    // nY = img.height;
+    // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
+    // g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
+    // b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
+    // a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
+    // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
+
+    // show hsl
+    // ctx.fillText([
+    //     Math.round(car.wheels[0].h),
+    //     Math.round(car.wheels[0].s),
+    //     Math.round(car.wheels[0].l)
+    // ], 100, 100)
+    ctx.fillText(debugTxt, X - 500, 20, 500)
+
+    // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
+    // ctx.fillText(nX + " " + nY, 100, 140);
+    // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
+    // ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
+    // ctx.fillText("headOff " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
+    // ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
+}
+function showImage(fileReader) {
+    var img = document.getElementById("myImage");
+    img.onload = () => getImageData(img);
+    img.src = fileReader.result;
+
+}
+function drawHUD() {
+    let hudX = 10;
+    let hudY = 10 + isTouch * Y / 3;
+    let barHeight = 50 * pixRat;
+    let barWidthSpace = 5 * pixRat;
+    let barWidth = 20 * pixRat;
+    ctx.lineWidth = baseLW * pixRat;
+    ctx.strokeStyle = "green";
+    ctx.fillStyle = "green";
+    ctx.beginPath();
+    ctx.rect(hudX, Y - hudY, barWidth, -barHeight);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(hudX, Y - hudY, barWidth, -car.torqueWheelHUD.torque / car.maxTorqueHUD * barHeight);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = "red";
+    ctx.fillStyle = "red";
+    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -barHeight);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -car.wheels[0].brake / car.brakeMax * barHeight);
+    ctx.fill()
+
+
+    ctx.beginPath();
+    ctx.strokeStyle = "blue";
+    ctx.fillStyle = "blue"
+    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / car.maxUth * barHeight);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.strokeStyle = "yellow";
+    ctx.fillStyle = "yellow";
+    ctx.rect(hudX, Y - hudY - barHeight - barWidthSpace, barWidth * 3 + barWidthSpace * 2, -barWidth);
+    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, 0, -barWidth);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, -(barWidth * 3 + barWidthSpace * 2) / 2 * car.wheels[0].theta / car.steeringMax, -barWidth);
+    ctx.fill();
+
+
+    // let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
+    // let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
+    // for (let i = 0; i < 4; i++) {
+    //     ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
+    //     ctx.beginPath();
+    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
+    //     ctx.fill();
+    //     ctx.strokeStyle = "white";
+    //     ctx.beginPath();
+    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
+    //     ctx.stroke();
+
+    //     ctx.fillStyle = "white";
+    //     ctx.textAlign = "center"
+    //     ctx.textBaseline = "middle"
+    //     ctx.font = "15px " + fontFamily;
+    //     ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
+    // }
+
+
+
+}
+const RGBToHSL = (r, g, b) => {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const l = Math.max(r, g, b);
+    const s = l - Math.min(r, g, b);
+    const h = s
+        ? l === r
+            ? (g - b) / s
+            : l === g
+                ? 2 + (b - r) / s
+                : 4 + (r - g) / s
+        : 0;
+    return [
+        60 * h < 0 ? 60 * h + 360 : 60 * h,
+        100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
+        (100 * (2 * l - s)) / 2,
+    ];
+};
+function isTouchDevice() {
+    return (('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0));
+}
+function addPointerListeners(touchControl) {
+    // window.addEventListener("resize", () => {
+    //     setSize()
+    // }
+    // );
+
+    if (isTouchDevice()) {
+        canvas.addEventListener("touchstart", e => {
+            e.preventDefault();
+            touchControl.pointerDownHandler(
+                e.changedTouches[0].clientX * pixRat,
+                e.changedTouches[0].clientY * pixRat,
+                e.changedTouches[0].identifier);
+        },
+            { passive: false }
+        );
+
+        canvas.addEventListener("touchend", e => {
+            e.preventDefault();
+            touchControl.pointerUpHandler(e.changedTouches[0].identifier);
+        },
+            { passive: false }
+        );
+    }
+    else {
+        addEventListener("mousedown", e => {
+            // e.preventDefault();
+            // pointerDownHandler(e.offsetX, e.offsetY);
+            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat, 0)
+        },
+        );
+        addEventListener('mouseup', e => {
+            touchControl.pointerUpHandler(0);
+        });
+
+    }
+}
+function addListeners(inputState) {
+
+    window.addEventListener("resize", () => {
+        resize();
+    }
+    );
+
+    if (inputState.touch) {
+        accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
+        brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
+        leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
+        rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
+        addPointerListeners(accBtn);
+        addPointerListeners(brkBtn);
+        addPointerListeners(leftBtn);
+        addPointerListeners(rightBtn);
+    }
+    addPointerListeners(name);
+    addPointerListeners(ghost);
+    addEventListener('keydown', (event) => { inputState.set(event) });
+    addEventListener('keyup', (event) => { inputState.set(event) });
+}
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+function formatDuration(duration) {
+    var seconds = Math.abs(Math.floor(duration / 1000)),
+        h = (seconds - seconds % 3600) / 3600,
+        m = (seconds - seconds % 60) / 60 % 60,
+        s = seconds % 60,
+        ms = duration % 1000;
+    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
+}
+function formatDurationTenth(duration) {
+    var seconds = Math.abs(Math.floor(duration / 1000)),
+        h = (seconds - seconds % 3600) / 3600,
+        m = (seconds - seconds % 60) / 60 % 60,
+        s = seconds % 60,
+        ms = duration % 1000,
+        ts = Math.floor(ms / 100);
+    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
+}
+function intersects(a, b, c, d, p, q, r, s) {
+    // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+    var det, gamma, lambda;
+    det = (c - a) * (s - q) - (r - p) * (d - b);
+    // log(det)
+    if (det === 0) {
+        return false;
+    } else {
+        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+    }
+};
+function secondBezier(x1, y1, x2, y2, x3, y3, x4, y4) {
+    return ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+};
+function dotProduct(a, b, c, d) {
+    return a * c + b * d;
+};
+function crossProduct(a, b, c, d) {
+    return a * d - b * c;
+};
+function secsToString(seconds) {
+
+    // var seconds = Math.floor((new Date() - date) / 1000);
+
+    var interval = seconds / 31536000;
+
+    if (interval > 1) {
+        return Math.floor(interval) + " years";
+    }
+    interval = seconds / 2592000;
+    if (interval > 1) {
+        return Math.floor(interval) + " months";
+    }
+    interval = seconds / 86400;
+    if (interval > 1) {
+        return Math.floor(interval) + " days";
+    }
+    interval = seconds / 3600;
+    if (interval > 1.5) {
+        return Math.round(interval) + " hours";
+    }
+    if (interval > 10) {
+        return Math.round(interval) + " hour";
+    }
+    // if (interval > 1) {
+    //     return Math.floor(interval) + " hours " +
+    //         Math.round(60 * (interval - Math.floor(interval))) + " minutes";
+    // }
+    interval = seconds / 60;
+    if (interval > 1) {
+        return Math.floor(interval) + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
+}
+function submitName() {
+    let newName = document.getElementById('name').value
+
+    if (newName.trim().length === 0) {
+        flash.flash("Empty name, try again")
+    }
+    else {
+        name.name = newName;
+        name.text = name.name;
+        localStorage.name = name.name;
+        hiScoresWeb.name = name.name;
+    }
+    name.hideNameForm();
+    log('submitting name')
+}
+function resize() {
+    canvas = document.getElementById("cw");
+    ctx = canvas.getContext("2d", { alpha: false });
+    pixRat = window.devicePixelRatio * 1.0;
+    canvas.height = window.innerHeight * pixRat;
+    canvas.width = window.innerWidth * pixRat;
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    X = canvas.width;
+    Y = canvas.height;
+    xc = 0 // screen centre coords
+    yc = 0
+    isTouch = isTouchDevice();
+    yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
+
+}
+function anim() {
+    n++;
+    if (n < nMax) {
+        requestAnimationFrame(anim);
+    }
+
+    // requestAnimationFrame(anim);
+
+    car.control(inputState);
+    if (track.trackReady) {
+        car.readTrack();
+        car.mech2();
+    }
+    // calc screen centre coords
+    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
+    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
+    xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
+    yc = yc + (yct - yc) * panSpeed
+
+    //draw scaled stuff
+    // ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
+
+    // clear screen
+    ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
+
+    // flat background for icon making
+    // ctx.beginPath()
+    // ctx.fillStyle='grey'
+    // ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
+    // ctx.fill()
+
+    ctx.drawImage(track.canvasScl, xc, yc);
+    track.drawGates(ctx, xc, yc);
+    // track.drawAllGwwates(ctx, xc, yc);
+    lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
+    lapCounter.updateLapTime();
+    lapCounter.draw(ctx);
+    car.draw(ctx, xc, yc);
+    ghost.draw(ctx, xc, yc);
+    ghost.drawToggle();
+
+    // draw unscaled scaled stuff
+    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // touchControl.draw(ctx);
+    if (inputState.touch) {
+        accBtn.draw(ctx);
+        brkBtn.draw(ctx);
+        leftBtn.draw(ctx);
+        rightBtn.draw(ctx);
+    }
+    // drawDebug();
+    // drawHUD();
+
+    // car.drawHUD(ctx);
+    hiScores.draw(ctx);
+    hiScoresWeb.draw(ctx);
+    sessionLogger.draw(ctx);
+    name.draw(ctx);
+    // drawInfo(ctx);
+    flash.draw(ctx);
+    drawHUD();
+
+    ghost.addState(car.x, car.y, car.theta);
+
+}
 function cyrb128(str) {
     //string to numeric hash for seeding
     let h1 = 1779033703, h2 = 3144134277,
@@ -2078,58 +2376,6 @@ function mulberry32(a) {
     }
 }
 
-class Randomizer {
-    constructor(seed) {
-        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue','hotpink']
-        this.xflips = [false, true]
-        this.yflips = [false, true]
-        this.reverses = [false, true]
-        this.scales = [
-            { ppm: 10, mpp: 0.2 },
-            { ppm: 8, mpp: 0.35 },
-            { ppm: 6, mpp: 0.6 }
-        ]
-
-        this.colour = null;
-        this.xflip = null;
-        this.yflip = null
-        this.scale = null;
-        this.reverse = null;
-        this.seed=seed;
-        this.rand = mulberry32(this.seed);
-    }
-    randomElement(array) {
-        return array[Math.floor(this.rand() * array.length)];
-    }
-    setDefaults(){
-        this.scale = { ppm: 10, mpp: 0.2 };
-        this.yflip = false;
-        this.xflip = false;
-        this.reverse = false;
-        this.colour = 'hotpink';
-        this.track = p.track[1];
-    }
-    gen() {
-        this.scale = this.randomElement(this.scales);
-        this.yflip = this.randomElement(this.yflips);
-        this.xflip = this.randomElement(this.xflips);
-        this.reverse = this.randomElement(this.reverses);
-        this.colour = this.randomElement(this.colours);
-        this.track = this.randomElement(p.track);
-    }
-    apply(p) {
-        p.ctrack = this.track;
-
-        p.car.colour = this.colour;
-        p.trackSetup.reverse = this.reverse;
-        p.trackSetup.flipX = this.xflip;
-        p.trackSetup.flipY = this.yflip;
-        p.trackSetup.metresPerPix = this.scale.mpp;
-        p.draw.pixPerMetre = this.scale.ppm;
-        
-    }
-
-}
 
 let log = console.log;
 const queryString = window.location.search;
@@ -2140,7 +2386,7 @@ const showLapCount = urlParams.get('nLaps');
 import { p } from './params.js'
 const sessionPrefix = p.version.n
 
-let serverOveride=false;
+let serverOveride = false;
 // serverOveride=true;
 let apiURL;
 if ((location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
@@ -2192,7 +2438,7 @@ const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen p
 // const forceLeft = false;
 let inputState = new InputState;
 let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
-addListeners(inputState);
+
 
 //track and lapCounter set up
 let track = new Track()
@@ -2200,7 +2446,9 @@ let lapCounter = new LapCounter(track.gates);
 
 // car set up
 let car = new Car();
-
+//ghost set up
+let ghost = new Ghost();
+addListeners(inputState);
 // run
 let n = 0;
 let nMax = p.run.nMax;
