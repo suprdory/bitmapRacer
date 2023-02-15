@@ -181,18 +181,17 @@ class Track {
         this.ctx.translate(-(0 + this.Xi * 1 / 2), -(0 + this.Yi * 1 / 2));
         this.ctx.drawImage(this.img, 0, 0);
         this.imageData = this.ctx.getImageData(0, 0, this.img.width, this.img.height).data;
-
+        // this.imgFlipped = this.ctx;
 
         this.image2trackDat()
-        this.canvasScl.height = this.Yi * this.trackScl;
-        this.canvasScl.width = this.Xi * this.trackScl;
-
-        this.ctxScl.imageSmoothingEnabled = false;
-        this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
-        this.ctxScl.scale(xFlip, yFlip);
-        this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
-
-        this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
+        
+        // this.canvasScl.height = this.Yi * this.trackScl;
+        // this.canvasScl.width = this.Xi * this.trackScl;
+        // this.ctxScl.imageSmoothingEnabled = false;
+        // this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
+        // this.ctxScl.scale(xFlip, yFlip);
+        // this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
+        // this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
     }
     drawGates(ctx, xc, yc) {
         let gate = this.gates[0]
@@ -1644,10 +1643,10 @@ class SessionLogger {
         ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
         // ctx.fillText("Streak: " + this.streak + " days", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
         if (this.currentRank) {
-            ctx.fillText("Current Rank " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
+            ctx.fillText("Current Rank: " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
         }
         if (this.yesterRank) {
-            ctx.fillText("Last Rank " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
+            ctx.fillText("Last Rank: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
 
         }
         if (this.qualified) {
@@ -1923,7 +1922,7 @@ class Ghost {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Ghost: ' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 80 * pixRat)
+        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 80 * pixRat)
     }
     contains(ex, ey) {
         // log(ex,ey)
@@ -2279,6 +2278,7 @@ function submitName() {
 function resize() {
     canvas = document.getElementById("cw");
     ctx = canvas.getContext("2d", { alpha: false });
+    ctx.imageSmoothingEnabled = false;
     pixRat = window.devicePixelRatio * 1.0;
     canvas.height = window.innerHeight * pixRat;
     canvas.width = window.innerWidth * pixRat;
@@ -2323,9 +2323,21 @@ function anim() {
     // ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
     // ctx.fill()
 
-    ctx.drawImage(track.canvasScl, xc, yc);
+    //draw track
+
+    // this method scales track image live every frame, is too slow when smooth scaling is enables, maybe ok without?
+    
+    ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
+
+    // this method user prescaled track from 'offscreen' (but not officially) canvas, was sig faster when
+    // tha canvas smooth scaling was set to true. may be uncessary when smooth if false?
+    // prescaled track is too big for iphone (maybe, not tested).
+    // ctx.drawImage(track.canvasScl, xc, yc);
+    
+    
+
     track.drawGates(ctx, xc, yc);
-    // track.drawAllGwwates(ctx, xc, yc);
+    // track.drawAllGates(ctx, xc, yc);
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.updateLapTime();
     lapCounter.draw(ctx);
