@@ -1909,7 +1909,7 @@ class Ghost {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Ghost: ' + this.dispText, + 5 * pixRat, Y - isTouch * Y / 3 - 85 * pixRat)
+        ctx.fillText('Ghost: ' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 80 * pixRat)
     }
     contains(ex, ey) {
         log(ex,ey)
@@ -2019,8 +2019,8 @@ function showImage(fileReader) {
 
 }
 function drawHUD() {
-    let hudX = 10;
-    let hudY = 10 + isTouch * Y / 3;
+    let hudX = 5*pixRat;
+    let hudY = 5*pixRat + isTouch * Y / 3;
     let barHeight = 50 * pixRat;
     let barWidthSpace = 5 * pixRat;
     let barWidth = 20 * pixRat;
