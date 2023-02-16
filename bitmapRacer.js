@@ -2035,7 +2035,12 @@ class Ghost {
             this.savedLap.x = JSON.parse(localGhost.x)
             this.savedLap.y = JSON.parse(localGhost.y)
             this.savedLap.th = JSON.parse(localGhost.th)
-            this.savedLap.time = JSON.parse(localGhost.time)
+            if (localGhost.time){
+                this.savedLap.time = JSON.parse(localGhost.time)
+            }
+            else{
+                this.savedLap.time=9999999; //catched previous version with not ghost time stored
+            }
             this.ghostAvail = true;
         }
     }
