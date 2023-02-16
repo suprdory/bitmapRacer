@@ -2087,7 +2087,7 @@ class Ghost {
         if (this.toggleState == 1) {
             this.drawGhost = true;
             this.drawWebGhost = false;
-            this.dispText = 'Local';
+            this.dispText = 'On';
         }
         if (this.toggleState == 2) {
             this.drawGhost = false;
