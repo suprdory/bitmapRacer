@@ -176,6 +176,7 @@ class Track {
 
         let xFlip = this.flipX ? -1 : 1;
         let yFlip = this.flipY ? -1 : 1;
+        this.ctx.imageSmoothingEnabled = false;
         this.ctx.translate(0 + this.Xi * 1 / 2, 0 + this.Yi * 1 / 2);
         this.ctx.scale(xFlip, yFlip);
         this.ctx.translate(-(0 + this.Xi * 1 / 2), -(0 + this.Yi * 1 / 2));
@@ -184,7 +185,7 @@ class Track {
         // this.imgFlipped = this.ctx;
 
         this.image2trackDat()
-        
+
         // this.canvasScl.height = this.Yi * this.trackScl;
         // this.canvasScl.width = this.Xi * this.trackScl;
         // this.ctxScl.imageSmoothingEnabled = false;
@@ -978,6 +979,7 @@ class LapCounter {
             this.bestLap = this.lapTime;
             // ghost.saveLap();
         }
+        ghost.newLap(this.lastLap)
         hiScores.newLap(this.lastLap);
         if (name.name) {
             hiScoresWeb.newLap(this.lastLap);
@@ -1013,7 +1015,7 @@ class LapCounter {
         this.nextCheck = 1;
 
         ghost.started = true;
-        ghost.newLap();
+        ghost.newLap(0);
     }
     updateLapTime() {
         // this.lapTime = Date.now() - this.t0;
@@ -1158,13 +1160,13 @@ class HiScores {
         this.last = t;
         if (this.times[0] == 0) {
             flash.flash("First Lap")
-            ghost.saveLap();
+            // ghost.saveLap();
 
             sessionLogger.currentBestLap = t;
             sessionLogger.updateRank();
         }
         else if (t < this.times[0]) {
-            ghost.saveLap();
+            // ghost.saveLap();
             flash.flash("Best Lap!")
             sessionLogger.currentBestLap = t;
             sessionLogger.updateRank();
@@ -1228,7 +1230,6 @@ class HiScoresWeb {
         this.lapCounts = [];
         this.showLapCounts = true;
         this.countStr = '';
-
 
         // this.version = p.version.n;
         this.version = sessionLogger.version;
@@ -1330,6 +1331,13 @@ class HiScoresWeb {
 
     newLap(t) {
         this.postLap(this.version, name.name, t);
+
+        if (t < this.lapCounts[0][0]) {
+            log(this.lapCounts)
+            // log('posting')
+            // ghost.postLap(t);
+        }
+
         // this.getTimes(this.version);
     }
 }
@@ -1719,19 +1727,34 @@ class Ghost {
         this.recLap.x = [];
         this.recLap.y = [];
         this.recLap.th = [];
-        
+
         //playback ghost
         this.savedLap = [];
-    
+        this.savedLap.time = 0;
+
         this.started = false; // set true once start line crossed
         this.ghostAvail = false; // set true when first ghost created, or when loaded from local
 
-        // this.oldLap.y=[];
-        this.loadFromLocal();
+        //web ghost
+        this.webLap = [];
+        this.webLap.time = 0;
+        this.webLap.name = 'Web'
+        this.webGhostAvail = false;
 
+        // this.oldLap.y=[];
+
+        this.loadFromWeb();
+        this.loadFromLocal();
         // toggle
-        this.drawGhost = JSON.parse(localStorage.getItem('drawGhost'));
-        this.dispText = this.drawGhost ? "On" : "Off";
+        this.toggleState = 0;
+        this.drawGhost = false;
+        this.drawWebGhost = false;
+        this.dispText = "Off";
+        if ("ghostToggleState" in localStorage) {
+            this.toggleState = localStorage.getItem("ghostToggleState");
+            this.toggleState--;
+            this.toggleDraw();
+        }
         // log(this.drawGhost,this.dispText)
 
         this.fontsize = 15 * pixRat;
@@ -1739,7 +1762,7 @@ class Ghost {
         this.ch = this.fontsize + 10 * pixRat;
         this.cw = pixRat * 80;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 80 * pixRat-this.ch;
+        this.cy0 = Y - isTouch * Y / 3 - 80 * pixRat - this.ch;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
@@ -1755,10 +1778,15 @@ class Ghost {
         this.wheelAspect = p.car.wheelAspect;
         this.oversize = p.car.oversize;
         this.bodyAspect = p.car.bodyAspect;
+
         this.colour = p.car.colour;
-        // this.colour='green';
+        this.colourWeb = 'black';
+
+        // this.colour = 'green';
+        // this.colourWeb = 'blue';
 
         this.rotMat = calcRotMat(0);
+
 
         // car body coords in normalized units relative to centre line and rear wheel
         // this.coordsRel = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
@@ -1800,27 +1828,31 @@ class Ghost {
             this.recLap.th.push(th);
         }
     }
-    newLap() {
+    newLap(t) {
         this.n = 0;
-        // log(this.recLap)
-        // this.saveLap();
+        // log('ghost new lap, t=',t)
+        // log(t, this.savedLap.time)
+        if ((t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
+            this.saveLap(t);
+        }
+        if ((t != 0) & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+            this.postLap(t);
+        }
+
         this.recLap.x = [];
         this.recLap.y = [];
         this.recLap.th = [];
 
-        // log(this.recLap)
-        // log(this.savedLap)
-
     }
-    saveLap() {
+    saveLap(t) {
         log('saving ghost')
         this.savedLap.x = this.recLap.x.slice();
         this.savedLap.y = this.recLap.y.slice();
         this.savedLap.th = this.recLap.th.slice();
+        this.savedLap.time = t;
         this.ghostAvail = true;
 
-        localStorage.setItem('ghostVersion', JSON.stringify(sessionLogger.version));
-        localStorage.setItem('ghost', JSON.stringify({
+        this.lapDataJSON = JSON.stringify({
             'x': JSON.stringify(this.savedLap.x, function (key, val) {
                 return val.toFixed ? Number(val.toFixed(3)) : val;
             }),
@@ -1829,9 +1861,51 @@ class Ghost {
             }),
             'th': JSON.stringify(this.savedLap.th, function (key, val) {
                 return val.toFixed ? Number(val.toFixed(3)) : val;
-            })
-        }));
+            }),
+            'time': JSON.stringify(t),
+        })
+        localStorage.setItem('ghostVersion', JSON.stringify(sessionLogger.version));
+        localStorage.setItem('ghost', this.lapDataJSON);
+    }
+    postLap(t) {
+        log('posting ghost')
+        this.savedLap.x = this.recLap.x.slice();
+        this.savedLap.y = this.recLap.y.slice();
+        this.savedLap.th = this.recLap.th.slice();
+        this.savedLap.time = t;
+        this.lapDataJSON = JSON.stringify({
+            'x': JSON.stringify(this.savedLap.x, function (key, val) {
+                return val.toFixed ? Number(val.toFixed(3)) : val;
+            }),
+            'y': JSON.stringify(this.savedLap.y, function (key, val) {
+                return val.toFixed ? Number(val.toFixed(3)) : val;
+            }),
+            'th': JSON.stringify(this.savedLap.th, function (key, val) {
+                return val.toFixed ? Number(val.toFixed(3)) : val;
+            }),
+            'time': JSON.stringify(t),
+        })
+        let formData = new FormData();
+        formData.append('name', name.name);
+        formData.append('version', sessionLogger.version);
+        formData.append('time', t);
+        formData.append("lapData", this.lapDataJSON);
+        // log(formData)
 
+        fetch(apiURL + '/post_ghost', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                // this.getTimes(this.version);
+                // this.getLaps(this.version);
+                // sessionLogger.updateRank();
+                console.log(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     }
     draw(ctx, xc, yc) {
         // log(this.n)
@@ -1893,6 +1967,66 @@ class Ghost {
             }
         }
     }
+    drawWeb(ctx, xc, yc) {
+        // log(this.n)
+        if (this.webGhostAvail & this.started & this.drawWebGhost) {
+            if (this.n < this.webLap.x.length) {
+
+                ctx.globalAlpha = 0.5;
+                this.rotMat = calcRotMat(this.webLap.th[this.n]);
+
+
+                let x = MatrixProd(this.coordMat3, this.rotMat);
+                x = MatrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'black';
+                ctx.fillStyle = this.colour;
+                ctx.lineWidth = baseLW / zoom * pixRat;
+                ctx.moveTo(x[0][0], x[0][1])
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo(x[i][0], x[i][1]);
+                }
+                ctx.lineTo(x[0][0], x[0][1]);
+                ctx.stroke();
+
+                x = MatrixProd(this.coordMat, this.rotMat);
+                x = MatrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
+
+                ctx.beginPath();
+                ctx.strokeStyle = this.colourWeb;
+                ctx.fillStyle = this.colourWeb;
+                ctx.lineWidth = baseLW / zoom * pixRat;
+                // console.table(this.coordMat)
+                ctx.moveTo(x[0][0], x[0][1])
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo(x[i][0], x[i][1]);
+                }
+                ctx.lineTo(x[0][0], x[0][1]);
+                // ctx.stroke();
+                ctx.fill();
+
+                x = MatrixProd(this.coordMat2, this.rotMat);
+                x = MatrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
+
+                ctx.beginPath();
+                ctx.strokeStyle = this.colour;
+                ctx.fillStyle = 'black';
+                ctx.lineWidth = baseLW / zoom * pixRat;
+                // console.table(this.coordMat)
+                ctx.moveTo(x[0][0], x[0][1])
+                for (let i = 1; i < x.length; i++) {
+                    ctx.lineTo(x[i][0], x[i][1]);
+                }
+                ctx.lineTo(x[0][0], x[0][1]);
+                // ctx.stroke();
+                ctx.fill();
+
+                this.wheels.forEach(wheel => wheel.draw(ctx, this.rotMat, this.webLap.x[this.n], this.webLap.y[this.n], xc, yc));
+                ctx.globalAlpha = 1.0;
+            }
+        }
+    }
     loadFromLocal() {
         let localGhostVersion = JSON.parse(localStorage.getItem('ghostVersion'))
         if (localGhostVersion == sessionLogger.version) {
@@ -1901,21 +2035,67 @@ class Ghost {
             this.savedLap.x = JSON.parse(localGhost.x)
             this.savedLap.y = JSON.parse(localGhost.y)
             this.savedLap.th = JSON.parse(localGhost.th)
+            this.savedLap.time = JSON.parse(localGhost.time)
             this.ghostAvail = true;
         }
     }
+    loadFromWeb() {
+        fetch(apiURL + '/get_ghost?version=' + sessionLogger.version)
+            .then(response => response.json())
+            .then(data => {
+                // log(data)
+                if (data.avail) {
+                    this.webLap.name = data.name;
+                    if (this.toggleState == 2) {
+                        this.dispText = data.name;
+                    }
+                    this.webLap.time = data.time;
+                    let lapData = JSON.parse(data.lapData);
+                    this.webLap.x = JSON.parse(lapData.x);
+                    this.webLap.y = JSON.parse(lapData.y);
+                    this.webLap.th = JSON.parse(lapData.th);
+                    this.webGhostAvail = true;
+                    // log(this.webLap.x)
+                }
+                else {
+                    log("no web ghost avail")
+                }
 
-    toggleDraw(){
-        this.drawGhost = !this.drawGhost;
-        if (this.drawGhost) {
-            this.dispText = 'On';
+                // log(this.name)
+                // let localGhost = JSON.parse(localStorage.getItem('ghost'));
+                // this.times = data
+                // this.n = Math.min(this.nMax, data.length);
+                // log("response:")
+
+            });
+    }
+    toggleDraw() {
+        this.toggleState++;
+        if (this.toggleState > 3) {
+            this.toggleState = 0;
         }
-        else {
+        if (this.toggleState == 0) {
+            this.drawGhost = false;
+            this.drawWebGhost = false;
             this.dispText = 'Off';
         }
-        localStorage.setItem('drawGhost',this.drawGhost)
+        if (this.toggleState == 1) {
+            this.drawGhost = true;
+            this.drawWebGhost = false;
+            this.dispText = 'Local';
+        }
+        if (this.toggleState == 2) {
+            this.drawGhost = false;
+            this.drawWebGhost = true;
+            this.dispText = this.webLap.name;
+        }
+        if (this.toggleState == 3) {
+            this.drawGhost = true;
+            this.drawWebGhost = true;
+            this.dispText = 'Both';
+        }
+        localStorage.setItem('ghostToggleState', this.toggleState)
     }
-
     drawToggle() {
         ctx.beginPath();
         ctx.textAlign = "left";
@@ -2027,8 +2207,8 @@ function showImage(fileReader) {
 
 }
 function drawHUD() {
-    let hudX = 5*pixRat;
-    let hudY = 5*pixRat + isTouch * Y / 3;
+    let hudX = 5 * pixRat;
+    let hudY = 5 * pixRat + isTouch * Y / 3;
     let barHeight = 50 * pixRat;
     let barWidthSpace = 5 * pixRat;
     let barWidth = 20 * pixRat;
@@ -2326,15 +2506,15 @@ function anim() {
     //draw track
 
     // this method scales track image live every frame, is too slow when smooth scaling is enables, maybe ok without?
-    
+
     ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
 
     // this method user prescaled track from 'offscreen' (but not officially) canvas, was sig faster when
     // tha canvas smooth scaling was set to true. may be uncessary when smooth if false?
     // prescaled track is too big for iphone (maybe, not tested).
     // ctx.drawImage(track.canvasScl, xc, yc);
-    
-    
+
+
 
     track.drawGates(ctx, xc, yc);
     // track.drawAllGates(ctx, xc, yc);
@@ -2343,6 +2523,7 @@ function anim() {
     lapCounter.draw(ctx);
     car.draw(ctx, xc, yc);
     ghost.draw(ctx, xc, yc);
+    ghost.drawWeb(ctx, xc, yc);
     ghost.drawToggle();
 
     // draw unscaled scaled stuff
@@ -2478,7 +2659,7 @@ anim();
 flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
-// log(localStorage.versionTimes)
+log(sessionLogger.version)
 
 // hiScoresWeb.postLap('0.1', 'NJS', 1001)
 // getTimes('vTest')
