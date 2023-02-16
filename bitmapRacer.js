@@ -1011,11 +1011,11 @@ class LapCounter {
     reset() {
         this.t0 = Date.now();
         this.n0 = n - (1 - this.bez);
-        // this.lapTime = 0
         this.nextCheck = 1;
 
         ghost.started = true;
         ghost.newLap(0);
+        sessionLogger.setCountDown();
     }
     updateLapTime() {
         // this.lapTime = Date.now() - this.t0;
@@ -1418,6 +1418,7 @@ class Flash {
         this.x = X / 2;
         // this.y = Y - isTouch * Y / 3;
         this.y = 15 * pixRat * 2.1
+        this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
         this.message = "Testing"
         this.mTime = Date.now();
@@ -1436,7 +1437,7 @@ class Flash {
             ctx.fillStyle = "white";
             // log(Y,this.y)
 
-            ctx.fillText(this.message, this.x, this.y)
+            ctx.fillText(this.message, this.x, this.y+6*this.dy)
         }
     }
 }
@@ -1446,7 +1447,8 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + 0 //it offset for testing session changes
+        this.timeTravelDays=0;
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
@@ -1471,6 +1473,12 @@ class SessionLogger {
         //     "current streak:", this.outStreak,);
     }
 
+    setCountDown(){
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
+        this.currentSesh = Math.floor(currentTime); //integer, days since 1970
+        let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
+        this.timeTillNextString = secsToString(timeTillNext);
+    }
     setLocalQual(version, stat) {
         if (localStorage.getItem('versionTimes')) {
             // log("Setting local qual status")
@@ -2660,8 +2668,8 @@ addListeners(inputState);
 let n = 0;
 let nMax = p.run.nMax;
 anim();
-// flash.flash("v: " + p.version.n)
-flash.flash("v:" + sessionLogger.version + " " + location.hostname);
+
+// flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
 log(sessionLogger.version)
