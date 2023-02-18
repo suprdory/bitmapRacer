@@ -1846,7 +1846,7 @@ class Ghost {
         if ((t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
             this.saveLap(t);
         }
-        if ((t != 0) & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+        if ((t != 0) & (name.name & (t < this.webLap.time) | (this.webLap.time == 0))) {
             this.postLap(t);
         }
 
