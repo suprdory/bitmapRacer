@@ -1437,7 +1437,7 @@ class Flash {
             ctx.fillStyle = "white";
             // log(Y,this.y)
 
-            ctx.fillText(this.message, this.x, this.y+6*this.dy)
+            ctx.fillText(this.message, this.x, this.y + 6 * this.dy)
         }
     }
 }
@@ -1447,7 +1447,7 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        this.timeTravelDays=0;
+        this.timeTravelDays = 0;
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
@@ -1473,7 +1473,7 @@ class SessionLogger {
         //     "current streak:", this.outStreak,);
     }
 
-    setCountDown(){
+    setCountDown() {
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
@@ -2043,11 +2043,11 @@ class Ghost {
             this.savedLap.x = JSON.parse(localGhost.x)
             this.savedLap.y = JSON.parse(localGhost.y)
             this.savedLap.th = JSON.parse(localGhost.th)
-            if (localGhost.time){
+            if (localGhost.time) {
                 this.savedLap.time = JSON.parse(localGhost.time)
             }
-            else{
-                this.savedLap.time=9999999; //catched previous version with not ghost time stored
+            else {
+                this.savedLap.time = 9999999; //catched previous version with not ghost time stored
             }
             this.ghostAvail = true;
         }
@@ -2485,10 +2485,71 @@ function resize() {
     yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
 
 }
+class FPS {
+    constructor() {
+        this.defaultFPS = 60;
+        this.fps = parseInt(this.getLocal());
+        this.nSmooth = this.fps;
+        this.t0 = 0;
+        this.t = 0;
+        this.fdtm10 = 0;
+        this.fdt = 0;
+        this.fdtarr = new Array(this.nSmooth).fill(0);
+        this.fdtmean = 0;
+        this.maxfps = 0;
+        this.fpsMatch = 0;
+        this.matchTime = this.fps * 2;//get fps after 2 secs
+        this.fpss = [30, 60, 90, 120, 144, 240];
+        // log(this.fdtarr)
+
+    }
+    getLocal() {
+        if (localStorage.getItem('fps')) {
+            // log("Local FPS retrieved:", localStorage.getItem('fps'))
+            return localStorage.getItem('fps');
+        }
+        else {
+            // log("No local FPS, setting default:", this.defaultFPS)
+            return this.defaultFPS;
+        }
+    }
+    setLocal(fps) {
+        // log('local set:', fps)
+        localStorage.setItem('fps', fps)
+    }
+    calc() {
+        // call from anim every frame until matchTime
+        this.t = Date.now()
+        this.fdt = this.t - this.t0;
+        this.t0 = this.t;
+        this.fdtarr.push(this.fdt)
+        this.fdtm10 = this.fdtarr.shift()
+        this.fdtmean += this.fdt / this.nSmooth;
+        this.fdtmean -= this.fdtm10 / this.nSmooth;
+        this.maxfps = Math.max(1000 / this.fdtmean, this.maxfps);
+    }
+    match() {
+        //call from anim at matchTime
+        this.fpsMatch = this.fpss.reduce((a, b) => {
+            return Math.abs(b - this.maxfps) < Math.abs(a - this.maxfps) ? b : a;
+        });
+        this.fps = this.fpsMatch;
+        // log('matched: ', this.fpsMatch);
+        this.setLocal(this.fpsMatch);
+        flash.flash(this.fps + " Hz detected");
+        dt = p.run.dt * 60 / Fps.fps;
+    }
+}
 function anim() {
     n++;
     if (n < nMax) {
         requestAnimationFrame(anim);
+    }
+    if (n < Fps.matchTime) {
+        Fps.calc()
+    }
+    if (n == Fps.matchTime) {
+        Fps.match();
     }
 
     // requestAnimationFrame(anim);
@@ -2590,9 +2651,9 @@ function mulberry32(a) {
         return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
 }
-
-
 let log = console.log;
+
+let Fps = new FPS();
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const showLapCount = urlParams.get('nLaps');
@@ -2625,7 +2686,7 @@ const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 //physics constants
-const dt = p.run.dt;
+let dt = p.run.dt * 60 / Fps.fps; //time step, updated by FPS class after fps check/match
 const F_lat = p.phys.F_lat; // max lat fric force
 const stiffness = p.phys.stiffness; // cornering stiffness
 const CD = p.phys.CD; // surface drag coefficient
@@ -2667,12 +2728,18 @@ addListeners(inputState);
 // run
 let n = 0;
 let nMax = p.run.nMax;
+
+// var FPS = 0
+// let err
+// err = await calcFPS({ count: 120, callback: fps => FPS = fps });
+// if (err) FPS = 30;
+
+log(sessionLogger.version)
 anim();
 
 // flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
-log(sessionLogger.version)
 
 // hiScoresWeb.postLap('0.1', 'NJS', 1001)
 // getTimes('vTest')
