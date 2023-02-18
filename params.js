@@ -36,8 +36,6 @@ export let p = {
         "flipX": false,
         "flipY": false,
     },
-
-
     "draw": {
         "pixPerMetre": 8,
         "baseLW": 2,
@@ -55,9 +53,9 @@ export let p = {
         "nMax": 1000000,
         "fps": 60,
     },
-
     "track": [{
         "fname": 'tracks/square_track.png',
+        "bgColour":"#381b00",
         
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
@@ -86,7 +84,7 @@ export let p = {
     },
         {
             "fname": 'tracks/square_track2_allpath.png',
-
+            "bgColour": "#381b00",
             "x": 1000, // size, helpful for setting params before img loaded
             "y": 1000,
 

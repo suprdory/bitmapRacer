@@ -15,6 +15,9 @@ class Track {
             this.startX = this.flipX ? (p.ctrack.x - p.ctrack.startXRev) / this.trackPPM : p.ctrack.startXRev / this.trackPPM;
             this.startY = this.flipY ? (p.ctrack.x - p.ctrack.startYRev) / this.trackPPM : p.ctrack.startYRev / this.trackPPM;
         }
+        // log(p.ctrack)
+        this.bgColour=p.ctrack.bgColour;
+        log("track bgColour",this.bgColour)
         this.canvas = document.createElement("canvas"); // draw original img here
         this.ctx = this.canvas.getContext("2d", { alpha: false });
         this.canvasScl = document.createElement("canvas"); // draw prescaled track imgh here
@@ -2569,13 +2572,13 @@ function anim() {
     // ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
 
     // clear screen
-    ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
+    // ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
 
     // flat background for icon making
-    // ctx.beginPath()
-    // ctx.fillStyle='grey'
-    // ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
-    // ctx.fill()
+    ctx.beginPath()
+    ctx.fillStyle=track.bgColour;
+    ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
+    ctx.fill()
 
     //draw track
 
