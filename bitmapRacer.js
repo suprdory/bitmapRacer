@@ -16,8 +16,8 @@ class Track {
             this.startY = this.flipY ? (p.ctrack.x - p.ctrack.startYRev) / this.trackPPM : p.ctrack.startYRev / this.trackPPM;
         }
         // log(p.ctrack)
-        this.bgColour=p.ctrack.bgColour;
-        log("track bgColour",this.bgColour)
+        this.bgColour = p.ctrack.bgColour;
+        // log("track bgColour", this.bgColour)
         this.canvas = document.createElement("canvas"); // draw original img here
         this.ctx = this.canvas.getContext("2d", { alpha: false });
         this.canvasScl = document.createElement("canvas"); // draw prescaled track imgh here
@@ -982,7 +982,7 @@ class LapCounter {
             this.bestLap = this.lapTime;
             // ghost.saveLap();
         }
-        ghost.newLap(this.lastLap)
+        ghost.completeLap(this.lastLap)
         hiScores.newLap(this.lastLap);
         if (name.name) {
             hiScoresWeb.newLap(this.lastLap);
@@ -1017,12 +1017,12 @@ class LapCounter {
         this.nextCheck = 1;
 
         ghost.started = true;
-        ghost.newLap(0);
+        ghost.newLap();
         sessionLogger.setCountDown();
     }
     updateLapTime() {
         // this.lapTime = Date.now() - this.t0;
-        this.lapTimePh = (n - this.n0) * 1000 / p.run.fps;
+        this.lapTimePh = (n - this.n0) * 1000 / Fps.fps;
     }
     checkGates(x, y) {
         //in track pixel coords
@@ -1334,12 +1334,10 @@ class HiScoresWeb {
 
     newLap(t) {
         this.postLap(this.version, name.name, t);
-
-        if (t < this.lapCounts[0][0]) {
-            log(this.lapCounts)
-            // log('posting')
-            // ghost.postLap(t);
-        }
+        // if (this.lapCounts){
+        // if (t < this.lapCounts[0][0]) {
+        //     log(this.lapCounts)
+        // }}
 
         // this.getTimes(this.version);
     }
@@ -1450,7 +1448,7 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        this.timeTravelDays = 0;
+        this.timeTravelDays = 8000;
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
@@ -1839,23 +1837,26 @@ class Ghost {
             this.recLap.th.push(th);
         }
     }
-    newLap(t) {
-        this.n = 0;
+    completeLap(t) {
+
         // log('ghost new lap, t=',t)
         // log(t, this.savedLap.time)
         if ((t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
-            this.saveLap(t);
+            this.saveGhost(t);
         }
-        if ((t != 0) & (name.name & (t < this.webLap.time) | (this.webLap.time == 0))) {
-            this.postLap(t);
+        // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
+        if ((t != 0) & name.name!=null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+            this.postGhost(t);
         }
 
+    }
+    newLap() {
+        this.n = 0;
         this.recLap.x = [];
         this.recLap.y = [];
         this.recLap.th = [];
-
     }
-    saveLap(t) {
+    saveGhost(t) {
         log('saving ghost')
         this.savedLap.x = this.recLap.x.slice();
         this.savedLap.y = this.recLap.y.slice();
@@ -1878,7 +1879,7 @@ class Ghost {
         localStorage.setItem('ghostVersion', JSON.stringify(sessionLogger.version));
         localStorage.setItem('ghost', this.lapDataJSON);
     }
-    postLap(t) {
+    postGhost(t) {
         log('posting ghost')
         this.savedLap.x = this.recLap.x.slice();
         this.savedLap.y = this.recLap.y.slice();
@@ -1900,6 +1901,7 @@ class Ghost {
         formData.append('name', name.name);
         formData.append('version', sessionLogger.version);
         formData.append('time', t);
+        formData.append('fps', Fps.fps);
         formData.append("lapData", this.lapDataJSON);
         // log(formData)
 
@@ -2056,7 +2058,7 @@ class Ghost {
         }
     }
     loadFromWeb() {
-        fetch(apiURL + '/get_ghost?version=' + sessionLogger.version)
+        fetch(apiURL + '/get_ghost?version=' + sessionLogger.version + '&fps=' + Fps.fps)
             .then(response => response.json())
             .then(data => {
                 // log(data)
@@ -2071,7 +2073,7 @@ class Ghost {
                     this.webLap.y = JSON.parse(lapData.y);
                     this.webLap.th = JSON.parse(lapData.th);
                     this.webGhostAvail = true;
-                    // log(this.webLap.x)
+                    // log(this.webLap.time)
                 }
                 else {
                     log("no web ghost avail")
@@ -2576,7 +2578,7 @@ function anim() {
 
     // flat background for icon making
     ctx.beginPath()
-    ctx.fillStyle=track.bgColour;
+    ctx.fillStyle = track.bgColour;
     ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
     ctx.fill()
 
@@ -2740,6 +2742,7 @@ let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
 
+// log(1 & name.name!=null)
 // flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
