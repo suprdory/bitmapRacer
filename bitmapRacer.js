@@ -976,7 +976,7 @@ class LapCounter {
     lapComplete() {
         // log('Complete')
         // this.lapTimes.push(this.lapTime)
-        this.completeLapTimePh = Math.round((n - (1 - this.bez) - this.n0) * 1000 / p.run.fps);
+        this.completeLapTimePh = Math.round((n - (1 - this.bez) - this.n0) * 1000 / Fps.fps);
         this.lastLap = this.completeLapTimePh;
         if ((this.lastLap < this.bestLap) || this.bestLap == 0) {
             this.bestLap = this.lapTime;

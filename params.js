@@ -49,9 +49,8 @@ export let p = {
         "n": "flip01",
     },
     "run": {
-        "dt": 0.2,
+        "dt": 0.2, // time per frame at 60Hz
         "nMax": 1000000,
-        "fps": 60,
     },
     "track": [{
         "fname": 'tracks/square_track.png',
