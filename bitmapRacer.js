@@ -1702,7 +1702,7 @@ class Randomizer {
         return array[Math.floor(this.rand() * array.length)];
     }
     setDev() {
-        this.scale = { ppm: 8, mpp: 0.35 };
+        this.scale = { ppm: 6, mpp: 0.35 };
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
@@ -2741,7 +2741,7 @@ randomizer.gen();
 if (trackDev) {
     randomizer.setDev();
 }
-if (sessionLogger.version=='flip01-19408'){//use to 'cue' up setting for day e.g. tomorrow
+if (sessionLogger.version=='flip01-19408'){//use to 'cue' up setting for day e.g. tomor
     randomizer.specialCase();
 }
 
