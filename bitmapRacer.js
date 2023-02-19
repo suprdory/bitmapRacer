@@ -153,7 +153,7 @@ class Track {
                 else if (hx >= 70 & hx <= 150) { // green
                     sfcType = 'grass';
                 }
-                else if ((hx > 330 | hx < 50) & lx < 50) { //dark red/yellow i.e. brown
+                else if ((hx > 330 | hx < 50) & lx < 75) { //dark red/yellow i.e. brown
                     sfcType = 'mud';
                 }
                 else {
@@ -1453,6 +1453,9 @@ class SessionLogger {
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
+        if (trackDev) {
+            this.version = this.version + '-' + 'trackDev'
+        }
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
         this.currentBestLap = 0;
@@ -1698,13 +1701,19 @@ class Randomizer {
     randomElement(array) {
         return array[Math.floor(this.rand() * array.length)];
     }
-    setDefaults() {
-        this.scale = { ppm: 10, mpp: 0.2 };
+    setDev() {
+        this.scale = { ppm: 8, mpp: 0.35 };
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
+        if (revDev) {
+            this.reverse = Boolean(revDev);
+        }
         this.colour = 'hotpink';
-        this.track = p.track[1];
+        this.track = p.track[2];
+        this.trackImgName = this.track.fnames[trackDev - 1]
+        // this.track.startX= 500;
+        // this.track.startY = 500;
     }
     gen() {
         this.scale = this.randomElement(this.scales);
@@ -1713,17 +1722,30 @@ class Randomizer {
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(p.track);
+        this.trackImgName = this.randomElement(this.track.fnames)
+        // log(this.trackImgName)
     }
     apply(p) {
         p.ctrack = this.track;
-
+        p.ctrack.fname = this.trackImgName;
         p.car.colour = this.colour;
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
         p.trackSetup.metresPerPix = this.scale.mpp;
         p.draw.pixPerMetre = this.scale.ppm;
-
+    }
+    specialCase(){
+        this.scale = { ppm: 6, mpp: 0.35 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = false;
+        if (revDev) {
+            this.reverse = Boolean(revDev);
+        }
+        this.colour = 'hotpink';
+        this.track = p.track[2];
+        this.trackImgName = this.track.fnames[0]
     }
 
 }
@@ -1845,7 +1867,7 @@ class Ghost {
             this.saveGhost(t);
         }
         // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
-        if ((t != 0) & name.name!=null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+        if (!trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
             this.postGhost(t);
         }
 
@@ -1876,8 +1898,11 @@ class Ghost {
             }),
             'time': JSON.stringify(t),
         })
-        localStorage.setItem('ghostVersion', JSON.stringify(sessionLogger.version));
-        localStorage.setItem('ghost', this.lapDataJSON);
+
+        if (!trackDev) {
+            localStorage.setItem('ghostVersion', JSON.stringify(sessionLogger.version));
+            localStorage.setItem('ghost', this.lapDataJSON);
+        }
     }
     postGhost(t) {
         log('posting ghost')
@@ -2596,7 +2621,9 @@ function anim() {
 
 
     track.drawGates(ctx, xc, yc);
-    // track.drawAllGates(ctx, xc, yc);
+    if (trackDev) {
+        track.drawAllGates(ctx, xc, yc);
+    }
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.updateLapTime();
     lapCounter.draw(ctx);
@@ -2662,6 +2689,8 @@ let Fps = new FPS();
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const showLapCount = urlParams.get('nLaps');
+const trackDev = parseInt(urlParams.get('trackDev'));
+const revDev = parseInt(urlParams.get('revDev'));
 
 // import parameter object
 import { p } from './params.js'
@@ -2709,7 +2738,13 @@ sessionLogger.updateYesterRank();
 let seed = cyrb128(sessionLogger.version)[2]
 let randomizer = new Randomizer(seed);
 randomizer.gen();
-// randomizer.setDefaults();
+if (trackDev) {
+    randomizer.setDev();
+}
+if (sessionLogger.version=='flip01-19408'){//use to 'cue' up setting for day e.g. tomorrow
+    randomizer.specialCase();
+}
+
 randomizer.apply(p);
 const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 
@@ -2741,7 +2776,6 @@ let nMax = p.run.nMax;
 
 log(sessionLogger.version)
 anim();
-
 // log(1 & name.name!=null)
 // flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
