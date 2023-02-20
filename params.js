@@ -1,27 +1,49 @@
 export let p = {
-    "car": {
-        "width": 2,
-        "frontLength": 1,
-        "rearLength": 2,
-        "height": 0.75,
-        "wheelWidth": 0.4,
-        "wheelAspect": 2,
-        "oversize": 0.15,
-        "bodyAspect": 0.25,
-        "mass": 200,
-        "momIfac": 5, // moment of intertia over mass
-        "steeringRate": 0.1,
-        "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-        "steeringUscl": 5, // U scl of steering lock limiting
-        "steeringCentreRate": 1,
-        "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-        "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-        "torqueRate": 4,
-        "torqueMax": 50,
-        "brakeRate": 20,
-        "brakeMax": 100,
-        "colour": 'gold',
-    },
+    "cars": [
+        {
+            "width": 2,
+            "frontLength": 1,
+            "rearLength": 2,
+            "height": 0.75,
+            "wheelWidth": 0.6,
+            "wheelAspect": 1.6,
+            "mass": 200,
+            "momIfac": 5, // moment of intertia over mass
+            "steeringRate": 0.1,
+            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 5, // U scl of steering lock limiting
+            "steeringCentreRate": 1,
+            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "torqueRate": 4,
+            "torqueMax": 50,
+            "brakeRate": 20,
+            "brakeMax": 100,
+            "colour": 'gold',
+        },
+        {
+            "width": 2,
+            "frontLength": 1,
+            "rearLength": 2,
+            "height": 0.75,
+            "wheelWidth": 0.6,
+            "wheelAspect": 1.6,
+            "mass": 200,
+            "momIfac": 5, // moment of intertia over mass
+            "steeringRate": 0.1,
+            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 5, // U scl of steering lock limiting
+            "steeringCentreRate": 1,
+            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "torqueRate": 4,
+            "torqueMax": 50,
+            "brakeRate": 20,
+            "brakeMax": 100,
+            "colour": 'gold',
+        },
+    ],
+
     "phys": {
         "CD": 100, // Surface Drag resistance
         "Crr": 2, // Rolling resistance
@@ -29,7 +51,6 @@ export let p = {
         "F_lat": 1.2, // Max lateral friction multiplier, above 1.0 gives "superweight" force.
         "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
     },
-
     "trackSetup": {
         "metresPerPix": 0.35,
         "reverse": false,
@@ -37,7 +58,7 @@ export let p = {
         "flipY": false,
     },
     "draw": {
-        "pixPerMetre": 8,
+        "pixPerMetre": 10,
         "baseLW": 2,
         "lookAhead": 5.0,
         "panSpeed": 0.15,
@@ -52,7 +73,7 @@ export let p = {
         "dt": 0.2, // time per frame at 60Hz
         "nMax": 1000000,
     },
-    "track": [{
+    "tracks": [{
         "fnames": ['tracks/square_track.png'],
         "bgColour": "#381b00",
 
@@ -111,39 +132,39 @@ export let p = {
         ]
     },
 
-        {
-            "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
-            "bgColour": "#B97A56",
-            "x": 1000, // size, helpful for setting params before img loaded
-            "y": 1000,
+    {
+        "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
+        "bgColour": "#B97A56",
+        "x": 1000, // size, helpful for setting params before img loaded
+        "y": 1000,
 
-            "startTheta": 3.141,
-            "startX": 180,
-            "startY": 840,
+        "startTheta": 3.141,
+        "startX": 180,
+        "startY": 840,
 
-            "startThetaRev": 0,
-            "startXRev": 180,
-            "startYRev": 200,
+        "startThetaRev": 0,
+        "startXRev": 180,
+        "startYRev": 200,
 
-            "sfcTypes": {
-                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-                "tarmac": { "mu": 0.8, "drag": 0.001 },
-                "grass": { "mu": 0.3, "drag": 0.02 },
-                "mud": { "mu": 0.2, "drag": 0.3 },
-                "unknown": { "mu": 0.8, "drag": 0.01 },
-            },
-            "gates": [ // in track pixels
-                { 'n': 0, 'left': { 'x': 0, 'y': 500 }, 'right': { 'x': 199, 'y': 500 } },
-                { 'n': 1, 'left': { 'x': 500, 'y': 0 }, 'right': { 'x': 500, 'y': 185 } },
-                { 'n': 2, 'left': { 'x': 1000, 'y': 195 }, 'right': { 'x': 790, 'y': 195 } },
-                { 'n': 3, 'left': { 'x': 784, 'y': 357 }, 'right': { 'x': 555, 'y': 357 } },
-                { 'n': 4, 'left': { 'x': 1000, 'y': 489 }, 'right': { 'x': 805, 'y': 489 } },
-                { 'n': 5, 'left': { 'x': 945, 'y': 630 }, 'right': { 'x': 612, 'y': 630 } },
-                { 'n': 6, 'left': { 'x': 800, 'y': 1000 }, 'right': { 'x': 800, 'y': 794 } },
-                { 'n': 7, 'left': { 'x': 398, 'y': 369 }, 'right': { 'x': 398, 'y': 189 } },
-                { 'n': 8, 'left': { 'x': 258, 'y': 1000 }, 'right': { 'x': 258, 'y': 793 } },
-            ]
+        "sfcTypes": {
+            "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+            "tarmac": { "mu": 0.8, "drag": 0.001 },
+            "grass": { "mu": 0.3, "drag": 0.02 },
+            "mud": { "mu": 0.2, "drag": 0.3 },
+            "unknown": { "mu": 0.8, "drag": 0.01 },
         },
+        "gates": [ // in track pixels
+            { 'n': 0, 'left': { 'x': 0, 'y': 500 }, 'right': { 'x': 199, 'y': 500 } },
+            { 'n': 1, 'left': { 'x': 500, 'y': 0 }, 'right': { 'x': 500, 'y': 185 } },
+            { 'n': 2, 'left': { 'x': 1000, 'y': 195 }, 'right': { 'x': 790, 'y': 195 } },
+            { 'n': 3, 'left': { 'x': 784, 'y': 357 }, 'right': { 'x': 555, 'y': 357 } },
+            { 'n': 4, 'left': { 'x': 1000, 'y': 489 }, 'right': { 'x': 805, 'y': 489 } },
+            { 'n': 5, 'left': { 'x': 945, 'y': 630 }, 'right': { 'x': 612, 'y': 630 } },
+            { 'n': 6, 'left': { 'x': 800, 'y': 1000 }, 'right': { 'x': 800, 'y': 794 } },
+            { 'n': 7, 'left': { 'x': 398, 'y': 369 }, 'right': { 'x': 398, 'y': 189 } },
+            { 'n': 8, 'left': { 'x': 258, 'y': 1000 }, 'right': { 'x': 258, 'y': 793 } },
+        ]
+    },
 
     ],
 }

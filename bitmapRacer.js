@@ -5,18 +5,18 @@ class Track {
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
         this.flipX = p.trackSetup.flipX;
         this.flipY = p.trackSetup.flipY;
-        this.gates = p.ctrack.gates;
+        this.gates = p.track.gates;
         this.reverse = p.trackSetup.reverse;
         if (!this.reverse) {
-            this.startX = this.flipX ? (p.ctrack.x - p.ctrack.startX) / this.trackPPM : p.ctrack.startX / this.trackPPM;
-            this.startY = this.flipY ? (p.ctrack.x - p.ctrack.startY) / this.trackPPM : p.ctrack.startY / this.trackPPM;
+            this.startX = this.flipX ? (p.track.x - p.track.startX) / this.trackPPM : p.track.startX / this.trackPPM;
+            this.startY = this.flipY ? (p.track.x - p.track.startY) / this.trackPPM : p.track.startY / this.trackPPM;
         }
         else {
-            this.startX = this.flipX ? (p.ctrack.x - p.ctrack.startXRev) / this.trackPPM : p.ctrack.startXRev / this.trackPPM;
-            this.startY = this.flipY ? (p.ctrack.x - p.ctrack.startYRev) / this.trackPPM : p.ctrack.startYRev / this.trackPPM;
+            this.startX = this.flipX ? (p.track.x - p.track.startXRev) / this.trackPPM : p.track.startXRev / this.trackPPM;
+            this.startY = this.flipY ? (p.track.x - p.track.startYRev) / this.trackPPM : p.track.startYRev / this.trackPPM;
         }
         // log(p.ctrack)
-        this.bgColour = p.ctrack.bgColour;
+        this.bgColour = p.track.bgColour;
         // log("track bgColour", this.bgColour)
         this.canvas = document.createElement("canvas"); // draw original img here
         this.ctx = this.canvas.getContext("2d", { alpha: false });
@@ -26,7 +26,7 @@ class Track {
         this.imageData; // extracted on img load;
         this.sfc_mu; // derived after img load by image2trackDat();
         this.sfc_drag; // derived after img load by image2trackDat();
-        this.sfcTypes = p.ctrack.sfcTypes;
+        this.sfcTypes = p.track.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
             // console.log("track object img loaded")
@@ -34,7 +34,7 @@ class Track {
             this.trackReady = 1;
             // console.log("track ready", this)
         }
-        this.img.src = p.ctrack.fname;
+        this.img.src = p.track.fname;
         this.Xi = 0; //img dimensions, obtained after load.
         this.Yi = 0;
         this.flipGates();
@@ -46,16 +46,16 @@ class Track {
         if (this.flipY) {
             this.gates = this.gates.map(g => ({
                 'n': g.n,
-                'right': { 'x': g.left.x, 'y': p.ctrack.y - g.left.y },
-                'left': { 'x': g.right.x, 'y': p.ctrack.y - g.right.y }
+                'right': { 'x': g.left.x, 'y': p.track.y - g.left.y },
+                'left': { 'x': g.right.x, 'y': p.track.y - g.right.y }
             }));
             // log(this.gates);
         }
         if (this.flipX) {
             this.gates = this.gates.map(g => ({
                 'n': g.n,
-                'right': { 'x': p.ctrack.x - g.left.x, 'y': g.left.y },
-                'left': { 'x': p.ctrack.x - g.right.x, 'y': g.right.y }
+                'right': { 'x': p.track.x - g.left.x, 'y': g.left.y },
+                'left': { 'x': p.track.x - g.right.x, 'y': g.right.y }
             }));
         }
 
@@ -263,10 +263,10 @@ class Car {
 
 
         if (!track.reverse) {
-            this.theta = p.ctrack.startTheta; // heading angle
+            this.theta = p.track.startTheta; // heading angle
         }
         else {
-            this.theta = p.ctrack.startThetaRev; // heading angle
+            this.theta = p.track.startThetaRev; // heading angle
         }
         if (track.flipX) {
             this.theta = -this.theta;
@@ -363,54 +363,49 @@ class Car {
         })
     }
     draw(ctx, xc, yc) {
-        // let x = this.coordMat;
-        let x = fs.matrixProd(this.coordMat3, this.rotMat);
-        x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+        let x;
 
+        //axles
+        x= fs.matrixProd(this.coordMat3, this.rotMat);
+        x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = 'black';
         ctx.fillStyle = this.colour;
-        ctx.lineWidth = baseLW / zoom * pixRat;
-        // console.table(this.coordMat)
+        ctx.lineWidth = baseLW / zoom * pixRat*PPM/10;
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
             ctx.lineTo(x[i][0], x[i][1]);
         }
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.stroke();
-        // ctx.fill();
 
-        // let x = this.coordMat;
+
+        // body
         x = fs.matrixProd(this.coordMat, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
-
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
         ctx.fillStyle = this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
-        // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
             ctx.lineTo(x[i][0], x[i][1]);
         }
         ctx.lineTo(x[0][0], x[0][1]);
-        // ctx.stroke();
         ctx.fill();
-
+        
+        // cockpit
         x = fs.matrixProd(this.coordMat2, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
-
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
         ctx.fillStyle = 'black';
         ctx.lineWidth = baseLW / zoom * pixRat;
-        // console.table(this.coordMat)
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
             ctx.lineTo(x[i][0], x[i][1]);
         }
         ctx.lineTo(x[0][0], x[0][1]);
-        // ctx.stroke();
         ctx.fill();
 
         this.wheels.forEach(wheel => wheel.draw(ctx, this.rotMat, this.x, this.y, xc, yc));
@@ -718,7 +713,7 @@ class Wheel {
             ctx.lineTo(x[i][0], x[i][1]);
         }
 
-        ctx.stroke();
+        // ctx.stroke();
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.fillStyle = this.colour;
         ctx.fill();
@@ -1448,8 +1443,7 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        this.timeTravelDays = 0;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) +timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
@@ -1680,7 +1674,7 @@ class SessionLogger {
 }
 class SessionSetter {
     constructor(seedstr) {
-        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue', 'hotpink']
+        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'white', 'DimGrey', 'cornflowerblue', 'hotpink']
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
@@ -1689,7 +1683,6 @@ class SessionSetter {
             { ppm: 8, mpp: 0.35 },
             { ppm: 6, mpp: 0.6 }
         ]
-
         this.colour = null;
         this.xflip = null;
         this.yflip = null
@@ -1710,8 +1703,9 @@ class SessionSetter {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'hotpink';
-        this.track = p.track[2];
+        this.track = p.tracks[2];
         this.trackImgName = this.track.fnames[trackDev - 1]
+        this.car = p.cars[1];
         // this.track.startX= 500;
         // this.track.startY = 500;
     }
@@ -1721,22 +1715,24 @@ class SessionSetter {
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
-        this.track = this.randomElement(p.track);
+        this.track = this.randomElement(p.tracks);
         this.trackImgName = this.randomElement(this.track.fnames)
-        // log(this.trackImgName)
+        this.car = this.randomElement(p.cars);
     }
     apply(p) {
-        p.ctrack = this.track;
-        p.ctrack.fname = this.trackImgName;
+        p.track = this.track;
+        p.track.fname = this.trackImgName;
+        p.car=this.car;
         p.car.colour = this.colour;
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
         p.trackSetup.metresPerPix = this.scale.mpp;
         p.draw.pixPerMetre = this.scale.ppm;
+        PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase() {
-        this.scale = { ppm: 6, mpp: 0.35 };
+        this.scale = { ppm: 10, mpp: 0.35 };
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
@@ -1744,9 +1740,26 @@ class SessionSetter {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'hotpink';
-        this.track = p.track[2];
+        this.track = p.tracks[2];
         this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0];
+
     }
+    specialCase2() {
+        this.scale = { ppm: 10, mpp: 0.20 };
+        this.yflip = true;
+        this.xflip = false;
+        this.reverse = true;
+        if (revDev) {
+            this.reverse = Boolean(revDev);
+        }
+        this.colour = 'yellow';
+        this.track = p.tracks[2];
+        this.trackImgName = this.track.fnames[1]
+        this.car = p.cars[1];
+
+    }
+
     cyrb128(str) {
     //string to numeric hash for seeding
     let h1 = 1779033703, h2 = 3144134277,
@@ -1834,8 +1847,7 @@ class Ghost {
         this.height = p.car.height; //height of CoM
         this.wheelWidth = p.car.wheelWidth;
         this.wheelAspect = p.car.wheelAspect;
-        this.oversize = p.car.oversize;
-        this.bodyAspect = p.car.bodyAspect;
+
 
         this.colour = p.car.colour;
         this.colourWeb = 'black';
@@ -2721,6 +2733,7 @@ const sessionPrefix = p.version.n
 
 let serverOveride = false;
 // serverOveride=true;
+let timeTravelDays = 0;
 let apiURL;
 if ((location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -2735,7 +2748,7 @@ fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
-const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+let PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
@@ -2749,10 +2762,13 @@ const CD = p.phys.CD; // surface drag coefficient
 const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 let flash = new Flash();
+
+
 let sessionLogger = new SessionLogger();
 let name = new Name();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
+
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
 
@@ -2761,6 +2777,9 @@ let setter = new SessionSetter(sessionLogger.version);
 setter.gen();
 if (sessionLogger.version == 'flip01-19408') {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase();
+}
+if (sessionLogger.version == 'flip01-19409') {//use to 'cue' up setting for day e.g. tomor
+    setter.specialCase2();
 }
 if (trackDev) {
     setter.setDev();
