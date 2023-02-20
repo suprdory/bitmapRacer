@@ -1297,7 +1297,7 @@ class HiScoresWeb {
         //             ctx.fillText(
         //                 (i + 1).toString() + " " +
         //                 fs.formatDuration(this.times[i].time) + " " +
-        //                 pad(this.times[i].name, 3, ' ')
+        //                 fs.pad(this.times[i].name, 3, ' ')
         //                 , X, this.y + (i + 0) * this.dy);
         //         }
         //         // ctx.fillText("L " + fs.formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
@@ -1312,7 +1312,7 @@ class HiScoresWeb {
                 ctx.fillStyle = "white";
                 for (let i = 0; i < this.nLapCounts; i++) {
                     if (showLapCount == 1) {
-                        this.countStr = pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
+                        this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
                     }
                     else {
                         this.countStr = '';
@@ -1321,7 +1321,7 @@ class HiScoresWeb {
                     ctx.fillText(
                         this.countStr + " " + // nLaps
                         (i + 1).toString() + " " + //position
-                        pad(this.lapCounts[i][2], 3, ' ') + " " +//name
+                        fs.pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                         fs.formatDuration(this.lapCounts[i][0])   //best lap time
 
                         , X,
