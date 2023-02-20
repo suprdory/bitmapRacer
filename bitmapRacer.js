@@ -122,7 +122,7 @@ class Track {
             let s_col = Array(Yi);
             let l_col = Array(Yi);
             for (let j = 0; j < Yi; j++) {
-                let hslj = RGBToHSL(r[i][j], g[i][j], b[i][j]);
+                let hslj = fs.RGBToHSL(r[i][j], g[i][j], b[i][j]);
                 h_col[j] = hslj[0];
                 s_col[j] = hslj[1];
                 l_col[j] = hslj[2];
@@ -308,7 +308,7 @@ class Car {
         // log('max speed:', this.maxUth)
 
 
-        this.rotMat = calcRotMat(this.theta);
+        this.rotMat = fs.calcRotMat(this.theta);
 
         // let xl = (-this.w / 2 * (1 + this.oversize));
         // let xr = (+this.w / 2 * (1 + this.oversize));
@@ -364,8 +364,8 @@ class Car {
     }
     draw(ctx, xc, yc) {
         // let x = this.coordMat;
-        let x = MatrixProd(this.coordMat3, this.rotMat);
-        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+        let x = fs.matrixProd(this.coordMat3, this.rotMat);
+        x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
         ctx.strokeStyle = 'black';
@@ -381,8 +381,8 @@ class Car {
         // ctx.fill();
 
         // let x = this.coordMat;
-        x = MatrixProd(this.coordMat, this.rotMat);
-        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+        x = fs.matrixProd(this.coordMat, this.rotMat);
+        x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
@@ -397,8 +397,8 @@ class Car {
         // ctx.stroke();
         ctx.fill();
 
-        x = MatrixProd(this.coordMat2, this.rotMat);
-        x = MatrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
+        x = fs.matrixProd(this.coordMat2, this.rotMat);
+        x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
 
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
@@ -424,9 +424,9 @@ class Car {
         // log(yOff)
         let HUDy = Y - (50) * pixRat - isTouch * (Y / 3);
         let x = this.coordMatHUD;
-        x = MatrixProd(x, calcRotMat(Math.PI));
-        x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
-        x = MatrixTrans(x, [HUDx, HUDy])
+        x = fs.matrixProd(x, fs.calcRotMat(Math.PI));
+        x = fs.matrixProd(x, [[HUDscl, 0], [0, HUDscl]])
+        x = fs.matrixTrans(x, [HUDx, HUDy])
         ctx.beginPath();
         ctx.strokeStyle = "white";
         ctx.lineWidth = baseLW / zoom * pixRat;
@@ -441,40 +441,40 @@ class Car {
 
         let x0 = [HUDx, HUDy]
         let xd = [[this.n.Fair.lat, this.n.Fair.lon]]
-        xd = MatrixProd(xd, calcRotMat(Math.PI));
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
-        let x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'brown')
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI));
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        let x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'brown')
 
         xd = [[this.n.Fres.lat, this.n.Fres.lon]]
-        xd = MatrixProd(xd, calcRotMat(Math.PI));
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'white')
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI));
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'white')
 
     }
     control(inputState) {
         if (inputState.left) {
             this.wheels[0].theta = Math.min(this.steeringMax, this.wheels[0].theta + this.steeringRate * dt);
-            this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
+            this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = Math.min(this.steeringMax, this.wheels[1].theta + this.steeringRate * dt);
-            this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
+            this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
         }
         else if (inputState.right) {
             this.wheels[0].theta = Math.max(-this.steeringMax, this.wheels[0].theta - this.steeringRate * dt);
-            this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
+            this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta;
-            this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
+            this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
             // this.wheels[1].theta = Math.max(-this.steeringMax, this.wheels[1].theta - this.steeringRate * dt);
-            // this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
+            // this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
         }
         else {
             this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
                 this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
 
-            this.wheels[0].rotMat = calcRotMat(this.wheels[0].theta)
+            this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta
-            this.wheels[1].rotMat = calcRotMat(this.wheels[1].theta)
+            this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
         }
         if (inputState.up) {
             // front wheel accel
@@ -607,7 +607,7 @@ class Car {
             // console.log()
         }
 
-        this.Fxy = MatrixProd([[this.n.Fres.lat, this.n.Fres.lon]], calcRotMat(this.theta))[0]
+        this.Fxy = fs.matrixProd([[this.n.Fres.lat, this.n.Fres.lon]], fs.calcRotMat(this.theta))[0]
         this.alon = this.n.Fres.lon / this.m;
         this.alat = this.n.Fres.lat / this.m;
         this.ulon = this.ulon + this.alon * dt;
@@ -638,7 +638,7 @@ class Car {
         // if (this.n.Mres) {
         this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
         this.theta = this.theta + this.thetaDot * dt;
-        this.rotMat = calcRotMat(this.theta);
+        this.rotMat = fs.calcRotMat(this.theta);
         this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
         if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
         if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
@@ -700,15 +700,15 @@ class Wheel {
         //unscaled for hud
         this.coordMatHUD = [[xl, yr], [xl, yf], [xr, yf], [xr, yr]];
 
-        this.rotMat = calcRotMat(this.theta);
+        this.rotMat = fs.calcRotMat(this.theta);
     }
 
     draw(ctx, carrot, carx, cary, xc, yc) {
         // let x=this.coordMat;
-        let x = MatrixProd(this.coordMat, this.rotMat);
-        x = MatrixTrans(x, [this.x * PPM, this.y * PPM]);
-        x = MatrixProd(x, carrot);
-        x = MatrixTrans(x, [carx * PPM + xc, cary * PPM + yc])
+        let x = fs.matrixProd(this.coordMat, this.rotMat);
+        x = fs.matrixTrans(x, [this.x * PPM, this.y * PPM]);
+        x = fs.matrixProd(x, carrot);
+        x = fs.matrixTrans(x, [carx * PPM + xc, cary * PPM + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
         ctx.lineWidth = baseLW / zoom * pixRat;
@@ -724,62 +724,62 @@ class Wheel {
         ctx.fill();
 
         //wheel centre abs coords
-        x = MatrixProd([[this.x, this.y]], carrot);
-        x = MatrixTrans(x, [carx, cary]);
+        x = fs.matrixProd([[this.x, this.y]], carrot);
+        x = fs.matrixTrans(x, [carx, cary]);
         this.xa = x[0][0];
         this.ya = x[0][1];
     }
     drawHUD(ctx, car, HUDx, HUDy, HUDscl, HUDforceScl) {
 
-        let x = MatrixProd(this.coordMatHUD, this.rotMat);
+        let x = fs.matrixProd(this.coordMatHUD, this.rotMat);
 
-        x = MatrixProd(x, [[HUDscl, 0], [0, HUDscl]])
-        x = MatrixTrans(x, [this.x * HUDscl, this.y * HUDscl]);
-        x = MatrixProd(x, calcRotMat(Math.PI));
-        x = MatrixTrans(x, [HUDx, HUDy])
+        x = fs.matrixProd(x, [[HUDscl, 0], [0, HUDscl]])
+        x = fs.matrixTrans(x, [this.x * HUDscl, this.y * HUDscl]);
+        x = fs.matrixProd(x, fs.calcRotMat(Math.PI));
+        x = fs.matrixTrans(x, [HUDx, HUDy])
 
         let xd, x1;
         let x0 = [[0, 0]];
 
-        x0 = MatrixTrans(x0, [this.x * HUDscl, this.y * HUDscl]);
-        x0 = MatrixProd(x0, calcRotMat(Math.PI));
-        x0 = MatrixTrans(x0, [HUDx, HUDy])[0]
+        x0 = fs.matrixTrans(x0, [this.x * HUDscl, this.y * HUDscl]);
+        x0 = fs.matrixProd(x0, fs.calcRotMat(Math.PI));
+        x0 = fs.matrixTrans(x0, [HUDx, HUDy])[0]
 
         xd = [[this.n.Fthrust.lat, this.n.Fthrust.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
-        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'green')
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI))[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'green')
 
         xd = [[this.n.Fbrake.lat, this.n.Fbrake.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
-        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'red')
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI))[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'red')
 
         xd = [[this.n.Frollres.lat, this.n.Frollres.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
-        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'purple')
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI))[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'purple')
 
         xd = [[this.n.Fdrag.lat, this.n.Fdrag.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
-        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'blue')
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI))[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'blue')
 
         xd = [[this.n.Fcorn.lat, this.n.Fcorn.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
-        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'yellow')
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI))[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'yellow')
 
         xd = [[this.n.Fres.lat, this.n.Fres.lon]]
-        xd = MatrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
-        xd = MatrixProd(xd, calcRotMat(Math.PI))[0];
-        x1 = MatrixTrans([x0], xd)[0];
-        drawHUDArrow(x0, x1, 'white')
+        xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]]);
+        xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI))[0];
+        x1 = fs.matrixTrans([x0], xd)[0];
+        fs.drawHUDArrow(x0, x1, 'white')
 
         ctx.beginPath();
         ctx.strokeStyle = this.color;
@@ -799,7 +799,7 @@ class Wheel {
 }
 class InputState {
     constructor() {
-        this.touch = isTouchDevice();
+        this.touch = fs.isTouchDevice();
         this.left = false;
         this.right = false;
         this.up = false;
@@ -966,8 +966,8 @@ class LapCounter {
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(formatDurationTenth(this.lapTimePh), X / 2, this.yPos * pixRat);
-        // ctx.fillText(formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
+        ctx.fillText(fs.formatDurationTenth(this.lapTimePh), X / 2, this.yPos * pixRat);
+        // ctx.fillText(fs.formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
 
@@ -1042,13 +1042,13 @@ class LapCounter {
     }
     checkGate(nGate, gate, oldPoint, newPoint) {
         // this.intersection=doLineSegmentsIntersect(oldPoint,newPoint,gate.left,gate.right)
-        this.intersection = intersects(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, gate.left.x, gate.left.y, gate.right.x, gate.right.y)
+        this.intersection = fs.intersects(oldPoint.x, oldPoint.y, newPoint.x, newPoint.y, gate.left.x, gate.left.y, gate.right.x, gate.right.y)
         // log(oldPoint.y, newPoint.y,  gate.left.y, gate.right.y);
         if (this.intersection) {
-            this.direction = this.directionSign * crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
+            this.direction = this.directionSign * fs.crossProduct(newPoint.x - oldPoint.x, newPoint.y - oldPoint.y, gate.right.x - gate.left.x, gate.right.y - gate.left.y) > 0;
             // log("Gate ", nGate, " crossed.", this.direction);
             if (this.direction) {
-                this.bez = secondBezier(
+                this.bez = fs.secondBezier(
                     gate.left.x, gate.left.y, gate.right.x, gate.right.y,
                     oldPoint.x, oldPoint.y, newPoint.x, newPoint.y
                 )
@@ -1142,15 +1142,15 @@ class HiScores {
         ctx.fillStyle = "white";
 
         // ctx.fillText("Best Laps",this.x,this.y)
-        ctx.fillText("L " + formatDuration(this.last), this.x, this.y);
+        ctx.fillText("L " + fs.formatDuration(this.last), this.x, this.y);
 
         for (let i = 0; i < this.n; i++) {
-            ctx.fillText((i + 1).toString() + " " + formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
+            ctx.fillText((i + 1).toString() + " " + fs.formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
 
 
 
-        // ctx.fillText("P " + formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
+        // ctx.fillText("P " + fs.formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
         // ctx.fillText("L: " + this.last + " P: " + lapCounter.completeLapTimePh, this.x, this.y + (7 + 1.2) * this.dy);
     }
     badLap() {
@@ -1296,11 +1296,11 @@ class HiScoresWeb {
         //         for (let i = 0; i < this.n; i++) {
         //             ctx.fillText(
         //                 (i + 1).toString() + " " +
-        //                 formatDuration(this.times[i].time) + " " +
+        //                 fs.formatDuration(this.times[i].time) + " " +
         //                 pad(this.times[i].name, 3, ' ')
         //                 , X, this.y + (i + 0) * this.dy);
         //         }
-        //         // ctx.fillText("L " + formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
+        //         // ctx.fillText("L " + fs.formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
         //     }
         // }
         if (this.showLapCounts) {
@@ -1322,7 +1322,7 @@ class HiScoresWeb {
                         this.countStr + " " + // nLaps
                         (i + 1).toString() + " " + //position
                         pad(this.lapCounts[i][2], 3, ' ') + " " +//name
-                        formatDuration(this.lapCounts[i][0])   //best lap time
+                        fs.formatDuration(this.lapCounts[i][0])   //best lap time
 
                         , X,
                         this.y + (i + 0) * this.dy//this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
@@ -1361,7 +1361,7 @@ class Name {
             this.text = this.name;
         }
         this.hideNameForm()
-        document.getElementById("submit").addEventListener("click", submitName, { passive: true })
+        document.getElementById("submit").addEventListener("click", fs.submitName, { passive: true })
         // log(this)
     }
     draw(ctx) {
@@ -1463,7 +1463,7 @@ class SessionLogger {
         this.qualified = this.getLocalQual(this.version);
 
         let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
-        this.timeTillNextString = secsToString(timeTillNext);
+        this.timeTillNextString = fs.secsToString(timeTillNext);
         // console.log("current sesh:", this.currentSesh, this.timeTillNextString);
         this.yesterStreak = this.getLocalStreak(this.yesterVersion);
         this.yesterQual = this.getLocalQual(this.yesterVersion);
@@ -1481,7 +1481,7 @@ class SessionLogger {
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
-        this.timeTillNextString = secsToString(timeTillNext);
+        this.timeTillNextString = fs.secsToString(timeTillNext);
     }
     setLocalQual(version, stat) {
         if (localStorage.getItem('versionTimes')) {
@@ -1678,8 +1678,8 @@ class SessionLogger {
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
     }
 }
-class Randomizer {
-    constructor(seed) {
+class SessionSetter {
+    constructor(seedstr) {
         this.colours = ['red', 'gold', 'darkgreen', 'orange', 'darkred', 'white', 'DimGrey', 'cornflowerblue', 'hotpink']
         this.xflips = [false, true]
         this.yflips = [false, true]
@@ -1695,8 +1695,8 @@ class Randomizer {
         this.yflip = null
         this.scale = null;
         this.reverse = null;
-        this.seed = seed;
-        this.rand = mulberry32(this.seed);
+        this.seed = this.cyrb128(seedstr)[2]
+        this.rand = this.mulberry32(this.seed);
     }
     randomElement(array) {
         return array[Math.floor(this.rand() * array.length)];
@@ -1735,7 +1735,7 @@ class Randomizer {
         p.trackSetup.metresPerPix = this.scale.mpp;
         p.draw.pixPerMetre = this.scale.ppm;
     }
-    specialCase(){
+    specialCase() {
         this.scale = { ppm: 6, mpp: 0.35 };
         this.yflip = false;
         this.xflip = false;
@@ -1747,6 +1747,33 @@ class Randomizer {
         this.track = p.track[2];
         this.trackImgName = this.track.fnames[0]
     }
+    cyrb128(str) {
+    //string to numeric hash for seeding
+    let h1 = 1779033703, h2 = 3144134277,
+        h3 = 1013904242, h4 = 2773480762;
+    for (let i = 0, k; i < str.length; i++) {
+        k = str.charCodeAt(i);
+        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    }
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+}
+
+    mulberry32(a) {
+    //seeded rng
+    return function () {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
 
 }
 class Ghost {
@@ -1816,7 +1843,7 @@ class Ghost {
         // this.colour = 'green';
         // this.colourWeb = 'blue';
 
-        this.rotMat = calcRotMat(0);
+        this.rotMat = fs.calcRotMat(0);
 
 
         // car body coords in normalized units relative to centre line and rear wheel
@@ -1951,11 +1978,11 @@ class Ghost {
             if (this.n < this.savedLap.x.length) {
 
                 ctx.globalAlpha = 0.5;
-                this.rotMat = calcRotMat(this.savedLap.th[this.n]);
+                this.rotMat = fs.calcRotMat(this.savedLap.th[this.n]);
 
 
-                let x = MatrixProd(this.coordMat3, this.rotMat);
-                x = MatrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
+                let x = fs.matrixProd(this.coordMat3, this.rotMat);
+                x = fs.matrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
 
                 ctx.beginPath();
                 ctx.strokeStyle = 'black';
@@ -1968,8 +1995,8 @@ class Ghost {
                 ctx.lineTo(x[0][0], x[0][1]);
                 ctx.stroke();
 
-                x = MatrixProd(this.coordMat, this.rotMat);
-                x = MatrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
+                x = fs.matrixProd(this.coordMat, this.rotMat);
+                x = fs.matrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
 
                 ctx.beginPath();
                 ctx.strokeStyle = this.colour;
@@ -1984,8 +2011,8 @@ class Ghost {
                 // ctx.stroke();
                 ctx.fill();
 
-                x = MatrixProd(this.coordMat2, this.rotMat);
-                x = MatrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
+                x = fs.matrixProd(this.coordMat2, this.rotMat);
+                x = fs.matrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
 
                 ctx.beginPath();
                 ctx.strokeStyle = this.colour;
@@ -2011,11 +2038,11 @@ class Ghost {
             if (this.n < this.webLap.x.length) {
 
                 ctx.globalAlpha = 0.5;
-                this.rotMat = calcRotMat(this.webLap.th[this.n]);
+                this.rotMat = fs.calcRotMat(this.webLap.th[this.n]);
 
 
-                let x = MatrixProd(this.coordMat3, this.rotMat);
-                x = MatrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
+                let x = fs.matrixProd(this.coordMat3, this.rotMat);
+                x = fs.matrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
 
                 ctx.beginPath();
                 ctx.strokeStyle = 'black';
@@ -2028,8 +2055,8 @@ class Ghost {
                 ctx.lineTo(x[0][0], x[0][1]);
                 ctx.stroke();
 
-                x = MatrixProd(this.coordMat, this.rotMat);
-                x = MatrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
+                x = fs.matrixProd(this.coordMat, this.rotMat);
+                x = fs.matrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
 
                 ctx.beginPath();
                 ctx.strokeStyle = this.colourWeb;
@@ -2044,8 +2071,8 @@ class Ghost {
                 // ctx.stroke();
                 ctx.fill();
 
-                x = MatrixProd(this.coordMat2, this.rotMat);
-                x = MatrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
+                x = fs.matrixProd(this.coordMat2, this.rotMat);
+                x = fs.matrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
 
                 ctx.beginPath();
                 ctx.strokeStyle = this.colour;
@@ -2175,346 +2202,6 @@ class Ghost {
     }
 
 }
-
-let MatrixProd = (A, B) =>
-    A.map((row, i) =>
-        B[0].map((_, j) =>
-            row.reduce((acc, _, n) =>
-                acc + A[i][n] * B[n][j], 0
-            )
-        )
-    )
-function MatrixTrans(A, B) {
-    let ni = A.length;
-    let nj = A[0].length;
-    let C = new Array(ni);
-    for (let i = 0; i < ni; i++) {
-        C[i] = new Array(nj);
-    }
-    for (let i = 0; i < ni; i++) {
-        for (let j = 0; j < nj; j++) {
-            C[i][j] = A[i][j] + B[j];
-        }
-    }
-    // console.log(ni, nj);
-    return C;
-}
-function calcRotMat(theta) {
-    return [[Math.cos(theta), -Math.sin(theta)],
-    [Math.sin(theta), Math.cos(theta)]];
-}
-function drawHUDArrow(x0, x1, color) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = baseLW / zoom * pixRat;
-    ctx.beginPath();
-    ctx.moveTo(x0[0], x0[1]);
-    ctx.lineTo(x1[0], x1[1]);
-    ctx.stroke();
-}
-function drawDebug() {
-    // xw0 = Math.round(car.wheels[0].xa / scl);
-    // yw0 = Math.round(car.wheels[0].ya / scl);
-    // xw1 = Math.round(car.wheels[1].xa / scl);
-    // yw1 = Math.round(car.wheels[1].ya / scl);
-
-    ctx.fillStyle = "white"
-    ctx.textAlign = "left"
-    ctx.font = 10 * pixRat + 'px ' + fontFamily;
-    // nX = img.width;
-    // nY = img.height;
-    // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
-    // g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
-    // b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
-    // a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
-    // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
-
-    // show hsl
-    // ctx.fillText([
-    //     Math.round(car.wheels[0].h),
-    //     Math.round(car.wheels[0].s),
-    //     Math.round(car.wheels[0].l)
-    // ], 100, 100)
-    ctx.fillText(debugTxt, X - 500, 20, 500)
-
-    // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
-    // ctx.fillText(nX + " " + nY, 100, 140);
-    // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
-    // ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
-    // ctx.fillText("headOff " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
-    // ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
-}
-function showImage(fileReader) {
-    var img = document.getElementById("myImage");
-    img.onload = () => getImageData(img);
-    img.src = fileReader.result;
-
-}
-function drawHUD() {
-    let hudX = 5 * pixRat;
-    let hudY = 5 * pixRat + isTouch * Y / 3;
-    let barHeight = 50 * pixRat;
-    let barWidthSpace = 5 * pixRat;
-    let barWidth = 20 * pixRat;
-    ctx.lineWidth = baseLW * pixRat;
-    ctx.strokeStyle = "green";
-    ctx.fillStyle = "green";
-    ctx.beginPath();
-    ctx.rect(hudX, Y - hudY, barWidth, -barHeight);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.rect(hudX, Y - hudY, barWidth, -car.torqueWheelHUD.torque / car.maxTorqueHUD * barHeight);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.strokeStyle = "red";
-    ctx.fillStyle = "red";
-    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -barHeight);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -car.wheels[0].brake / car.brakeMax * barHeight);
-    ctx.fill()
-
-
-    ctx.beginPath();
-    ctx.strokeStyle = "blue";
-    ctx.fillStyle = "blue"
-    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / car.maxUth * barHeight);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.strokeStyle = "yellow";
-    ctx.fillStyle = "yellow";
-    ctx.rect(hudX, Y - hudY - barHeight - barWidthSpace, barWidth * 3 + barWidthSpace * 2, -barWidth);
-    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, 0, -barWidth);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, -(barWidth * 3 + barWidthSpace * 2) / 2 * car.wheels[0].theta / car.steeringMax, -barWidth);
-    ctx.fill();
-
-
-    // let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
-    // let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
-    // for (let i = 0; i < 4; i++) {
-    //     ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
-    //     ctx.beginPath();
-    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
-    //     ctx.fill();
-    //     ctx.strokeStyle = "white";
-    //     ctx.beginPath();
-    //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
-    //     ctx.stroke();
-
-    //     ctx.fillStyle = "white";
-    //     ctx.textAlign = "center"
-    //     ctx.textBaseline = "middle"
-    //     ctx.font = "15px " + fontFamily;
-    //     ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
-    // }
-
-
-
-}
-const RGBToHSL = (r, g, b) => {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    const l = Math.max(r, g, b);
-    const s = l - Math.min(r, g, b);
-    const h = s
-        ? l === r
-            ? (g - b) / s
-            : l === g
-                ? 2 + (b - r) / s
-                : 4 + (r - g) / s
-        : 0;
-    return [
-        60 * h < 0 ? 60 * h + 360 : 60 * h,
-        100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
-        (100 * (2 * l - s)) / 2,
-    ];
-};
-function isTouchDevice() {
-    return (('ontouchstart' in window) ||
-        (navigator.maxTouchPoints > 0) ||
-        (navigator.msMaxTouchPoints > 0));
-}
-function addPointerListeners(touchControl) {
-    // window.addEventListener("resize", () => {
-    //     setSize()
-    // }
-    // );
-
-    if (isTouchDevice()) {
-        canvas.addEventListener("touchstart", e => {
-            e.preventDefault();
-            touchControl.pointerDownHandler(
-                e.changedTouches[0].clientX * pixRat,
-                e.changedTouches[0].clientY * pixRat,
-                e.changedTouches[0].identifier);
-        },
-            { passive: false }
-        );
-
-        canvas.addEventListener("touchend", e => {
-            e.preventDefault();
-            touchControl.pointerUpHandler(e.changedTouches[0].identifier);
-        },
-            { passive: false }
-        );
-    }
-    else {
-        addEventListener("mousedown", e => {
-            // e.preventDefault();
-            // pointerDownHandler(e.offsetX, e.offsetY);
-            touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat, 0)
-        },
-        );
-        addEventListener('mouseup', e => {
-            touchControl.pointerUpHandler(0);
-        });
-
-    }
-}
-function addListeners(inputState) {
-
-    window.addEventListener("resize", () => {
-        resize();
-    }
-    );
-
-    if (inputState.touch) {
-        accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
-        brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
-        leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
-        rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
-        addPointerListeners(accBtn);
-        addPointerListeners(brkBtn);
-        addPointerListeners(leftBtn);
-        addPointerListeners(rightBtn);
-    }
-    addPointerListeners(name);
-    addPointerListeners(ghost);
-    addEventListener('keydown', (event) => { inputState.set(event) });
-    addEventListener('keyup', (event) => { inputState.set(event) });
-}
-function pad(n, width, z) {
-    z = z || '0';
-    n = n + '';
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-function formatDuration(duration) {
-    var seconds = Math.abs(Math.floor(duration / 1000)),
-        h = (seconds - seconds % 3600) / 3600,
-        m = (seconds - seconds % 60) / 60 % 60,
-        s = seconds % 60,
-        ms = duration % 1000;
-    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
-}
-function formatDurationTenth(duration) {
-    var seconds = Math.abs(Math.floor(duration / 1000)),
-        h = (seconds - seconds % 3600) / 3600,
-        m = (seconds - seconds % 60) / 60 % 60,
-        s = seconds % 60,
-        ms = duration % 1000,
-        ts = Math.floor(ms / 100);
-    // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-    return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
-}
-function intersects(a, b, c, d, p, q, r, s) {
-    // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
-    var det, gamma, lambda;
-    det = (c - a) * (s - q) - (r - p) * (d - b);
-    // log(det)
-    if (det === 0) {
-        return false;
-    } else {
-        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
-        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
-    }
-};
-function secondBezier(x1, y1, x2, y2, x3, y3, x4, y4) {
-    return ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
-};
-function dotProduct(a, b, c, d) {
-    return a * c + b * d;
-};
-function crossProduct(a, b, c, d) {
-    return a * d - b * c;
-};
-function secsToString(seconds) {
-
-    // var seconds = Math.floor((new Date() - date) / 1000);
-
-    var interval = seconds / 31536000;
-
-    if (interval > 1) {
-        return Math.floor(interval) + " years";
-    }
-    interval = seconds / 2592000;
-    if (interval > 1) {
-        return Math.floor(interval) + " months";
-    }
-    interval = seconds / 86400;
-    if (interval > 1) {
-        return Math.floor(interval) + " days";
-    }
-    interval = seconds / 3600;
-    if (interval > 1.5) {
-        return Math.round(interval) + " hours";
-    }
-    if (interval > 10) {
-        return Math.round(interval) + " hour";
-    }
-    // if (interval > 1) {
-    //     return Math.floor(interval) + " hours " +
-    //         Math.round(60 * (interval - Math.floor(interval))) + " minutes";
-    // }
-    interval = seconds / 60;
-    if (interval > 1) {
-        return Math.floor(interval) + " minutes";
-    }
-    return Math.floor(seconds) + " seconds";
-}
-function submitName() {
-    let newName = document.getElementById('name').value
-
-    if (newName.trim().length === 0) {
-        flash.flash("Empty name, try again")
-    }
-    else {
-        name.name = newName;
-        name.text = name.name;
-        localStorage.name = name.name;
-        hiScoresWeb.name = name.name;
-    }
-    name.hideNameForm();
-    log('submitting name')
-}
-function resize() {
-    canvas = document.getElementById("cw");
-    ctx = canvas.getContext("2d", { alpha: false });
-    ctx.imageSmoothingEnabled = false;
-    pixRat = window.devicePixelRatio * 1.0;
-    canvas.height = window.innerHeight * pixRat;
-    canvas.width = window.innerWidth * pixRat;
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
-    X = canvas.width;
-    Y = canvas.height;
-    xc = 0 // screen centre coords
-    yc = 0
-    isTouch = isTouchDevice();
-    yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
-
-}
 class FPS {
     constructor() {
         this.defaultFPS = 60;
@@ -2570,6 +2257,368 @@ class FPS {
         dt = p.run.dt * 60 / Fps.fps;
     }
 }
+let fs = function () {
+    var matrixProd = (A, B) =>
+        A.map((row, i) =>
+            B[0].map((_, j) =>
+                row.reduce((acc, _, n) =>
+                    acc + A[i][n] * B[n][j], 0
+                )
+            )
+        )
+    function matrixTrans(A, B) {
+        let ni = A.length;
+        let nj = A[0].length;
+        let C = new Array(ni);
+        for (let i = 0; i < ni; i++) {
+            C[i] = new Array(nj);
+        }
+        for (let i = 0; i < ni; i++) {
+            for (let j = 0; j < nj; j++) {
+                C[i][j] = A[i][j] + B[j];
+            }
+        }
+        // console.log(ni, nj);
+        return C;
+    }
+    function calcRotMat(theta) {
+        return [[Math.cos(theta), -Math.sin(theta)],
+        [Math.sin(theta), Math.cos(theta)]];
+    }
+    function drawHUDArrow(x0, x1, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        ctx.beginPath();
+        ctx.moveTo(x0[0], x0[1]);
+        ctx.lineTo(x1[0], x1[1]);
+        ctx.stroke();
+    }
+    function drawDebug() {
+        // xw0 = Math.round(car.wheels[0].xa / scl);
+        // yw0 = Math.round(car.wheels[0].ya / scl);
+        // xw1 = Math.round(car.wheels[1].xa / scl);
+        // yw1 = Math.round(car.wheels[1].ya / scl);
+
+        ctx.fillStyle = "white"
+        ctx.textAlign = "left"
+        ctx.font = 10 * pixRat + 'px ' + fontFamily;
+        // nX = img.width;
+        // nY = img.height;
+        // r = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 0];
+        // g = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 1];
+        // b = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 2];
+        // a = imageData[((yw0 * (img.width * 4)) + (xw0 * 4)) + 3];
+        // let rgba=imageData[((50*(imageData.width*4)) + (200*4)) + 2];
+
+        // show hsl
+        // ctx.fillText([
+        //     Math.round(car.wheels[0].h),
+        //     Math.round(car.wheels[0].s),
+        //     Math.round(car.wheels[0].l)
+        // ], 100, 100)
+        ctx.fillText(debugTxt, X - 500, 20, 500)
+
+        // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
+        // ctx.fillText(nX + " " + nY, 100, 140);
+        // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
+        // ctx.fillText("thetaU " + Math.round(car.thetaU * 360 / (Math.PI * 2)), 100, 180)
+        // ctx.fillText("headOff " + Math.round((car.headOff) * 360 / (Math.PI * 2)), 100, 200)
+        // ctx.fillText(r + " " + g + " " + b + " " + a, 100, 160)
+    }
+    function showImage(fileReader) {
+        var img = document.getElementById("myImage");
+        img.onload = () => getImageData(img);
+        img.src = fileReader.result;
+
+    }
+    function drawHUD() {
+        let hudX = 5 * pixRat;
+        let hudY = 5 * pixRat + isTouch * Y / 3;
+        let barHeight = 50 * pixRat;
+        let barWidthSpace = 5 * pixRat;
+        let barWidth = 20 * pixRat;
+        ctx.lineWidth = baseLW * pixRat;
+        ctx.strokeStyle = "green";
+        ctx.fillStyle = "green";
+        ctx.beginPath();
+        ctx.rect(hudX, Y - hudY, barWidth, -barHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.rect(hudX, Y - hudY, barWidth, -car.torqueWheelHUD.torque / car.maxTorqueHUD * barHeight);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.fillStyle = "red";
+        ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -barHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.rect(hudX + barWidth + barWidthSpace, Y - hudY, barWidth, -car.wheels[0].brake / car.brakeMax * barHeight);
+        ctx.fill()
+
+
+        ctx.beginPath();
+        ctx.strokeStyle = "blue";
+        ctx.fillStyle = "blue"
+        ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -barHeight);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.rect(hudX + 2 * (barWidth + barWidthSpace), Y - hudY, barWidth, -car.U / car.maxUth * barHeight);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.strokeStyle = "yellow";
+        ctx.fillStyle = "yellow";
+        ctx.rect(hudX, Y - hudY - barHeight - barWidthSpace, barWidth * 3 + barWidthSpace * 2, -barWidth);
+        ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, 0, -barWidth);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.rect(hudX + (barWidth * 3 + barWidthSpace * 2) / 2, Y - hudY - barHeight - barWidthSpace, -(barWidth * 3 + barWidthSpace * 2) / 2 * car.wheels[0].theta / car.steeringMax, -barWidth);
+        ctx.fill();
+
+
+        // let whX = [hudX + 2 * (barWidth + barWidthSpace), hudX, hudX + 2 * (barWidth + barWidthSpace), hudX]
+        // let whY = [Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - 3 * barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth, Y - hudY - barHeight - 2 * barWidthSpace - barWidth]
+        // for (let i = 0; i < 4; i++) {
+        //     ctx.fillStyle = "rgb(" + car.wheels[i].skidFac * 50 + ",0,0)";
+        //     ctx.beginPath();
+        //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
+        //     ctx.fill();
+        //     ctx.strokeStyle = "white";
+        //     ctx.beginPath();
+        //     ctx.rect(whX[i], whY[i], barWidth, -barWidth * 1.5)
+        //     ctx.stroke();
+
+        //     ctx.fillStyle = "white";
+        //     ctx.textAlign = "center"
+        //     ctx.textBaseline = "middle"
+        //     ctx.font = "15px " + fontFamily;
+        //     ctx.fillText(Math.round(car.wheels[i].sfc_mu * 10), whX[i] + barWidth / 2, whY[i] - barWidth * 1.5 / 2)
+        // }
+
+
+
+    }
+    const RGBToHSL = (r, g, b) => {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        const l = Math.max(r, g, b);
+        const s = l - Math.min(r, g, b);
+        const h = s
+            ? l === r
+                ? (g - b) / s
+                : l === g
+                    ? 2 + (b - r) / s
+                    : 4 + (r - g) / s
+            : 0;
+        return [
+            60 * h < 0 ? 60 * h + 360 : 60 * h,
+            100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0),
+            (100 * (2 * l - s)) / 2,
+        ];
+    };
+    function isTouchDevice() {
+        return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+    }
+    function addPointerListeners(touchControl) {
+        // window.addEventListener("resize", () => {
+        //     setSize()
+        // }
+        // );
+
+        if (isTouchDevice()) {
+            canvas.addEventListener("touchstart", e => {
+                e.preventDefault();
+                touchControl.pointerDownHandler(
+                    e.changedTouches[0].clientX * pixRat,
+                    e.changedTouches[0].clientY * pixRat,
+                    e.changedTouches[0].identifier);
+            },
+                { passive: false }
+            );
+
+            canvas.addEventListener("touchend", e => {
+                e.preventDefault();
+                touchControl.pointerUpHandler(e.changedTouches[0].identifier);
+            },
+                { passive: false }
+            );
+        }
+        else {
+            addEventListener("mousedown", e => {
+                // e.preventDefault();
+                // pointerDownHandler(e.offsetX, e.offsetY);
+                touchControl.pointerDownHandler(e.clientX * pixRat, e.clientY * pixRat, 0)
+            },
+            );
+            addEventListener('mouseup', e => {
+                touchControl.pointerUpHandler(0);
+            });
+
+        }
+    }
+    function addListeners(inputState) {
+
+        window.addEventListener("resize", () => {
+            resize();
+        }
+        );
+
+        if (inputState.touch) {
+            accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
+            brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
+            leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
+            rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
+            addPointerListeners(accBtn);
+            addPointerListeners(brkBtn);
+            addPointerListeners(leftBtn);
+            addPointerListeners(rightBtn);
+        }
+        addPointerListeners(name);
+        addPointerListeners(ghost);
+        addEventListener('keydown', (event) => { inputState.set(event) });
+        addEventListener('keyup', (event) => { inputState.set(event) });
+    }
+    function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
+    function formatDuration(duration) {
+        var seconds = Math.abs(Math.floor(duration / 1000)),
+            h = (seconds - seconds % 3600) / 3600,
+            m = (seconds - seconds % 60) / 60 % 60,
+            s = seconds % 60,
+            ms = duration % 1000;
+        // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+        return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
+    }
+    function formatDurationTenth(duration) {
+        var seconds = Math.abs(Math.floor(duration / 1000)),
+            h = (seconds - seconds % 3600) / 3600,
+            m = (seconds - seconds % 60) / 60 % 60,
+            s = seconds % 60,
+            ms = duration % 1000,
+            ts = Math.floor(ms / 100);
+        // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+        return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
+    }
+    function intersects(a, b, c, d, p, q, r, s) {
+        // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+        var det, gamma, lambda;
+        det = (c - a) * (s - q) - (r - p) * (d - b);
+        // log(det)
+        if (det === 0) {
+            return false;
+        } else {
+            lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+            gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+            return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+        }
+    };
+    function secondBezier(x1, y1, x2, y2, x3, y3, x4, y4) {
+        return ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+    };
+    function dotProduct(a, b, c, d) {
+        return a * c + b * d;
+    };
+    function crossProduct(a, b, c, d) {
+        return a * d - b * c;
+    };
+    function secsToString(seconds) {
+
+        // var seconds = Math.floor((new Date() - date) / 1000);
+
+        var interval = seconds / 31536000;
+
+        if (interval > 1) {
+            return Math.floor(interval) + " years";
+        }
+        interval = seconds / 2592000;
+        if (interval > 1) {
+            return Math.floor(interval) + " months";
+        }
+        interval = seconds / 86400;
+        if (interval > 1) {
+            return Math.floor(interval) + " days";
+        }
+        interval = seconds / 3600;
+        if (interval > 1.5) {
+            return Math.round(interval) + " hours";
+        }
+        if (interval > 10) {
+            return Math.round(interval) + " hour";
+        }
+        // if (interval > 1) {
+        //     return Math.floor(interval) + " hours " +
+        //         Math.round(60 * (interval - Math.floor(interval))) + " minutes";
+        // }
+        interval = seconds / 60;
+        if (interval > 1) {
+            return Math.floor(interval) + " minutes";
+        }
+        return Math.floor(seconds) + " seconds";
+    }
+    function submitName() {
+        let newName = document.getElementById('name').value
+
+        if (newName.trim().length === 0) {
+            flash.flash("Empty name, try again")
+        }
+        else {
+            name.name = newName;
+            name.text = name.name;
+            localStorage.name = name.name;
+            hiScoresWeb.name = name.name;
+        }
+        name.hideNameForm();
+        log('submitting name')
+    }
+    function resize() {
+        canvas = document.getElementById("cw");
+        ctx = canvas.getContext("2d", { alpha: false });
+        ctx.imageSmoothingEnabled = false;
+        pixRat = window.devicePixelRatio * 1.0;
+        canvas.height = window.innerHeight * pixRat;
+        canvas.width = window.innerWidth * pixRat;
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+        X = canvas.width;
+        Y = canvas.height;
+        xc = 0 // screen centre coords
+        yc = 0
+        isTouch = fs.isTouchDevice();
+        yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
+
+    }
+    return{
+        matrixProd:matrixProd,
+        matrixTrans:matrixTrans,
+        calcRotMat:calcRotMat,
+        drawHUD:drawHUD,
+        drawHUDArrow:drawHUDArrow,
+        RGBToHSL:RGBToHSL,
+        isTouchDevice:isTouchDevice,
+        addPointerListeners:addPointerListeners,
+        addListeners:addListeners,
+        pad:pad,
+        formatDuration:formatDuration,
+        formatDurationTenth:formatDurationTenth,
+        intersects:intersects,
+        secondBezier:secondBezier,
+        dotProduct:dotProduct,
+        crossProduct:crossProduct,
+        resize:resize,
+        secsToString:secsToString,
+        submitName:submitName,
+    }
+}();
 function anim() {
     n++;
     if (n < nMax) {
@@ -2643,7 +2692,7 @@ function anim() {
         rightBtn.draw(ctx);
     }
     // drawDebug();
-    // drawHUD();
+    // fs.drawHUD();
 
     // car.drawHUD(ctx);
     hiScores.draw(ctx);
@@ -2652,36 +2701,10 @@ function anim() {
     name.draw(ctx);
     // drawInfo(ctx);
     flash.draw(ctx);
-    drawHUD();
+    fs.drawHUD();
 
     ghost.addState(car.x, car.y, car.theta);
 
-}
-function cyrb128(str) {
-    //string to numeric hash for seeding
-    let h1 = 1779033703, h2 = 3144134277,
-        h3 = 1013904242, h4 = 2773480762;
-    for (let i = 0, k; i < str.length; i++) {
-        k = str.charCodeAt(i);
-        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-    }
-    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-    return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
-}
-function mulberry32(a) {
-    //seeded rng
-    return function () {
-        var t = a += 0x6D2B79F5;
-        t = Math.imul(t ^ t >>> 15, t | 1);
-        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
 }
 let log = console.log;
 
@@ -2708,12 +2731,11 @@ else {
 
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
-resize();
+fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
-// const fontFamily = 'terminus';
-
+const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
@@ -2734,19 +2756,16 @@ let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
 
-// randomize parameters, seeded with daily session name.
-let seed = cyrb128(sessionLogger.version)[2]
-let randomizer = new Randomizer(seed);
-randomizer.gen();
+// set session parameters, seeded with daily session name, unless special case
+let setter = new SessionSetter(sessionLogger.version);
+setter.gen();
+if (sessionLogger.version == 'flip01-19408') {//use to 'cue' up setting for day e.g. tomor
+    setter.specialCase();
+}
 if (trackDev) {
-    randomizer.setDev();
+    setter.setDev();
 }
-if (sessionLogger.version=='flip01-19408'){//use to 'cue' up setting for day e.g. tomor
-    randomizer.specialCase();
-}
-
-randomizer.apply(p);
-const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+setter.apply(p);
 
 
 //control set up
@@ -2755,28 +2774,23 @@ const PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen p
 let inputState = new InputState;
 let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
 
-
 //track and lapCounter set up
 let track = new Track()
 let lapCounter = new LapCounter(track.gates);
 
 // car set up
 let car = new Car();
+
 //ghost set up
 let ghost = new Ghost();
-addListeners(inputState);
+fs.addListeners(inputState);
+
 // run
 let n = 0;
 let nMax = p.run.nMax;
-
-// var FPS = 0
-// let err
-// err = await calcFPS({ count: 120, callback: fps => FPS = fps });
-// if (err) FPS = 30;
-
 log(sessionLogger.version)
 anim();
-// log(1 & name.name!=null)
+
 // flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 
 
