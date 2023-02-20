@@ -76,6 +76,7 @@ export let p = {
     "tracks": [{
         "fnames": ['tracks/square_track.png'],
         "bgColour": "#381b00",
+        "scale":1,
 
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
@@ -105,6 +106,7 @@ export let p = {
     {
         "fnames": ['tracks/square_track2_allpath.png'],
         "bgColour": "#381b00",
+        "scale":1,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
 
@@ -135,6 +137,7 @@ export let p = {
     {
         "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
         "bgColour": "#B97A56",
+        "scale":0.7,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
 

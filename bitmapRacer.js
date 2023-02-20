@@ -1729,7 +1729,7 @@ class SessionSetter {
         p.trackSetup.flipY = this.yflip;
         p.trackSetup.metresPerPix = this.scale.mpp;
         p.draw.pixPerMetre = this.scale.ppm;
-        PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        PPM = p.track.scale*p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase() {
         this.scale = { ppm: 10, mpp: 0.35 };
