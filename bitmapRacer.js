@@ -1223,7 +1223,7 @@ class HiScoresWeb {
         this.times;
 
 
-        this.nMaxLapCounts = 5;
+        this.nMaxLapCounts = showLapCount? 10:5;
         this.nLapCounts = 0
         this.lapCounts = [];
         this.showLapCounts = true;
@@ -1733,16 +1733,16 @@ class SessionSetter {
         PPM = p.track.scale*p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase() {
-        this.scale = { ppm: 10, mpp: 0.35 };
-        this.yflip = false;
-        this.xflip = false;
+        this.scale = { ppm: 6, mpp: 0.6 };
+        this.yflip = true;
+        this.xflip = true;
         this.reverse = false;
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
-        this.colour = 'hotpink';
+        this.colour = 'blueviolet';
         this.track = p.tracks[2];
-        this.trackImgName = this.track.fnames[0]
+        this.trackImgName = this.track.fnames[2]
         this.car = p.cars[0];
 
     }
@@ -2724,9 +2724,10 @@ let log = console.log;
 let Fps = new FPS();
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
-const showLapCount = urlParams.get('nLaps');
+const showLapCount = urlParams.get('nLaps') || urlParams.has('tt');
 const trackDev = parseInt(urlParams.get('trackDev'));
 const revDev = parseInt(urlParams.get('revDev'));
+let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')):0;
 
 // import parameter object
 import { p } from './params.js'
@@ -2736,12 +2737,13 @@ let serverOveride = false;
 // serverOveride=true;
 
 let apiURL;
-if ((location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
+if ((urlParams.has('tt') || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
 }
 else {
     apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
 }
+log(apiURL)
 
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
@@ -2764,7 +2766,7 @@ const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 let flash = new Flash();
 
-let timeTravelDays = 0;
+
 let sessionLogger = new SessionLogger(timeTravelDays);
 let name = new Name();
 let hiScores = new HiScores();
@@ -2776,7 +2778,7 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.version);
 setter.gen();
-if (sessionLogger.version == 'flip01-19408') {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version == 'flip01-19410') {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase();
 }
 if (sessionLogger.version == 'flip01-19409') {//use to 'cue' up setting for day e.g. tomor
