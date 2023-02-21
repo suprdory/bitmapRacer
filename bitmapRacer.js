@@ -1831,10 +1831,10 @@ class Ghost {
 
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
-        this.ch = this.fontsize + 10 * pixRat;
-        this.cw = pixRat * 80;
+        this.ch = this.fontsize + 15 * pixRat;
+        this.cw = pixRat * 100;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 80 * pixRat - this.ch;
+        this.cy0 = Y - isTouch * Y / 3 - 0 * pixRat - this.ch;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
@@ -2185,7 +2185,7 @@ class Ghost {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 80 * pixRat)
+        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
     }
     contains(ex, ey) {
         // log(ex,ey)
@@ -2714,11 +2714,32 @@ function anim() {
     name.draw(ctx);
     // drawInfo(ctx);
     flash.draw(ctx);
-    fs.drawHUD();
+    // fs.drawHUD();
+    drawSpeedo();
 
     ghost.addState(car.x, car.y, car.theta);
 
 }
+function drawSpeedo(){
+    let x0=10*pixRat;
+    let y0 = Y - isTouch * Y / 3 - 20 * pixRat;
+    let rad=35*pixRat;
+    let th0=Math.PI*45/180;
+    let th=car.U/car.maxUth*(Math.PI*2-2*th0)-Math.PI/2+th0;
+    ctx.beginPath()
+    ctx.strokeStyle='white';
+    ctx.arc(x0+rad,y0-rad,rad,th0+Math.PI/2,Math.PI*5/2-th0)
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x0 + rad, y0 - rad);
+    ctx.lineTo(x0 + rad - .9*rad * Math.cos(-th), y0 - rad + .9*rad * Math.sin(-th));
+    ctx.stroke();
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(Math.round(car.U*5),x0+rad,y0-rad/2)
+}
+
+
 let log = console.log;
 
 let Fps = new FPS();
