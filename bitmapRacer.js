@@ -1438,12 +1438,13 @@ class Flash {
     }
 }
 class SessionLogger {
-    constructor() {
+    constructor(timeTravelDays) {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24) +timeTravelDays //it offset for testing session changes
+        this.timeTravelDays=timeTravelDays;
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) +this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
@@ -2733,7 +2734,7 @@ const sessionPrefix = p.version.n
 
 let serverOveride = false;
 // serverOveride=true;
-let timeTravelDays = 0;
+
 let apiURL;
 if ((location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -2763,8 +2764,8 @@ const Crr = p.phys.Crr; // rolling resistance
 const CA = p.phys.CA; //air drag coefficient
 let flash = new Flash();
 
-
-let sessionLogger = new SessionLogger();
+let timeTravelDays = 0;
+let sessionLogger = new SessionLogger(timeTravelDays);
 let name = new Name();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
