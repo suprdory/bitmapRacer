@@ -150,6 +150,9 @@ class Track {
                 else if (sx < 10) { //colourless, not black
                     sfcType = 'tarmac'
                 }
+                else if(hx >150 & hx <= 200 & sx >10 & lx>80){
+                    sfcType = 'ice';
+                }
                 else if (hx >= 70 & hx <= 150) { // green
                     sfcType = 'grass';
                 }
@@ -1675,7 +1678,7 @@ class SessionLogger {
 }
 class SessionSetter {
     constructor(seedstr) {
-        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'white', 'DimGrey', 'cornflowerblue', 'hotpink']
+        this.colours = ['red', 'gold', 'darkgreen', 'orange', 'white', 'DimGrey', 'cornflowerblue', 'hotpink', 'blueviolet']
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
@@ -1696,15 +1699,15 @@ class SessionSetter {
         return array[Math.floor(this.rand() * array.length)];
     }
     setDev() {
-        this.scale = { ppm: 6, mpp: 0.35 };
+        this.scale = { ppm: 8, mpp: 0.35 };
         this.yflip = false;
         this.xflip = false;
-        this.reverse = false;
+        this.reverse = true;
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'hotpink';
-        this.track = p.tracks[2];
+        this.track = p.tracks[3];
         this.trackImgName = this.track.fnames[trackDev - 1]
         this.car = p.cars[1];
         // this.track.startX= 500;
@@ -1728,9 +1731,9 @@ class SessionSetter {
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
-        p.trackSetup.metresPerPix = this.scale.mpp;
+        p.trackSetup.metresPerPix = this.scale.mpp*p.track.trackScale;
         p.draw.pixPerMetre = this.scale.ppm;
-        PPM = p.track.scale*p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        PPM = p.track.drawScale*p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase() {
         this.scale = { ppm: 6, mpp: 0.6 };
@@ -1747,17 +1750,17 @@ class SessionSetter {
 
     }
     specialCase2() {
-        this.scale = { ppm: 10, mpp: 0.20 };
-        this.yflip = true;
+        this.scale = { ppm: 8, mpp: 0.35 };
+        this.yflip = false;
         this.xflip = false;
-        this.reverse = true;
+        this.reverse = false;
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
-        this.colour = 'yellow';
-        this.track = p.tracks[2];
+        this.colour = 'turquoise';
+        this.track = p.tracks[3];
         this.trackImgName = this.track.fnames[1]
-        this.car = p.cars[1];
+        this.car = p.cars[0];
 
     }
 
@@ -2801,7 +2804,7 @@ setter.gen();
 if (sessionLogger.version == 'flip01-19410') {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase();
 }
-if (sessionLogger.version == 'flip01-19409') {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version == 'flip01-19411') {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase2();
 }
 if (trackDev) {

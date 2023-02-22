@@ -1,49 +1,4 @@
 export let p = {
-    "cars": [
-        {
-            "width": 2,
-            "frontLength": 1,
-            "rearLength": 2,
-            "height": 0.75,
-            "wheelWidth": 0.6,
-            "wheelAspect": 1.6,
-            "mass": 200,
-            "momIfac": 5, // moment of intertia over mass
-            "steeringRate": 0.1,
-            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 5, // U scl of steering lock limiting
-            "steeringCentreRate": 1,
-            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "torqueRate": 4,
-            "torqueMax": 50,
-            "brakeRate": 30,
-            "brakeMax": 50,
-            "colour": 'gold',
-        },
-        {
-            "width": 2,
-            "frontLength": 1,
-            "rearLength": 2,
-            "height": 0.75,
-            "wheelWidth": 0.6,
-            "wheelAspect": 1.6,
-            "mass": 200,
-            "momIfac": 5, // moment of intertia over mass
-            "steeringRate": 0.1,
-            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 5, // U scl of steering lock limiting
-            "steeringCentreRate": 1,
-            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "torqueRate": 4,
-            "torqueMax": 50,
-            "brakeRate": 30,
-            "brakeMax": 50,
-            "colour": 'gold',
-        },
-    ],
-
     "phys": {
         "CD": 100, // Surface Drag resistance
         "Crr": 2, // Rolling resistance
@@ -70,13 +25,13 @@ export let p = {
         "n": "flip01",
     },
     "run": {
-        "dt": 0.2, // time per frame at 60Hz
         "nMax": 1000000,
     },
     "tracks": [{
         "fnames": ['tracks/square_track.png'],
         "bgColour": "#381b00",
-        "scale":1,
+        "drawScale":1,
+        "trackScale":1.0,
 
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
@@ -106,7 +61,8 @@ export let p = {
     {
         "fnames": ['tracks/square_track2_allpath.png'],
         "bgColour": "#381b00",
-        "scale":1,
+        "drawScale":1,
+        "trackScale": 1.0,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
 
@@ -137,7 +93,8 @@ export let p = {
     {
         "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
         "bgColour": "#B97A56",
-        "scale":0.7,
+        "drawScale":0.7,
+        "trackScale": 1.0,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
 
@@ -168,6 +125,89 @@ export let p = {
             { 'n': 8, 'left': { 'x': 258, 'y': 1000 }, 'right': { 'x': 258, 'y': 793 } },
         ]
     },
+        {
+            "fnames": ['tracks/spiralator-0.png', 'tracks/spiralator-1.png'],
+            "bgColour": "#4c0f00",
+            "drawScale": 0.6,
+            "trackScale": 2.0,
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
 
+            "startTheta": 4.9,
+            "startX": 470,
+            "startY": 720,
+
+            "startThetaRev": 1,
+            "startXRev": 88,
+            "startYRev": 658,
+
+            "sfcTypes": {
+                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "ice": { "mu": 0.05, "drag": 0.001},
+                "unknown": { "mu": 0.8, "drag": 0.01 },
+            },
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 246, 'y': 784 }, 'right': { 'x': 275, 'y': 662 } },
+                { 'n': 1, 'left': { 'x': 0, 'y':660 }, 'right': { 'x': 163, 'y': 627 } },
+                { 'n': 2, 'left': { 'x': 211, 'y': 449 }, 'right': { 'x': 356, 'y': 541 } },
+                { 'n': 3, 'left': { 'x': 337, 'y': 0 }, 'right': { 'x': 371, 'y': 163 } },
+                { 'n': 4, 'left': { 'x': 550, 'y': 210 }, 'right': { 'x': 459, 'y': 355 } },
+                { 'n': 5, 'left': { 'x': 1000, 'y': 335 }, 'right': { 'x': 836, 'y': 371 } },
+                { 'n': 6, 'left': { 'x': 789, 'y': 550 }, 'right': { 'x': 644, 'y': 459 } },
+                { 'n': 7, 'left': { 'x': 662, 'y': 1000 }, 'right': { 'x': 628, 'y': 836 } },
+                { 'n': 8, 'left': { 'x': 449, 'y': 789 }, 'right': { 'x': 541, 'y': 644 } },
+            ]
+        },
     ],
+    "cars": [
+        {
+            "width": 2,
+            "frontLength": 1,
+            "rearLength": 2,
+            "height": 0.75,
+            "wheelWidth": 0.6,
+            "wheelAspect": 1.6,
+            "mass": 200,
+            "momIfac": 5, // moment of intertia over mass
+            "steeringRate": 0.1,
+            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 5, // U scl of steering lock limiting
+            "steeringCentreRate": 1,
+            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "torqueRate": 4,
+            "torqueMax": 50,
+            "brakeRate": 30,
+            "brakeMax": 50,
+            "colour": 'gold',
+            "gamma": 12, // time multiplier
+        },
+        {
+            "width": 2,
+            "frontLength": 1,
+            "rearLength": 2,
+            "height": 0.75,
+            "wheelWidth": 0.6,
+            "wheelAspect": 1.6,
+            "mass": 200,
+            "momIfac": 5, // moment of intertia over mass
+            "steeringRate": 0.1,
+            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 5, // U scl of steering lock limiting
+            "steeringCentreRate": 1,
+            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "torqueRate": 4,
+            "torqueMax": 50,
+            "brakeRate": 30,
+            "brakeMax": 50,
+            "colour": 'gold',
+            "gamma": 12, // time multiplier
+        },
+    ],
+    "car": '', // chosen from cars by sessionSetter
+    "track": '', // chosen from tracks by sessionSetter
 }
