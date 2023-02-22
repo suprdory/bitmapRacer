@@ -2267,7 +2267,7 @@ class FPS {
         // log('matched: ', this.fpsMatch);
         this.setLocal(this.fpsMatch);
         flash.flash(this.fps + " Hz detected");
-        dt = p.run.dt * 60 / Fps.fps;
+        dt = p.car.gamma / Fps.fps;
     }
 }
 let fs = function () {
@@ -2779,7 +2779,6 @@ const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 //physics constants
-let dt = p.run.dt * 60 / Fps.fps; //time step, updated by FPS class after fps check/match
 const F_lat = p.phys.F_lat; // max lat fric force
 const stiffness = p.phys.stiffness; // cornering stiffness
 const CD = p.phys.CD; // surface drag coefficient
@@ -2809,6 +2808,7 @@ if (trackDev) {
     setter.setDev();
 }
 setter.apply(p);
+let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
 
 
 //control set up
