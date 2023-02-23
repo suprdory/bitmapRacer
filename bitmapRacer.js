@@ -1443,7 +1443,7 @@ class Flash {
     }
 }
 class SessionLogger {
-    constructor(timeTravelDays) {
+    constructor(timeTravelDays,dev) {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
@@ -1453,8 +1453,8 @@ class SessionLogger {
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
-        if (trackDev) {
-            this.version = this.version + '-' + 'trackDev'
+        if (dev) {
+            this.version = this.version + '-' + 'dev'
         }
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
@@ -1701,15 +1701,15 @@ class SessionSetter {
         return array[Math.floor(this.rand() * array.length)];
     }
     setDev() {
-        this.scale = { ppm: 8, mpp: 0.35 };
+        this.scale = { ppm: 6, mpp: 0.6 };
         this.yflip = false;
         this.xflip = false;
-        this.reverse = true;
+        this.reverse = false;
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'hotpink';
-        this.track = p.tracks[3];
+        this.track = p.tracks[2];
         this.trackImgName = this.track.fnames[trackDev - 1]
         this.car = p.cars[1];
         // this.track.startX= 500;
@@ -1765,7 +1765,6 @@ class SessionSetter {
         this.car = p.cars[0];
 
     }
-
     cyrb128(str) {
     //string to numeric hash for seeding
     let h1 = 1779033703, h2 = 3144134277,
@@ -2609,6 +2608,7 @@ let fs = function () {
         canvas.style.height = window.innerHeight + "px";
         X = canvas.width;
         Y = canvas.height;
+        halfMinDim=Math.min(X,Y)/2;
         xc = 0 // screen centre coords
         yc = 0
         isTouch = fs.isTouchDevice();
@@ -2656,9 +2656,11 @@ function anim() {
         car.readTrack();
         car.mech2();
     }
+    let Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy))/PPM;
+    let dynLookAhead=Math.min(lookAhead,Lmax)
     // calc screen centre coords
-    let xct = X / 2 - PPM * (car.x + car.ux * lookAhead)  //centre target, pan to this, screen pixel units
-    let yct = Y / 2 - PPM * (car.y + car.uy * lookAhead) - yOff
+    let xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
+    let yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
@@ -2754,6 +2756,7 @@ const showLapCount = urlParams.get('nLaps') || urlParams.has('tt');
 const trackDev = parseInt(urlParams.get('trackDev'));
 const revDev = parseInt(urlParams.get('revDev'));
 let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')):0;
+const dev = urlParams.has('tt') || urlParams.get('trackDev');
 
 // import parameter object
 import { p } from './params.js'
@@ -2763,7 +2766,7 @@ let serverOveride = false;
 // serverOveride=true;
 
 let apiURL;
-if ((urlParams.has('tt') || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
+if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
 }
 else {
@@ -2772,14 +2775,14 @@ else {
 log(apiURL)
 
 // screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff;
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff,halfMinDim;
 fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
 let PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
 const baseLW = p.draw.baseLW; // linewidth
-const lookAhead = p.draw.lookAhead / (1 + (pixRat - 1) / 3); // seconds
+const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = p.draw.panSpeed; // pixels per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
@@ -2792,7 +2795,7 @@ const CA = p.phys.CA; //air drag coefficient
 let flash = new Flash();
 
 
-let sessionLogger = new SessionLogger(timeTravelDays);
+let sessionLogger = new SessionLogger(timeTravelDays,dev);
 let name = new Name();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
@@ -2803,11 +2806,13 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.version);
 setter.gen();
-if (sessionLogger.version == 'flip01-19410') {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19410')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase();
+    log('case1')
 }
-if (sessionLogger.version == 'flip01-19411') {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19411')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase2();
+    log('case2')
 }
 if (trackDev) {
     setter.setDev();

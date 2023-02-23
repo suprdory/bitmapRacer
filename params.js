@@ -15,7 +15,7 @@ export let p = {
     "draw": {
         "pixPerMetre": 10,
         "baseLW": 2,
-        "lookAhead": 5.0,
+        "lookAhead": 6,
         "panSpeed": 0.15,
         "zoom": 1.0,
         "HUDscl": 15,
