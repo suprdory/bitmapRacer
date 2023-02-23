@@ -2056,7 +2056,7 @@ class Ghost {
         if (this.webGhostAvail & this.started & this.drawWebGhost) {
             if (this.n < this.webLap.x.length) {
 
-                ctx.globalAlpha = tjis.webAlpha;
+                ctx.globalAlpha = this.webAlpha;
                 this.rotMat = fs.calcRotMat(this.webLap.th[this.n]);
 
 
