@@ -1856,6 +1856,8 @@ class Ghost {
 
         this.colour = p.car.colour;
         this.colourWeb = 'black';
+        this.alpha=0.5;
+        this.webAlpha=0.3;
 
         // this.colour = 'green';
         // this.colourWeb = 'blue';
@@ -1994,7 +1996,7 @@ class Ghost {
         if (this.ghostAvail & this.started & this.drawGhost) {
             if (this.n < this.savedLap.x.length) {
 
-                ctx.globalAlpha = 0.5;
+                ctx.globalAlpha = this.alpha;
                 this.rotMat = fs.calcRotMat(this.savedLap.th[this.n]);
 
 
@@ -2054,7 +2056,7 @@ class Ghost {
         if (this.webGhostAvail & this.started & this.drawWebGhost) {
             if (this.n < this.webLap.x.length) {
 
-                ctx.globalAlpha = 0.5;
+                ctx.globalAlpha = tjis.webAlpha;
                 this.rotMat = fs.calcRotMat(this.webLap.th[this.n]);
 
 
