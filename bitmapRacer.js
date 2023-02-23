@@ -572,26 +572,28 @@ class Car {
 
             // lateral friction
             let maxF = F_lat * wh.sfc_mu * wh.load;
+            // log(wh.load)
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / stiffness;
 
-            if (this.ulon < 1) {
+            if (this.U < 1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * stiffness * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * stiffness * .1;
+                // log('corn: slow')
             }
             else if (Math.abs(slipAngle) < skidThresh) {
                 wh.skidFac = 2;
                 // let maximp = dt * this.m * this.ulat
                 wh.n.Fcorn.lat = -slipAngle * cosTh * stiffness;
                 wh.n.Fcorn.lon = slipAngle * sinTh * stiffness;
-                // console.log("tract")
+                // log("corn: tract")
             }
             else {
                 wh.skidFac = 5;
                 wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * maxF;
                 wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
-                // console.log("skid")
+                // log("corn: skid")
             }
             wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
             wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
