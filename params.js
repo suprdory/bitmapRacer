@@ -27,104 +27,104 @@ export let p = {
     "run": {
         "nMax": 1000000,
     },
-    "tracks": [{
-        "fnames": ['tracks/square_track.png'],
-        "bgColour": "#381b00",
-        "drawScale":1,
-        "trackScale":1.0,
+    "tracks": [
+        {
+            "fnames": ['tracks/square_track.png'],
+            "bgColour": "#381b00",
+            "drawScale": 1,
+            "trackScale": 1.0,
 
-        "x": 1000, // size, helpful for setting params before img loaded
-        "y": 1000,
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
 
-        "startTheta": -.10,
-        "startX": 180,
-        "startY": 260,
+            "startTheta": -.10,
+            "startX": 180,
+            "startY": 260,
 
-        "startThetaRev": Math.PI,
-        "startXRev": 180,
-        "startYRev": 720,
+            "startThetaRev": Math.PI,
+            "startXRev": 180,
+            "startYRev": 720,
 
-        "sfcTypes": {
-            "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-            "tarmac": { "mu": 0.8, "drag": 0.001 },
-            "grass": { "mu": 0.3, "drag": 0.02 },
-            "mud": { "mu": 0.2, "drag": 0.3 },
-            "unknown": { "mu": 0.8, "drag": 0.01 },
+            "sfcTypes": {
+                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "unknown": { "mu": 0.8, "drag": 0.01 },
+            },
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
+                { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
+                { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
+                { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
+            ]
         },
-        "gates": [ // in track pixels
-            { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
-            { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
-            { 'n': 2, 'left': { 'x': 450, 'y': 770 }, 'right': { 'x': 450, 'y': 580 } },
-            { 'n': 3, 'left': { 'x': 330, 'y': 250 }, 'right': { 'x': 330, 'y': 0 } },
-        ]
-    },
-    {
-        "fnames": ['tracks/square_track2_allpath.png'],
-        "bgColour": "#381b00",
-        "drawScale":1,
-        "trackScale": 1.0,
-        "x": 1000, // size, helpful for setting params before img loaded
-        "y": 1000,
+        {
+            "fnames": ['tracks/square_track2_allpath.png'],
+            "bgColour": "#381b00",
+            "drawScale": 0.8,
+            "trackScale": 1.0,
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
 
-        "startTheta": 3.3,
-        "startX": 140,
-        "startY": 840,
+            "startTheta": 3.3,
+            "startX": 140,
+            "startY": 840,
 
-        "startThetaRev": -0.4,
-        "startXRev": 180,
-        "startYRev": 200,
+            "startThetaRev": -0.4,
+            "startXRev": 180,
+            "startYRev": 200,
 
-        "sfcTypes": {
-            "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-            "tarmac": { "mu": 0.8, "drag": 0.001 },
-            "grass": { "mu": 0.3, "drag": 0.02 },
-            "mud": { "mu": 0.2, "drag": 0.3 },
-            "unknown": { "mu": 0.8, "drag": 0.01 },
+            "sfcTypes": {
+                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "unknown": { "mu": 0.8, "drag": 0.01 },
+            },
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 16, 'y': 500 }, 'right': { 'x': 187, 'y': 500 } },
+                { 'n': 1, 'left': { 'x': 580, 'y': 150 }, 'right': { 'x': 438, 'y': 250 } },
+                { 'n': 2, 'left': { 'x': 805, 'y': 252 }, 'right': { 'x': 975, 'y': 237 } },
+                { 'n': 3, 'left': { 'x': 365, 'y': 531 }, 'right': { 'x': 195, 'y': 529 } },
+                { 'n': 4, 'left': { 'x': 940, 'y': 783 }, 'right': { 'x': 767, 'y': 794 } },
+            ]
         },
-        "gates": [ // in track pixels
-            { 'n': 0, 'left': { 'x': 16, 'y': 500 }, 'right': { 'x': 187, 'y': 500 } },
-            { 'n': 1, 'left': { 'x': 580, 'y': 150 }, 'right': { 'x': 438, 'y': 250 } },
-            { 'n': 2, 'left': { 'x': 805, 'y': 252 }, 'right': { 'x': 975, 'y': 237 } },
-            { 'n': 3, 'left': { 'x': 365, 'y': 531 }, 'right': { 'x': 195, 'y': 529 } },
-            { 'n': 4, 'left': { 'x': 940, 'y': 783 }, 'right': { 'x': 767, 'y': 794 } },
-        ]
-    },
+        {
+            "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
+            "bgColour": "#B97A56",
+            "drawScale": 0.7,
+            "trackScale": 1.0,
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
 
-    {
-        "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
-        "bgColour": "#B97A56",
-        "drawScale":0.7,
-        "trackScale": 1.0,
-        "x": 1000, // size, helpful for setting params before img loaded
-        "y": 1000,
+            "startTheta": 3.141,
+            "startX": 180,
+            "startY": 840,
 
-        "startTheta": 3.141,
-        "startX": 180,
-        "startY": 840,
+            "startThetaRev": 0,
+            "startXRev": 180,
+            "startYRev": 200,
 
-        "startThetaRev": 0,
-        "startXRev": 180,
-        "startYRev": 200,
-
-        "sfcTypes": {
-            "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-            "tarmac": { "mu": 0.8, "drag": 0.001 },
-            "grass": { "mu": 0.3, "drag": 0.02 },
-            "mud": { "mu": 0.2, "drag": 0.3 },
-            "unknown": { "mu": 0.8, "drag": 0.01 },
+            "sfcTypes": {
+                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "unknown": { "mu": 0.8, "drag": 0.01 },
+            },
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 0, 'y': 500 }, 'right': { 'x': 199, 'y': 500 } },
+                { 'n': 1, 'left': { 'x': 500, 'y': 0 }, 'right': { 'x': 500, 'y': 185 } },
+                { 'n': 2, 'left': { 'x': 1000, 'y': 195 }, 'right': { 'x': 790, 'y': 195 } },
+                { 'n': 3, 'left': { 'x': 784, 'y': 357 }, 'right': { 'x': 555, 'y': 357 } },
+                { 'n': 4, 'left': { 'x': 1000, 'y': 489 }, 'right': { 'x': 805, 'y': 489 } },
+                { 'n': 5, 'left': { 'x': 945, 'y': 630 }, 'right': { 'x': 612, 'y': 630 } },
+                { 'n': 6, 'left': { 'x': 800, 'y': 1000 }, 'right': { 'x': 800, 'y': 794 } },
+                { 'n': 7, 'left': { 'x': 398, 'y': 369 }, 'right': { 'x': 398, 'y': 189 } },
+                { 'n': 8, 'left': { 'x': 258, 'y': 1000 }, 'right': { 'x': 258, 'y': 793 } },
+            ]
         },
-        "gates": [ // in track pixels
-            { 'n': 0, 'left': { 'x': 0, 'y': 500 }, 'right': { 'x': 199, 'y': 500 } },
-            { 'n': 1, 'left': { 'x': 500, 'y': 0 }, 'right': { 'x': 500, 'y': 185 } },
-            { 'n': 2, 'left': { 'x': 1000, 'y': 195 }, 'right': { 'x': 790, 'y': 195 } },
-            { 'n': 3, 'left': { 'x': 784, 'y': 357 }, 'right': { 'x': 555, 'y': 357 } },
-            { 'n': 4, 'left': { 'x': 1000, 'y': 489 }, 'right': { 'x': 805, 'y': 489 } },
-            { 'n': 5, 'left': { 'x': 945, 'y': 630 }, 'right': { 'x': 612, 'y': 630 } },
-            { 'n': 6, 'left': { 'x': 800, 'y': 1000 }, 'right': { 'x': 800, 'y': 794 } },
-            { 'n': 7, 'left': { 'x': 398, 'y': 369 }, 'right': { 'x': 398, 'y': 189 } },
-            { 'n': 8, 'left': { 'x': 258, 'y': 1000 }, 'right': { 'x': 258, 'y': 793 } },
-        ]
-    },
         {
             "fnames": ['tracks/spiralator-0.png', 'tracks/spiralator-1.png'],
             "bgColour": "#4c0f00",
@@ -146,12 +146,12 @@ export let p = {
                 "tarmac": { "mu": 0.8, "drag": 0.001 },
                 "grass": { "mu": 0.3, "drag": 0.02 },
                 "mud": { "mu": 0.2, "drag": 0.3 },
-                "ice": { "mu": 0.05, "drag": 0.001},
+                "ice": { "mu": 0.05, "drag": 0.001 },
                 "unknown": { "mu": 0.8, "drag": 0.01 },
             },
             "gates": [ // in track pixels
                 { 'n': 0, 'left': { 'x': 246, 'y': 784 }, 'right': { 'x': 275, 'y': 662 } },
-                { 'n': 1, 'left': { 'x': 0, 'y':660 }, 'right': { 'x': 163, 'y': 627 } },
+                { 'n': 1, 'left': { 'x': 0, 'y': 660 }, 'right': { 'x': 163, 'y': 627 } },
                 { 'n': 2, 'left': { 'x': 211, 'y': 449 }, 'right': { 'x': 356, 'y': 541 } },
                 { 'n': 3, 'left': { 'x': 337, 'y': 0 }, 'right': { 'x': 371, 'y': 163 } },
                 { 'n': 4, 'left': { 'x': 550, 'y': 210 }, 'right': { 'x': 459, 'y': 355 } },

@@ -1738,16 +1738,16 @@ class SessionSetter {
         PPM = p.track.drawScale*p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase() {
-        this.scale = { ppm: 6, mpp: 0.6 };
+        this.scale = { ppm: 8, mpp: 0.4 };
         this.yflip = true;
         this.xflip = true;
-        this.reverse = false;
+        this.reverse = true;
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
-        this.colour = 'blueviolet';
-        this.track = p.tracks[2];
-        this.trackImgName = this.track.fnames[2]
+        this.colour = '#FF5500';
+        this.track = p.tracks[1];
+        this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0];
 
     }
@@ -2806,7 +2806,7 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.version);
 setter.gen();
-if (sessionLogger.version.includes('flip01-19410')) {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19412')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase();
     log('case1')
 }
