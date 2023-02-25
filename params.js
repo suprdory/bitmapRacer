@@ -60,6 +60,37 @@ export let p = {
             ]
         },
         {
+            "fnames": ['tracks/square_track3.png'],
+            "bgColour": "#462402",
+            "drawScale": 0.7,
+            "trackScale": 1.6,
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
+
+            "startTheta": 1.4,
+            "startX": 240,
+            "startY": 60,
+
+            "startThetaRev": -1.6,
+            "startXRev": 800,
+            "startYRev": 136,
+
+            "sfcTypes": {
+                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "unknown": { "mu": 0.8, "drag": 0.01 },
+            },
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 433, 'y': 33 }, 'right': { 'x': 423, 'y': 130 } },
+                { 'n': 1, 'left': { 'x': 546, 'y': 504 }, 'right': { 'x': 594, 'y': 417 } },
+                { 'n': 2, 'left': { 'x': 367, 'y': 553 }, 'right': { 'x': 265, 'y': 567 } },
+                { 'n': 3, 'left': { 'x': 669, 'y': 970 }, 'right': { 'x': 651, 'y': 868 } },
+                { 'n': 4, 'left': { 'x': 112, 'y': 267 }, 'right': { 'x': 171, 'y': 181 } },
+            ]
+        },
+        {
             "fnames": ['tracks/square_track2_allpath.png'],
             "bgColour": "#381b00",
             "drawScale": 0.8,
@@ -161,6 +192,7 @@ export let p = {
                 { 'n': 8, 'left': { 'x': 449, 'y': 789 }, 'right': { 'x': 541, 'y': 644 } },
             ]
         },
+
     ],
     "cars": [
         {
