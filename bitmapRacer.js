@@ -2234,7 +2234,7 @@ class FPS {
         this.fdtmean = 0;
         this.maxfps = 0;
         this.fpsMatch = 0;
-        this.matchTime = this.fps * 2;//get fps after 2 secs
+        this.matchTime = this.fps * 3;//get fps after 2 secs
         this.fpss = [30, 60, 90, 120, 144, 240];
         // log(this.fdtarr)
 
