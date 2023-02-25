@@ -150,7 +150,7 @@ class Track {
                 else if (sx < 10) { //colourless, not black
                     sfcType = 'tarmac'
                 }
-                else if(hx >150 & hx <= 200 & sx >10 & lx>80){
+                else if (hx > 150 & hx <= 200 & sx > 10 & lx > 80) {
                     sfcType = 'ice';
                 }
                 else if (hx >= 70 & hx <= 150) { // green
@@ -369,12 +369,12 @@ class Car {
         let x;
 
         //axles
-        x= fs.matrixProd(this.coordMat3, this.rotMat);
+        x = fs.matrixProd(this.coordMat3, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = 'black';
         ctx.fillStyle = this.colour;
-        ctx.lineWidth = baseLW / zoom * pixRat*PPM/10;
+        ctx.lineWidth = baseLW / zoom * pixRat;//* PPM / 10;
         ctx.moveTo(x[0][0], x[0][1])
         for (let i = 1; i < x.length; i++) {
             ctx.lineTo(x[i][0], x[i][1]);
@@ -396,7 +396,7 @@ class Car {
         }
         ctx.lineTo(x[0][0], x[0][1]);
         ctx.fill();
-        
+
         // cockpit
         x = fs.matrixProd(this.coordMat2, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
@@ -415,12 +415,12 @@ class Car {
 
     }
     drawHUD(ctx) {
-        let HUDscl = p.draw.HUDscl * pixRat;
+        let HUDscl = p.draw.HUDscl * pixRat*3/this.l;
         let HUDforceScl = p.draw.HUDforceScl * pixRat;
         // let HUDx = 50 * pixRat;
         let HUDx = X / 2;
         // log(yOff)
-        let HUDy = Y - (50) * pixRat - isTouch * (Y / 3);
+        let HUDy = Y - (100) * pixRat - isTouch * (Y / 3);
         let x = this.coordMatHUD;
         x = fs.matrixProd(x, fs.calcRotMat(Math.PI));
         x = fs.matrixProd(x, [[HUDscl, 0], [0, HUDscl]])
@@ -438,13 +438,13 @@ class Car {
         this.wheels.forEach(wheel => wheel.drawHUD(ctx, this, HUDx, HUDy, HUDscl, HUDforceScl));
 
         let x0 = [HUDx, HUDy]
-        let xd = [[this.n.Fair.lat, this.n.Fair.lon]]
+        let xd = [[this.n.Fair.lat/4, this.n.Fair.lon/4]]
         xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI));
         xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         let x1 = fs.matrixTrans([x0], xd)[0];
         fs.drawHUDArrow(x0, x1, 'brown')
 
-        xd = [[this.n.Fres.lat, this.n.Fres.lon]]
+        xd = [[this.n.Fres.lat/4, this.n.Fres.lon/4]]
         xd = fs.matrixProd(xd, fs.calcRotMat(Math.PI));
         xd = fs.matrixProd(xd, [[HUDforceScl, 0], [0, HUDforceScl]])[0];
         x1 = fs.matrixTrans([x0], xd)[0];
@@ -595,6 +595,13 @@ class Car {
                 wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
                 // log("corn: skid")
             }
+            // if(i<2){
+            //     // log(sinTh)
+            // // //trial 0 cornering force
+            // // wh.n.Fcorn.lat=0;
+            // // wh.n.Fcorn.lon=0;
+            // }
+
             wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
             wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
 
@@ -738,6 +745,22 @@ class Wheel {
         x = fs.matrixProd(x, fs.calcRotMat(Math.PI));
         x = fs.matrixTrans(x, [HUDx, HUDy])
 
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = baseLW / zoom * pixRat;
+        // ctx.globalAlpha=0.5;
+        // console.table(this.coordMat)
+        ctx.moveTo(x[0][0], x[0][1])
+        for (let i = 1; i < 4; i++) {
+            ctx.lineTo(x[i][0], x[i][1]);
+        }
+        ctx.lineTo(x[0][0], x[0][1]);
+        // ctx.stroke();
+        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (car.m / 2))}, 0,0)`;
+        ctx.fill();
+        // ctx.globalAlpha = 1;
+
+
         let xd, x1;
         let x0 = [[0, 0]];
 
@@ -781,18 +804,7 @@ class Wheel {
         x1 = fs.matrixTrans([x0], xd)[0];
         fs.drawHUDArrow(x0, x1, 'white')
 
-        ctx.beginPath();
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = baseLW / zoom * pixRat;
-        // console.table(this.coordMat)
-        ctx.moveTo(x[0][0], x[0][1])
-        for (let i = 1; i < 4; i++) {
-            ctx.lineTo(x[i][0], x[i][1]);
-        }
-        ctx.lineTo(x[0][0], x[0][1]);
-        // ctx.stroke();
-        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (car.m / 2))}, 0,0)`;
-        ctx.fill();
+
 
     }
 
@@ -1228,7 +1240,7 @@ class HiScoresWeb {
         this.times;
 
 
-        this.nMaxLapCounts = showLapCount? 10:5;
+        this.nMaxLapCounts = showLapCount ? 10 : 5;
         this.nLapCounts = 0
         this.lapCounts = [];
         this.showLapCounts = true;
@@ -1443,13 +1455,13 @@ class Flash {
     }
 }
 class SessionLogger {
-    constructor(timeTravelDays,dev) {
+    constructor(timeTravelDays, dev) {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        this.timeTravelDays=timeTravelDays;
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24) +this.timeTravelDays //it offset for testing session changes
+        this.timeTravelDays = timeTravelDays;
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
         this.version = sessionPrefix + '-' + this.currentSesh;
@@ -1715,6 +1727,21 @@ class SessionSetter {
         // this.track.startX= 500;
         // this.track.startY = 500;
     }
+    setCarDev() {
+        this.scale = { ppm: 100, mpp: 0.05 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = true;
+        if (revDev) {
+            this.reverse = Boolean(revDev);
+        }
+        this.colour = 'teal';
+        this.track = p.tracks[0];
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[1];
+        // this.track.startX= 500;
+        // this.track.startY = 500;
+    }
     gen() {
         this.scale = this.randomElement(this.scales);
         this.yflip = this.randomElement(this.yflips);
@@ -1728,14 +1755,14 @@ class SessionSetter {
     apply(p) {
         p.track = this.track;
         p.track.fname = this.trackImgName;
-        p.car=this.car;
+        p.car = this.car;
         p.car.colour = this.colour;
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
-        p.trackSetup.metresPerPix = this.scale.mpp*p.track.trackScale;
+        p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale;
         p.draw.pixPerMetre = this.scale.ppm;
-        PPM = p.track.drawScale*p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase1() {
         this.scale = { ppm: 8, mpp: 0.35 };
@@ -1766,32 +1793,32 @@ class SessionSetter {
 
     }
     cyrb128(str) {
-    //string to numeric hash for seeding
-    let h1 = 1779033703, h2 = 3144134277,
-        h3 = 1013904242, h4 = 2773480762;
-    for (let i = 0, k; i < str.length; i++) {
-        k = str.charCodeAt(i);
-        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+        //string to numeric hash for seeding
+        let h1 = 1779033703, h2 = 3144134277,
+            h3 = 1013904242, h4 = 2773480762;
+        for (let i = 0, k; i < str.length; i++) {
+            k = str.charCodeAt(i);
+            h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+            h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+            h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+            h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+        }
+        h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+        h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+        h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+        h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+        return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
     }
-    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-    return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
-}
 
     mulberry32(a) {
-    //seeded rng
-    return function () {
-        var t = a += 0x6D2B79F5;
-        t = Math.imul(t ^ t >>> 15, t | 1);
-        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        //seeded rng
+        return function () {
+            var t = a += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
     }
-}
 
 }
 class Ghost {
@@ -1856,8 +1883,8 @@ class Ghost {
 
         this.colour = p.car.colour;
         this.colourWeb = 'black';
-        this.alpha=0.5;
-        this.webAlpha=0.3;
+        this.alpha = 0.5;
+        this.webAlpha = 0.3;
 
         // this.colour = 'green';
         // this.colourWeb = 'blue';
@@ -2271,8 +2298,10 @@ class FPS {
         });
         this.fps = this.fpsMatch;
         // log('matched: ', this.fpsMatch);
-        this.setLocal(this.fpsMatch);
-        flash.flash(this.fps + " Hz detected");
+        if (this.fpsMatch != this.fps) {
+            this.setLocal(this.fpsMatch);
+            flash.flash(this.fps + " Hz detected");
+        }
         dt = p.car.gamma / Fps.fps;
     }
 }
@@ -2317,7 +2346,7 @@ let fs = function () {
         // yw0 = Math.round(car.wheels[0].ya / scl);
         // xw1 = Math.round(car.wheels[1].xa / scl);
         // yw1 = Math.round(car.wheels[1].ya / scl);
-
+        let debugTxt='Debug';
         ctx.fillStyle = "white"
         ctx.textAlign = "left"
         ctx.font = 10 * pixRat + 'px ' + fontFamily;
@@ -2335,7 +2364,7 @@ let fs = function () {
         //     Math.round(car.wheels[0].s),
         //     Math.round(car.wheels[0].l)
         // ], 100, 100)
-        ctx.fillText(debugTxt, X - 500, 20, 500)
+        ctx.fillText(debugTxt, 5, 120, 500)
 
         // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
         // ctx.fillText(nX + " " + nY, 100, 140);
@@ -2351,8 +2380,8 @@ let fs = function () {
 
     }
     function drawHUD() {
-        let hudX = 5 * pixRat;
-        let hudY = 5 * pixRat + isTouch * Y / 3;
+        let hudX = 10 * pixRat;
+        let hudY = 100 * pixRat + isTouch * Y / 3;
         let barHeight = 50 * pixRat;
         let barWidthSpace = 5 * pixRat;
         let barWidth = 20 * pixRat;
@@ -2610,33 +2639,34 @@ let fs = function () {
         canvas.style.height = window.innerHeight + "px";
         X = canvas.width;
         Y = canvas.height;
-        halfMinDim=Math.min(X,Y)/2;
+        halfMinDim = Math.min(X, Y) / 2;
         xc = 0 // screen centre coords
         yc = 0
         isTouch = fs.isTouchDevice();
         yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
 
     }
-    return{
-        matrixProd:matrixProd,
-        matrixTrans:matrixTrans,
-        calcRotMat:calcRotMat,
-        drawHUD:drawHUD,
-        drawHUDArrow:drawHUDArrow,
-        RGBToHSL:RGBToHSL,
-        isTouchDevice:isTouchDevice,
-        addPointerListeners:addPointerListeners,
-        addListeners:addListeners,
-        pad:pad,
-        formatDuration:formatDuration,
-        formatDurationTenth:formatDurationTenth,
-        intersects:intersects,
-        secondBezier:secondBezier,
-        dotProduct:dotProduct,
-        crossProduct:crossProduct,
-        resize:resize,
-        secsToString:secsToString,
-        submitName:submitName,
+    return {
+        matrixProd: matrixProd,
+        matrixTrans: matrixTrans,
+        calcRotMat: calcRotMat,
+        drawHUD: drawHUD,
+        drawHUDArrow: drawHUDArrow,
+        RGBToHSL: RGBToHSL,
+        isTouchDevice: isTouchDevice,
+        addPointerListeners: addPointerListeners,
+        addListeners: addListeners,
+        pad: pad,
+        formatDuration: formatDuration,
+        formatDurationTenth: formatDurationTenth,
+        intersects: intersects,
+        secondBezier: secondBezier,
+        dotProduct: dotProduct,
+        crossProduct: crossProduct,
+        resize: resize,
+        secsToString: secsToString,
+        submitName: submitName,
+        drawDebug:drawDebug,
     }
 }();
 function anim() {
@@ -2658,8 +2688,8 @@ function anim() {
         car.readTrack();
         car.mech2();
     }
-    let Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy))/PPM;
-    let dynLookAhead=Math.min(lookAhead,Lmax)
+    let Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM;
+    let dynLookAhead = Math.min(lookAhead, Lmax)*p.car.gamma
     // calc screen centre coords
     let xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
     let yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
@@ -2713,10 +2743,11 @@ function anim() {
         leftBtn.draw(ctx);
         rightBtn.draw(ctx);
     }
-    // drawDebug();
-    // fs.drawHUD();
-
-    // car.drawHUD(ctx);
+    if (carDev){
+        fs.drawDebug();
+    fs.drawHUD();
+    car.drawHUD(ctx);
+    }
     hiScores.draw(ctx);
     hiScoresWeb.draw(ctx);
     sessionLogger.draw(ctx);
@@ -2729,23 +2760,23 @@ function anim() {
     ghost.addState(car.x, car.y, car.theta);
 
 }
-function drawSpeedo(){
-    let x0=10*pixRat;
+function drawSpeedo() {
+    let x0 = 10 * pixRat;
     let y0 = Y - isTouch * Y / 3 - 20 * pixRat;
-    let rad=35*pixRat;
-    let th0=Math.PI*45/180;
-    let th=car.U/car.maxUth*(Math.PI*2-2*th0)-Math.PI/2+th0;
+    let rad = 35 * pixRat;
+    let th0 = Math.PI * 45 / 180;
+    let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
     ctx.beginPath()
-    ctx.strokeStyle='white';
-    ctx.arc(x0+rad,y0-rad,rad,th0+Math.PI/2,Math.PI*5/2-th0)
+    ctx.strokeStyle = 'white';
+    ctx.arc(x0 + rad, y0 - rad, rad, th0 + Math.PI / 2, Math.PI * 5 / 2 - th0)
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x0 + rad, y0 - rad);
-    ctx.lineTo(x0 + rad - .9*rad * Math.cos(-th), y0 - rad + .9*rad * Math.sin(-th));
+    ctx.lineTo(x0 + rad - .9 * rad * Math.cos(-th), y0 - rad + .9 * rad * Math.sin(-th));
     ctx.stroke();
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText(Math.round(car.U*5),x0+rad,y0-rad/2)
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(car.U * 5), x0 + rad, y0 - rad / 2)
 }
 
 
@@ -2757,9 +2788,10 @@ const urlParams = new URLSearchParams(queryString);
 const showLapCount = urlParams.get('nLaps') || urlParams.has('tt');
 const trackDev = parseInt(urlParams.get('trackDev'));
 const revDev = parseInt(urlParams.get('revDev'));
-let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')):0;
-const dev = urlParams.has('tt') || urlParams.get('trackDev');
-
+const carDev = parseInt(urlParams.get('carDev'));
+let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
+const dev = urlParams.has('tt') || urlParams.get('trackDev') || parseInt(urlParams.get('carDev'));
+log('Dev:', (parseInt(dev)))
 // import parameter object
 import { p } from './params.js'
 const sessionPrefix = p.version.n
@@ -2777,7 +2809,7 @@ else {
 log(apiURL)
 
 // screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff,halfMinDim;
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff, halfMinDim;
 fs.resize();
 
 // draw constants
@@ -2797,10 +2829,12 @@ const CA = p.phys.CA; //air drag coefficient
 let flash = new Flash();
 
 
-let sessionLogger = new SessionLogger(timeTravelDays,dev);
+let sessionLogger = new SessionLogger(timeTravelDays, dev);
 let name = new Name();
+
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
+
 
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
@@ -2818,6 +2852,9 @@ if (sessionLogger.version.includes('flip01-19411')) {//use to 'cue' up setting f
 }
 if (trackDev) {
     setter.setDev();
+}
+if (carDev) {
+    setter.setCarDev();
 }
 setter.apply(p);
 let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
@@ -2837,7 +2874,9 @@ let lapCounter = new LapCounter(track.gates);
 let car = new Car();
 
 //ghost set up
+
 let ghost = new Ghost();
+
 fs.addListeners(inputState);
 
 // run
@@ -2845,6 +2884,7 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
+// log('dt:',1/dt)
 
 // flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 

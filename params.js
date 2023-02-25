@@ -15,11 +15,11 @@ export let p = {
     "draw": {
         "pixPerMetre": 10,
         "baseLW": 2,
-        "lookAhead": 6,
+        "lookAhead": .5,
         "panSpeed": 0.15,
         "zoom": 1.0,
-        "HUDscl": 15,
-        "HUDforceScl": .8,
+        "HUDscl": 25,
+        "HUDforceScl": 12,
     },
     "version": {
         "n": "flip01",
@@ -218,26 +218,26 @@ export let p = {
             "gamma": 12, // time multiplier
         },
         {
-            "width": 2,
-            "frontLength": 1,
-            "rearLength": 2,
-            "height": 0.75,
-            "wheelWidth": 0.6,
+            "width": .3,
+            "frontLength": .3,
+            "rearLength": .2,
+            "height": 0.01,
+            "wheelWidth": 0.1,
             "wheelAspect": 1.6,
-            "mass": 200,
-            "momIfac": 5, // moment of intertia over mass
-            "steeringRate": 0.1,
+            "mass": 2,
+            "momIfac": .04, // moment of intertia over mass
+            "steeringRate": 1,
             "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
             "steeringUscl": 5, // U scl of steering lock limiting
             "steeringCentreRate": 1,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
             "torqueRate": 4,
-            "torqueMax": 50,
+            "torqueMax": 5,
             "brakeRate": 30,
-            "brakeMax": 50,
+            "brakeMax": 5,
             "colour": 'gold',
-            "gamma": 12, // time multiplier
+            "gamma": 1, // time multiplier
         },
     ],
     "car": '', // chosen from cars by sessionSetter
