@@ -22,7 +22,8 @@ export let p = {
     },
     "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
         "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-        "tarmac": { "mu": 0.8, "drag": 0.001 },
+        // "tarmac": { "mu": 0.8, "drag": 0.001 },
+        "tarmac": { "mu": 0.0, "drag": 0.000 },
         "grass": { "mu": 0.3, "drag": 0.02 },
         "mud": { "mu": 0.2, "drag": 0.3 },
         "ice": { "mu": 0.05, "drag": 0.001 },
@@ -212,8 +213,8 @@ export let p = {
             "gamma": 1, // time multiplier
             "phys": {
                 "CD": 50, // Surface Drag resistance
-                "Crr": .2, // Rolling resistance
-                "CA": 0.1, //Air resistance
+                "Crr": .0, // Rolling resistance
+                "CA": 0.0, //Air resistance
                 "mu": 1.2, // coeff of friction for lateral forces
                 "stiffness": 20, // Newtons (lateral friction) per Radian (slip angle)
             },
