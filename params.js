@@ -54,7 +54,7 @@ export let p = {
             ]
         },
         {
-            "fnames": ['tracks/square_track3_dust.png'],
+            "fnames": ['tracks/square_track3_dash.png'],
             "bgColour": "#462402",
             "drawScale": 0.6,
             "trackScale": 1.6,
