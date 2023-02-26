@@ -1,11 +1,4 @@
 export let p = {
-    "phys": {
-        "CD": 100, // Surface Drag resistance
-        "Crr": 2, // Rolling resistance
-        "CA": 0.5, //Air resistance
-        "F_lat": 1.2, // Max lateral friction multiplier, above 1.0 gives "superweight" force.
-        "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
-    },
     "trackSetup": {
         "metresPerPix": 0.35,
         "reverse": false,
@@ -25,7 +18,15 @@ export let p = {
         "n": "flip01",
     },
     "run": {
-        "nMax": 1000000,
+        "nMax": 10000000,
+    },
+    "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
+        "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+        "tarmac": { "mu": 0.8, "drag": 0.001 },
+        "grass": { "mu": 0.3, "drag": 0.02 },
+        "mud": { "mu": 0.2, "drag": 0.3 },
+        "ice": { "mu": 0.05, "drag": 0.001 },
+        "unknown": { "mu": 0.8, "drag": 0.01 },
     },
     "tracks": [
         {
@@ -45,13 +46,6 @@ export let p = {
             "startXRev": 180,
             "startYRev": 720,
 
-            "sfcTypes": {
-                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-                "tarmac": { "mu": 0.8, "drag": 0.001 },
-                "grass": { "mu": 0.3, "drag": 0.02 },
-                "mud": { "mu": 0.2, "drag": 0.3 },
-                "unknown": { "mu": 0.8, "drag": 0.01 },
-            },
             "gates": [ // in track pixels
                 { 'n': 0, 'left': { 'x': 250, 'y': 500 }, 'right': { 'x': 70, 'y': 500 } },
                 { 'n': 1, 'left': { 'x': 700, 'y': 500 }, 'right': { 'x': 1000, 'y': 500 } },
@@ -75,13 +69,6 @@ export let p = {
             "startXRev": 800,
             "startYRev": 136,
 
-            "sfcTypes": {
-                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-                "tarmac": { "mu": 0.8, "drag": 0.001 },
-                "grass": { "mu": 0.3, "drag": 0.02 },
-                "mud": { "mu": 0.2, "drag": 0.3 },
-                "unknown": { "mu": 0.8, "drag": 0.01 },
-            },
             "gates": [ // in track pixels
                 { 'n': 0, 'left': { 'x': 433, 'y': 33 }, 'right': { 'x': 423, 'y': 130 } },
                 { 'n': 1, 'left': { 'x': 546, 'y': 504 }, 'right': { 'x': 594, 'y': 417 } },
@@ -106,13 +93,6 @@ export let p = {
             "startXRev": 180,
             "startYRev": 200,
 
-            "sfcTypes": {
-                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-                "tarmac": { "mu": 0.8, "drag": 0.001 },
-                "grass": { "mu": 0.3, "drag": 0.02 },
-                "mud": { "mu": 0.2, "drag": 0.3 },
-                "unknown": { "mu": 0.8, "drag": 0.01 },
-            },
             "gates": [ // in track pixels
                 { 'n': 0, 'left': { 'x': 16, 'y': 500 }, 'right': { 'x': 187, 'y': 500 } },
                 { 'n': 1, 'left': { 'x': 580, 'y': 150 }, 'right': { 'x': 438, 'y': 250 } },
@@ -137,13 +117,6 @@ export let p = {
             "startXRev": 180,
             "startYRev": 200,
 
-            "sfcTypes": {
-                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-                "tarmac": { "mu": 0.8, "drag": 0.001 },
-                "grass": { "mu": 0.3, "drag": 0.02 },
-                "mud": { "mu": 0.2, "drag": 0.3 },
-                "unknown": { "mu": 0.8, "drag": 0.01 },
-            },
             "gates": [ // in track pixels
                 { 'n': 0, 'left': { 'x': 0, 'y': 500 }, 'right': { 'x': 199, 'y': 500 } },
                 { 'n': 1, 'left': { 'x': 500, 'y': 0 }, 'right': { 'x': 500, 'y': 185 } },
@@ -172,14 +145,6 @@ export let p = {
             "startXRev": 88,
             "startYRev": 658,
 
-            "sfcTypes": {
-                "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-                "tarmac": { "mu": 0.8, "drag": 0.001 },
-                "grass": { "mu": 0.3, "drag": 0.02 },
-                "mud": { "mu": 0.2, "drag": 0.3 },
-                "ice": { "mu": 0.05, "drag": 0.001 },
-                "unknown": { "mu": 0.8, "drag": 0.01 },
-            },
             "gates": [ // in track pixels
                 { 'n': 0, 'left': { 'x': 246, 'y': 784 }, 'right': { 'x': 275, 'y': 662 } },
                 { 'n': 1, 'left': { 'x': 0, 'y': 660 }, 'right': { 'x': 163, 'y': 627 } },
@@ -203,7 +168,7 @@ export let p = {
             "wheelWidth": 0.6,
             "wheelAspect": 1.6,
             "mass": 200,
-            "momIfac": 5, // moment of intertia over mass
+            "momIfac": 1.53846, // moment of intertia over mass
             "steeringRate": 0.1,
             "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
             "steeringUscl": 5, // U scl of steering lock limiting
@@ -216,6 +181,13 @@ export let p = {
             "brakeMax": 50,
             "colour": 'gold',
             "gamma": 12, // time multiplier
+            "phys": {
+                "CD": 100, // Surface Drag resistance
+                "Crr": 2, // Rolling resistance
+                "CA": 0.5, //Air resistance
+                "mu": 1.2, // Max lateral friction multiplier, above 1.0 gives "superweight" force.
+                "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
+            },
         },
         {
             "width": .3,
@@ -224,8 +196,8 @@ export let p = {
             "height": 0.01,
             "wheelWidth": 0.1,
             "wheelAspect": 1.6,
-            "mass": 2,
-            "momIfac": .04, // moment of intertia over mass
+            "mass": 1,
+            "momIfac": .3, // moment of intertia ratio to that of point masses at wheels
             "steeringRate": 1,
             "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
             "steeringUscl": 5, // U scl of steering lock limiting
@@ -238,6 +210,13 @@ export let p = {
             "brakeMax": 5,
             "colour": 'gold',
             "gamma": 1, // time multiplier
+            "phys": {
+                "CD": 50, // Surface Drag resistance
+                "Crr": .2, // Rolling resistance
+                "CA": 0.1, //Air resistance
+                "mu": 1.2, // coeff of friction for lateral forces
+                "stiffness": 20, // Newtons (lateral friction) per Radian (slip angle)
+            },
         },
     ],
     "car": '', // chosen from cars by sessionSetter
