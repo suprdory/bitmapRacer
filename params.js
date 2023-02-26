@@ -189,35 +189,35 @@ export let p = {
                 "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
             },
         },
-        {
-            "width": .3,
-            "frontLength": .3,
-            "rearLength": .2,
-            "height": 0.01,
-            "wheelWidth": 0.1,
-            "wheelAspect": 1.6,
-            "mass": 1,
-            "momIfac": .3, // moment of intertia ratio to that of point masses at wheels
-            "steeringRate": 1,
-            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 5, // U scl of steering lock limiting
-            "steeringCentreRate": 1,
-            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "torqueRate": 4,
-            "torqueMax": 5,
-            "brakeRate": 30,
-            "brakeMax": 5,
-            "colour": 'gold',
-            "gamma": 1, // time multiplier
-            "phys": {
-                "CD": 50, // Surface Drag resistance
-                "Crr": .2, // Rolling resistance
-                "CA": 0.1, //Air resistance
-                "mu": 1.2, // coeff of friction for lateral forces
-                "stiffness": 20, // Newtons (lateral friction) per Radian (slip angle)
-            },
-        },
+        // {
+        //     "width": .3,
+        //     "frontLength": .3,
+        //     "rearLength": .2,
+        //     "height": 0.01,
+        //     "wheelWidth": 0.1,
+        //     "wheelAspect": 1.6,
+        //     "mass": 1,
+        //     "momIfac": .3, // moment of intertia ratio to that of point masses at wheels
+        //     "steeringRate": 1,
+        //     "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
+        //     "steeringUscl": 5, // U scl of steering lock limiting
+        //     "steeringCentreRate": 1,
+        //     "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+        //     "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+        //     "torqueRate": 4,
+        //     "torqueMax": 5,
+        //     "brakeRate": 30,
+        //     "brakeMax": 5,
+        //     "colour": 'gold',
+        //     "gamma": 1, // time multiplier
+        //     "phys": {
+        //         "CD": 50, // Surface Drag resistance
+        //         "Crr": .2, // Rolling resistance
+        //         "CA": 0.1, //Air resistance
+        //         "mu": 1.2, // coeff of friction for lateral forces
+        //         "stiffness": 20, // Newtons (lateral friction) per Radian (slip angle)
+        //     },
+        // },
     ],
     "car": '', // chosen from cars by sessionSetter
     "track": '', // chosen from tracks by sessionSetter

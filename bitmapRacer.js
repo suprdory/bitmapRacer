@@ -1818,13 +1818,13 @@ class SessionSetter {
 
     }
     specialCase2() {
-        this.scale = { ppm: 8, mpp: 0.35 };
+        this.scale = { ppm: 10, mpp: 0.2 };
         this.yflip = false;
         this.xflip = false;
-        this.reverse = false;
-        this.colour = 'turquoise';
+        this.reverse = true;
+        this.colour = '#AA66BB';
         this.track = p.tracks[3];
-        this.trackImgName = this.track.fnames[1]
+        this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0];
 
     }
@@ -2882,7 +2882,7 @@ if (sessionLogger.version.includes('flip01-19414')) {//use to 'cue' up setting f
     setter.specialCase1();
     log('case1')
 }
-if (sessionLogger.version.includes('flip01-19411')) {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19415')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase2();
     log('case2')
 }
