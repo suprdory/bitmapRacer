@@ -1811,9 +1811,6 @@ class SessionSetter {
         this.yflip = true;
         this.xflip = true;
         this.reverse = false;
-        if (revDev) {
-            this.reverse = Boolean(revDev);
-        }
         this.colour = '#4488FF';
         this.track = p.tracks[1];
         this.trackImgName = this.track.fnames[0]
@@ -1825,9 +1822,6 @@ class SessionSetter {
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
-        if (revDev) {
-            this.reverse = Boolean(revDev);
-        }
         this.colour = 'turquoise';
         this.track = p.tracks[3];
         this.trackImgName = this.track.fnames[1]
@@ -2857,14 +2851,15 @@ log(apiURL)
 
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff, halfMinDim;
+let PPM;// init drawing scale, screen pixels per metre - pre zoom
 fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
-let PPM = p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+ 
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
-const panSpeed = p.draw.panSpeed; // pixels per frame
+const panSpeed = p.draw.panSpeed*60/Fps.fps; // fraction to target per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 let flash = new Flash();

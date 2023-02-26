@@ -56,7 +56,7 @@ export let p = {
         {
             "fnames": ['tracks/square_track3.png'],
             "bgColour": "#462402",
-            "drawScale": 0.7,
+            "drawScale": 0.6,
             "trackScale": 1.6,
             "x": 1000, // size, helpful for setting params before img loaded
             "y": 1000,
