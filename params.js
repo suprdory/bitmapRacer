@@ -189,7 +189,6 @@ export let p = {
         },
 
     },
-
     "cars": [
         {
             "design": 'moss',
@@ -238,9 +237,9 @@ export let p = {
             "steeringCentreRate": 10,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
             "fade": 1.0, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "torqueRate": 4,
+            "torqueRate": 20,
             "torqueMax": 5,
-            "brakeRate": 30,
+            "brakeRate": 40,
             "brakeMax": 10,
             "colour": 'gold',
             "mechV": 3,

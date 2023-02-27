@@ -356,9 +356,9 @@ class Car {
             new Wheel(this.w / 2, -this.rearLength, this.wheelWidth, this.wheelAspect)
         ];
 
-        this.torqueWheelHUD = this.fade > 0.5 ? this.wheels[0] : this.wheels[2];
-        this.maxTorqueHUD = Math.max(this.fade * this.torqueMax, this.fade * this.torqueMax);
-
+        this.torqueWheelHUD = this.fade <= 0.5 ? this.wheels[0] : this.wheels[2];
+        this.maxTorqueHUD = Math.max(this.fade * this.torqueMax, (1-this.fade) * this.torqueMax);
+        log("maxTorqueHUD",this.maxTorqueHUD)
     }
     readTrack() {
         this.wheels.forEach(function (wheel) {
