@@ -244,9 +244,12 @@ class Car {
         this.oversize = p.car.oversize;
         this.bodyAspect = p.car.bodyAspect;
         this.m = p.car.mass; // mass
-        this.momI = p.car.momIfac * this.m * ((this.l/2)**2+(this.w/2)**2); // moment of inertia
-        log("momI",this.momI)
+        this.momI = p.car.momIfac * this.m * ((this.l / 2) ** 2 + (this.w / 2) ** 2); // moment of inertia
+        // log("momI", this.momI)
         this.colour = p.car.colour;
+        this.design=p.car.design;
+        this.relCoords=p.carDesigns[this.design];
+        // log(this.relCoords)
 
         //physics constants
         this.mu = p.car.phys.mu; //coeff of friction for lateral force
@@ -254,13 +257,17 @@ class Car {
         this.CD = p.car.phys.CD; // surface drag coefficient
         this.Crr = p.car.phys.Crr; // rolling resistance
         this.CA = p.car.phys.CA; //air drag coefficient
+        this.g = 9.8;//grav const
+
+        this.W = this.m * this.g; //weight
+
+        //mechanics version
+        this.mechV=p.car.mechV;
 
 
         // mech + kin
         this.x = track.startX; // x pos 
         this.y = track.startY; // y pos
-
-
 
         this.Fxy = [0, 0]; //resultant Force on car as column vector;
         this.ax = 0; // x accel
@@ -268,11 +275,20 @@ class Car {
 
         this.to = 0; //heading torque;
 
-        this.U = 0; //speed
+        // circular motion exp
+        this.thetaFixed = null;
+        this.U0 = 0;
+        this.radius = 5;
+        this.omega = this.U0 / this.radius;
+        this.Fcirc = this.m * this.radius * this.omega ** 2;
+        this.thetaDot = this.omega;
+        this.period = 2 * Math.PI / this.omega;
+        // log('Fcirc=', this.Fcirc)
+        // log("T=", this.period)
+
+        this.U = this.U0; //speed
         this.thetaU = 0; //velocity angle
         this.headOff = 0; // heading - velocity angle
-
-
 
         if (!track.reverse) {
             this.theta = p.track.startTheta; // heading angle
@@ -317,44 +333,21 @@ class Car {
         this.steeringMax = 0; // can vary with speed.
 
         this.maxUth = (2 * this.torqueMax / p.car.phys.CA) ** 0.5 // approx theroretical max speed
-        // log('max speed:', this.maxUth)
+        log('max speed:', this.maxUth)
 
 
         this.rotMat = fs.calcRotMat(this.theta);
 
-        // let xl = (-this.w / 2 * (1 + this.oversize));
-        // let xr = (+this.w / 2 * (1 + this.oversize));
-        // let yf = (this.frontLength + this.l / 2 * (this.oversize + this.bodyAspect));
-        // let yr = (-this.rearLength - this.l / 2 * (this.oversize + this.bodyAspect));
-
-        // corners in normalized units relative to centre line and rear wheel
-        let xl = (-1 / 2 * (1 + this.oversize));
-        let xr = (+1 / 2 * (1 + this.oversize));
-        let yf = (1 + 1 / 2 * (this.oversize + this.bodyAspect));
-        let yr = (0 - 1 / 2 * (this.oversize + this.bodyAspect));
-
-        // car body coords in normalized units relative to centre line and rear wheel
-        // this.coordsRel = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
-        this.coordsRel = [ //main body
-            [0, -0.2], [-.20, -.15], [-0.30, 0], [-0.30, .7], [-0.14, 1.3],
-            [0.14, 1.3], [0.30, .7], [0.30, 0], [.20, -.15],
-        ]
+        // car design relCoords in normalized units relative to centre line and rear wheel
 
         //unscaled for HUD - coords in metres, relative to CoM
-        this.coordMatHUD = this.coordsRel.map(x => [x[0] * this.w, x[1] * this.l - this.rearLength])
-        // this.coordMatHUD = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
+        this.coordMatHUDbody = this.relCoords.body.map(x => [x[0] * this.w, x[1] * this.l - this.rearLength])
         //scaled for drawing on track
-        this.coordMat = this.coordMatHUD.map(x => x.map(x => x * PPM))
-
+        this.coordMatBody = this.coordMatHUDbody.map(x => x.map(x => x * PPM))
         // cockpit
-        this.coordsRel2 = [[0, .15], [-.1, .17], [-.2, .25], [-.2, .5],
-        [.2, .5], [.2, .25], [.1, .17],
-        ]
-        this.coordMat2 = this.coordsRel2.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
-
+        this.coordMatCockpit = this.relCoords.cockpit.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
         //axels
-        this.coordsRel3 = [[0, 0], [-.5, 0], [0.5, 0], [0, 0], [0, 1.0], [-.5, 1], [0.5, 1], [0, 1.0]]
-        this.coordMat3 = this.coordsRel3.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
+        this.coordMatAxels = this.relCoords.axels.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         this.wheels = [
             new Wheel(-this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
@@ -378,7 +371,7 @@ class Car {
         let x;
 
         //axles
-        x = fs.matrixProd(this.coordMat3, this.rotMat);
+        x = fs.matrixProd(this.coordMatAxels, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = 'black';
@@ -393,7 +386,7 @@ class Car {
 
 
         // body
-        x = fs.matrixProd(this.coordMat, this.rotMat);
+        x = fs.matrixProd(this.coordMatBody, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
@@ -407,7 +400,7 @@ class Car {
         ctx.fill();
 
         // cockpit
-        x = fs.matrixProd(this.coordMat2, this.rotMat);
+        x = fs.matrixProd(this.coordMatCockpit, this.rotMat);
         x = fs.matrixTrans(x, [PPM * this.x + xc, PPM * this.y + yc])
         ctx.beginPath();
         ctx.strokeStyle = this.colour;
@@ -430,7 +423,7 @@ class Car {
         let HUDx = X / 2;
         // log(yOff)
         let HUDy = Y - (100) * pixRat - isTouch * (Y / 3);
-        let x = this.coordMatHUD;
+        let x = this.coordMatHUDbody;
         x = fs.matrixProd(x, fs.calcRotMat(Math.PI));
         x = fs.matrixProd(x, [[HUDscl, 0], [0, HUDscl]])
         x = fs.matrixTrans(x, [HUDx, HUDy])
@@ -514,8 +507,215 @@ class Car {
             this.wheels[2].brake = Math.max(0, this.wheels[2].brake - this.brakeRate * dt);;
             this.wheels[3].brake = Math.max(0, this.wheels[3].brake - this.brakeRate * dt);;
         }
+        if (carDev & (this.thetaFixed != null)) {
+            this.wheels[0].theta = this.thetaFixed;
+            this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
+            this.wheels[1].theta = this.thetaFixed;
+            this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
+        }
     }
-    mech2() {
+
+    mech(){
+        if (this.mechV==2){
+            this.mechV2();
+        }
+        if (this.mechV == 3) {
+            this.mechV3();
+        }
+    }
+    mechV3() {
+        // calc all forces in car rel coords before transforming to track from and applying.
+        this.n.Fres.lon = 0;
+        this.n.Fres.lat = 0;
+        this.n.Mres = 0;
+
+        //forces directly on car - air resistance
+        this.n.Fair.lon = -this.CA * this.U ** 2 * Math.cos(-this.headOff);
+        this.n.Fair.lat = -this.CA * this.U ** 2 * Math.sin(-this.headOff);
+
+        this.n.Fres.lon += this.n.Fair.lon;
+        this.n.Fres.lat += this.n.Fair.lat;
+
+
+        for (let i = 0; i < 4; i++) {
+
+            let wh = this.wheels[i];
+
+            // max Force from wheel (excluding  sfc drag), occurs at and above alpha0 in cornering
+            let Fmax = this.mu * wh.sfc_mu * wh.load;
+
+            let cosTh = Math.cos(wh.theta);
+            let sinTh = Math.sin(wh.theta);
+
+            let cos_thth = Math.cos(this.theta + wh.theta);
+            let sin_thth = Math.sin(this.theta + wh.theta);
+
+            // wheel velocity - relative to car
+            wh.ux = +this.thetaDot * wh.d * Math.cos(this.theta + wh.phi);
+            wh.uy = -this.thetaDot * wh.d * Math.sin(this.theta + wh.phi);
+            // wheel velocity - absolute
+            wh.uxA = wh.ux + this.ux;
+            wh.uyA = wh.uy + this.uy;
+            // wheel velocity parallel/perpendicular to wheel
+            wh.uApar = -wh.uyA * cos_thth - wh.uxA * sin_thth;
+            wh.uAperp = -wh.uyA * sin_thth + wh.uxA * cos_thth;
+
+
+            wh.n.u.lonWheel = -wh.uApar; //wheel speed in wheel direction (sign error in wh.uApar?)
+            wh.n.u.latWheel = wh.uAperp; //wheel speed purp to wheel direction
+
+            //accelerating
+            wh.n.Fthrust.lon = cosTh * Math.min(Fmax, wh.torque);
+            wh.n.Fthrust.lat = sinTh * Math.min(Fmax, wh.torque);
+
+            // braking
+            if (Math.abs(wh.n.u.lonWheel) < .1) {
+                wh.n.Fbrake.lon = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * cosTh;
+                wh.n.Fbrake.lat = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * sinTh;
+            }
+            else {
+                wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.brake) * cosTh;
+                wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.brake) * sinTh;
+            }
+            // rolling resistance
+            if (Math.abs(wh.n.u.lonWheel) < .1) {
+                wh.n.Frollres.lon = -wh.n.u.lonWheel * this.Crr * wh.sfc_mu * cosTh;
+                wh.n.Frollres.lat = -wh.n.u.lonWheel * this.Crr * wh.sfc_mu * sinTh;
+            }
+            else {
+                wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * this.Crr * wh.sfc_mu * cosTh;
+                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.Crr * wh.sfc_mu * sinTh;
+            }
+            //surface drag
+            wh.n.Fdrag.lon = -wh.n.u.lonWheel * wh.sfc_drag * this.CD;
+            wh.n.Fdrag.lat = -wh.n.u.latWheel * wh.sfc_drag * this.CD;
+
+
+            // // lateral friction (orig)
+            // let maxF = this.mu * wh.sfc_mu * wh.load;
+            // // log(wh.load)
+            // let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
+            // let skidThresh = maxF / this.stiffness;
+            // // log(wh.load)
+            // if (this.U < 1) {
+            //     wh.skidFac = 0;
+            //     wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * this.stiffness * .1;
+            //     wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * this.stiffness * .1;
+            //     // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
+            // }
+            // else if (Math.abs(slipAngle) < skidThresh) {
+            //     wh.skidFac = 1;
+            //     // let maximp = dt * this.m * this.ulat
+            //     wh.n.Fcorn.lat = -slipAngle * cosTh * this.stiffness;
+            //     wh.n.Fcorn.lon = slipAngle * sinTh * this.stiffness;
+            //     // log("corn: tract")
+            // }
+            // else {
+            //     wh.skidFac = 2;
+            //     wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * maxF;
+            //     wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
+            //     // log("corn: skid")
+            // }
+
+
+            // wh.n.Fcorn.lat = this.Fcirc / 4;
+            // wh.n.Fcorn.lon = 0;
+            // this.thetaDot = this.omega;
+
+            let alpha0 = 12; // should pass as car param, slip angle in degs at Max lat force, Fmax
+            let alpha = 180 / Math.PI * Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel); // slipangle in degs
+
+            let cs = Fmax / alpha0; //cornering stiffness in N/deg. Varies with load.
+            // log('alpha',alpha)
+            if (this.U < .1) {
+                wh.skidFac = 0;
+                wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * cs * .1;
+                wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * cs * .1;
+                // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
+            }
+            else if (Math.abs(alpha) < alpha0) {
+                wh.skidFac = 1;
+                wh.n.Fcorn.lat = -alpha * cs * cosTh;
+                wh.n.Fcorn.lon = alpha * cs * sinTh;
+            }
+            else {
+                wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * Fmax;
+                wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * Fmax;
+                wh.skidFac = 2;
+            }
+
+            if (i == 1) {
+                // log(Math.round(Fmax * 1000) / 1000,Math.round(wh.n.Fcorn.lat * 1000) / 1000, Math.round(wh.n.Fcorn.lon * 1000) / 1000)
+            }
+            // if(i<2){
+            // log(sinTh)
+            // //trial 0 cornering force
+            // wh.n.Fcorn.lat = 0;
+            // wh.n.Fcorn.lon = 0;
+            // }
+
+            wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
+            wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
+
+            wh.n.Mres = -wh.n.Fres.lon * wh.x + wh.n.Fres.lat * wh.y;
+            this.n.Fres.lon += wh.n.Fres.lon
+            this.n.Fres.lat += wh.n.Fres.lat
+
+            this.n.Mres += wh.n.Mres
+            // console.log()
+        }
+        // ser circ force
+        // this.n.Fres.lon = 0
+        // this.n.Fres.lat = this.Fcirc;
+
+        this.Fxy = fs.matrixProd([[this.n.Fres.lat, this.n.Fres.lon]], fs.calcRotMat(this.theta))[0]
+
+        this.alon = this.n.Fres.lon / this.m;
+        this.alat = this.n.Fres.lat / this.m;
+        this.ulon = this.ulon + this.alon * dt;
+        this.ulat = this.ulat + this.alat * dt;
+
+        this.loadRear = Math.max(0, Math.min(this.W, this.m / this.l * (this.g * this.frontLength + this.height * this.alon)));
+        this.loadFront = this.W - this.loadRear;
+        this.loadRight = this.m / this.w * (this.g * this.w / 2 + this.height * this.alat);
+        this.loadLeft = this.W - this.loadRight;
+
+        this.loadFrontRight = this.loadFront * this.loadRight / this.W;
+        this.loadFrontLeft = this.loadFront * this.loadLeft / this.W;
+        this.loadRearRight = this.loadRear * this.loadRight / this.W;
+        this.loadRearLeft = this.loadRear * this.loadLeft / this.W;
+
+        this.wheels[0].load = this.loadFrontRight
+        this.wheels[1].load = this.loadFrontLeft
+        this.wheels[2].load = this.loadRearRight
+        this.wheels[3].load = this.loadRearLeft
+        // log(this.loadRear);
+        this.steeringMax = this.steeringMaxBase * +this.steeringUscl / (this.steeringUscl + this.U)
+
+        this.ax = this.Fxy[0] / this.m;
+        this.ay = this.Fxy[1] / this.m;
+        this.ux = this.ux + this.ax * dt;
+        this.uy = this.uy + this.ay * dt;
+        this.U = (this.ux ** 2 + this.uy ** 2) ** .5
+        this.thetaU = Math.atan2(this.ux, this.uy);
+        this.x = this.x + this.ux * dt;
+        this.y = this.y + this.uy * dt;
+        // if (this.n.Mres) {
+        this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
+
+
+        this.theta = this.theta + this.thetaDot * dt;
+        this.rotMat = fs.calcRotMat(this.theta);
+        this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
+        if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
+        if (this.headOff < -Math.PI) { this.headOff = this.headOff + 2 * Math.PI }
+        this.ulon = this.U * Math.cos(this.headOff)
+        this.ulat = this.U * Math.sin(this.headOff)
+        // }
+
+
+    }
+    mechV2() {
         // calc all forces in car rel coords before transforming to track from and applying.
         this.n.Fres.lon = 0;
         this.n.Fres.lat = 0;
@@ -798,7 +998,7 @@ class Wheel {
         }
         ctx.lineTo(x[0][0], x[0][1]);
         // ctx.stroke();
-        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (car.m / 2))}, 0,0)`;
+        ctx.fillStyle = `rgb(${Math.floor(256 * this.load / (0.5 * car.g * car.m))}, 0,0)`;
         ctx.fill();
         // ctx.globalAlpha = 1;
 
@@ -1770,19 +1970,19 @@ class SessionSetter {
         // this.track.startY = 500;
     }
     setCarDev() {
-        this.scale = { ppm: 100, mpp: 0.05 };
+        this.scale = { ppm: 8, mpp: 0.35 };
         this.yflip = false;
         this.xflip = false;
-        this.reverse = true;
+        this.reverse = false
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'teal';
         this.track = p.tracks[0];
         this.trackImgName = this.track.fnames[0]
-        this.car = p.cars[0];
-        // this.track.startX= 500;
-        // this.track.startY = 500;
+        this.car = p.cars[1];
+        this.track.startX = 135;
+        this.track.startY = 450;
     }
     gen() {
         this.scale = this.randomElement(this.scales);
@@ -1802,8 +2002,9 @@ class SessionSetter {
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
-        p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale;
-        p.draw.pixPerMetre = this.scale.ppm;
+        let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relatic to car0
+        p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale*carScale;
+        p.draw.pixPerMetre = this.scale.ppm/carScale;
         PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
     }
     specialCase1() {
@@ -1811,10 +2012,10 @@ class SessionSetter {
         this.yflip = true;
         this.xflip = true;
         this.reverse = false;
-        this.colour = '#4488FF';
-        this.track = p.tracks[1];
+        this.colour = '#CC0000';
+        this.track = p.tracks[0];
         this.trackImgName = this.track.fnames[0]
-        this.car = p.cars[0];
+        this.car = p.cars[1];
 
     }
     specialCase2() {
@@ -1922,34 +2123,7 @@ class Ghost {
         this.alpha = 0.5;
         this.webAlpha = 0.3;
 
-        // this.colour = 'green';
-        // this.colourWeb = 'blue';
-
         this.rotMat = fs.calcRotMat(0);
-
-
-        // car body coords in normalized units relative to centre line and rear wheel
-        // this.coordsRel = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
-        this.coordsRel = [ //main body
-            [0, -0.2], [-.20, -.15], [-0.30, 0], [-0.30, .7], [-0.14, 1.3],
-            [0.14, 1.3], [0.30, .7], [0.30, 0], [.20, -.15],
-        ]
-
-        //unscaled for HUD - coords in metres, relative to CoM
-        this.coordMatHUD = this.coordsRel.map(x => [x[0] * this.w, x[1] * this.l - this.rearLength])
-        // this.coordMatHUD = [[xl, yr], [xl, yf], [0, yf * 1.1], [xr, yf], [xr, yr]];
-        //scaled for drawing on track
-        this.coordMat = this.coordMatHUD.map(x => x.map(x => x * PPM))
-
-        // cockpit
-        this.coordsRel2 = [[0, .15], [-.1, .17], [-.2, .25], [-.2, .5],
-        [.2, .5], [.2, .25], [.1, .17],
-        ]
-        this.coordMat2 = this.coordsRel2.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
-
-        //axels
-        this.coordsRel3 = [[0, 0], [-.5, 0], [0.5, 0], [0, 0], [0, 1.0], [-.5, 1], [0.5, 1], [0, 1.0]]
-        this.coordMat3 = this.coordsRel3.map(x => [PPM * x[0] * this.w, PPM * (x[1] * this.l - this.rearLength)])
 
         this.wheels = [
             new Wheel(-this.w / 2, this.frontLength, this.wheelWidth, this.wheelAspect),
@@ -2063,7 +2237,7 @@ class Ghost {
                 this.rotMat = fs.calcRotMat(this.savedLap.th[this.n]);
 
 
-                let x = fs.matrixProd(this.coordMat3, this.rotMat);
+                let x = fs.matrixProd(car.coordMatAxels, this.rotMat);
                 x = fs.matrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
 
                 ctx.beginPath();
@@ -2077,7 +2251,7 @@ class Ghost {
                 ctx.lineTo(x[0][0], x[0][1]);
                 ctx.stroke();
 
-                x = fs.matrixProd(this.coordMat, this.rotMat);
+                x = fs.matrixProd(car.coordMatBody, this.rotMat);
                 x = fs.matrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
 
                 ctx.beginPath();
@@ -2093,7 +2267,7 @@ class Ghost {
                 // ctx.stroke();
                 ctx.fill();
 
-                x = fs.matrixProd(this.coordMat2, this.rotMat);
+                x = fs.matrixProd(car.coordMatCockpit, this.rotMat);
                 x = fs.matrixTrans(x, [PPM * this.savedLap.x[this.n] + xc, PPM * this.savedLap.y[this.n] + yc])
 
                 ctx.beginPath();
@@ -2123,7 +2297,7 @@ class Ghost {
                 this.rotMat = fs.calcRotMat(this.webLap.th[this.n]);
 
 
-                let x = fs.matrixProd(this.coordMat3, this.rotMat);
+                let x = fs.matrixProd(car.coordMatAxels, this.rotMat);
                 x = fs.matrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
 
                 ctx.beginPath();
@@ -2137,7 +2311,7 @@ class Ghost {
                 ctx.lineTo(x[0][0], x[0][1]);
                 ctx.stroke();
 
-                x = fs.matrixProd(this.coordMat, this.rotMat);
+                x = fs.matrixProd(car.coordMatBody, this.rotMat);
                 x = fs.matrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
 
                 ctx.beginPath();
@@ -2153,7 +2327,7 @@ class Ghost {
                 // ctx.stroke();
                 ctx.fill();
 
-                x = fs.matrixProd(this.coordMat2, this.rotMat);
+                x = fs.matrixProd(car.coordMatCockpit, this.rotMat);
                 x = fs.matrixTrans(x, [PPM * this.webLap.x[this.n] + xc, PPM * this.webLap.y[this.n] + yc])
 
                 ctx.beginPath();
@@ -2727,10 +2901,10 @@ function anim() {
     car.control(inputState);
     if (track.trackReady) {
         car.readTrack();
-        car.mech2();
+        car.mech();
     }
     let Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM;
-    let dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) 
+    let dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax)
     // calc screen centre coords
     let xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
     let yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
@@ -2856,10 +3030,10 @@ fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
- 
+
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
-const panSpeed = p.draw.panSpeed*60/Fps.fps; // fraction to target per frame
+const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 let flash = new Flash();
@@ -2878,7 +3052,7 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.version);
 setter.gen();
-if (sessionLogger.version.includes('flip01-19414')) {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19416')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase1();
     log('case1')
 }
@@ -2921,7 +3095,7 @@ let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
 // log('dt:',1/dt)
-log(car)
+// log(car)
 
 // flash.flash("v:" + sessionLogger.version + " " + location.hostname);
 

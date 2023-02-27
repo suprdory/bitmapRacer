@@ -23,6 +23,7 @@ export let p = {
     "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
         "outOfBounds": { "mu": 1.0, "drag": 0.2 },
         "tarmac": { "mu": 0.8, "drag": 0.001 },
+        // "tarmac": { "mu": 0.0, "drag": 0.000 },
         "grass": { "mu": 0.3, "drag": 0.02 },
         "mud": { "mu": 0.2, "drag": 0.3 },
         "ice": { "mu": 0.05, "drag": 0.001 },
@@ -38,7 +39,7 @@ export let p = {
             "x": 1000, // size, helpful for setting params before img loaded
             "y": 1000,
 
-            "startTheta": -.10,
+            "startTheta": 0.0,
             "startX": 180,
             "startY": 260,
 
@@ -159,8 +160,39 @@ export let p = {
         },
 
     ],
+    "carDesigns":
+    {
+        'moss': {
+            'body': [[0, -0.2], [-.20, -.15], [-0.30, 0], [-0.30, .7], [-0.14, 1.3],
+            [0.14, 1.3], [0.30, .7], [0.30, 0], [.20, -.15],],
+            'cockpit': [[0, .15], [-.1, .17], [-.2, .25], [-.2, .5],
+            [.2, .5], [.2, .25], [.1, .17],],
+            'axels': [[0, 0], [-.5, 0], [0.5, 0], [0, 0], [0, 1.0], [-.5, 1], [0.5, 1], [0, 1.0]],
+        },
+        'wings': {
+
+            'body': [[0, -0.5], [-0.50, -.5], [-0.50, -.25], [-0.20, -.25],
+             
+                [-0.30, .3], [-0.60, .3], [-0.60, .70], [-0.30, .8], 
+
+                [-0.1, 1.25], [-0.6, 1.25], [-0.5, 1.40], [0.5, 1.40], [0.6, 1.25], [0.1, 1.25],
+            
+                [0.30, .8], [0.60, .7], [0.60, .3], [0.30, .3], 
+                
+                [0.20, -.25], [0.50, -.25] ,[0.5, -.5],],
+
+            'cockpit': [
+                [0, .7], [-.1, .65], [-.2, .50], [-.2, .32],
+            [.2, .32], [.2, .50], [.1, .65],
+        ],
+            'axels': [[0, 0], [-.5, 0], [0.5, 0], [0, 0], [0, 1.0], [-.5, 1], [0.5, 1], [0, 1.0]],
+        },
+
+    },
+
     "cars": [
         {
+            "design": 'moss',
             "width": 2,
             "frontLength": 1,
             "rearLength": 2,
@@ -180,6 +212,7 @@ export let p = {
             "brakeRate": 30,
             "brakeMax": 50,
             "colour": 'gold',
+            "mechV": 2,
             "gamma": 12, // time multiplier
             "phys": {
                 "CD": 100, // Surface Drag resistance
@@ -189,35 +222,37 @@ export let p = {
                 "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
             },
         },
-        // {
-        //     "width": .3,
-        //     "frontLength": .3,
-        //     "rearLength": .2,
-        //     "height": 0.01,
-        //     "wheelWidth": 0.1,
-        //     "wheelAspect": 1.6,
-        //     "mass": 1,
-        //     "momIfac": .3, // moment of intertia ratio to that of point masses at wheels
-        //     "steeringRate": 1,
-        //     "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-        //     "steeringUscl": 5, // U scl of steering lock limiting
-        //     "steeringCentreRate": 1,
-        //     "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-        //     "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-        //     "torqueRate": 4,
-        //     "torqueMax": 5,
-        //     "brakeRate": 30,
-        //     "brakeMax": 5,
-        //     "colour": 'gold',
-        //     "gamma": 1, // time multiplier
-        //     "phys": {
-        //         "CD": 50, // Surface Drag resistance
-        //         "Crr": .2, // Rolling resistance
-        //         "CA": 0.1, //Air resistance
-        //         "mu": 1.2, // coeff of friction for lateral forces
-        //         "stiffness": 20, // Newtons (lateral friction) per Radian (slip angle)
-        //     },
-        // },
+        {
+            "design":'wings',
+            "width": .20,
+            "frontLength": .25,
+            "rearLength": .05,
+            "height": 0.3 / 10,
+            "wheelWidth": 0.06,
+            "wheelAspect": 2.0,
+            "mass": 2.0,
+            "momIfac": .9, // moment of intertia ratio to that of point masses at wheels
+            "steeringRate": 1,
+            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 5, // U scl of steering lock limiting
+            "steeringCentreRate": 10,
+            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+            "fade": 1.0, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "torqueRate": 4,
+            "torqueMax": 5,
+            "brakeRate": 30,
+            "brakeMax": 10,
+            "colour": 'gold',
+            "mechV": 3,
+            "gamma": 1, // time multiplier
+            "phys": {
+                "CD": 10.0, // Surface Drag resistance
+                "Crr": 0.0, // Rolling resistance
+                "CA": 0.001, //Air resistance
+                "mu": 2.0, // coeff of friction for lateral forces
+                "stiffness": 10, // Newtons (lateral friction) per Radian (slip angle)
+            },
+        },
     ],
     "car": '', // chosen from cars by sessionSetter
     "track": '', // chosen from tracks by sessionSetter
