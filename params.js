@@ -225,8 +225,8 @@ export let p = {
         {
             "design":'wings',
             "width": .20,
-            "frontLength": .2,
-            "rearLength": .1,
+            "frontLength": .25,
+            "rearLength": .05,
             "height": 0.3 / 10,
             "wheelWidth": 0.06,
             "wheelAspect": 2.0,
@@ -237,11 +237,11 @@ export let p = {
             "steeringUscl": 5, // U scl of steering lock limiting
             "steeringCentreRate": 10,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "fade": 1.0, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
             "torqueRate": 4,
             "torqueMax": 5,
             "brakeRate": 30,
-            "brakeMax": 5,
+            "brakeMax": 10,
             "colour": 'gold',
             "mechV": 3,
             "gamma": 1, // time multiplier
