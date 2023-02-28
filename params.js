@@ -12,7 +12,7 @@ export let p = {
         "panSpeed": 0.15,
         "zoom": 1.0,
         "HUDscl": 25,
-        "HUDforceScl": 12,
+        "HUDforceScl": 1,
     },
     "version": {
         "n": "flip01",
@@ -174,8 +174,8 @@ export let p = {
             'body': [
                 [0, 1.5], [-0.4, 1.5], [-0.5, 1.25], [-0.2, 1.25],
                 [-0.3, 0.8], [-0.6, 0.7], [-0.6, 0.3], [-0.3, 0.2],
-                [-0.2, -0.25], [-0.55, -0.25], [-.6, -0.45],
-                [0.6, -0.45], [0.55, -0.25], [0.2, -0.25],
+                [-0.2, 0.05], [-0.55, 0.05], [-.6, -0.30],
+                [0.6, -0.30], [0.55, 0.05], [0.2, 0.05],
                 [0.3, 0.2], [0.6, 0.3], [0.6, 0.7], [0.3, 0.8],
                 [0.2, 1.25], [0.5, 1.25], [0.4, 1.5], [0, 1.5]
             ],
@@ -205,14 +205,18 @@ export let p = {
             "steeringCentreRate": 1,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "torqueRate": 4,
-            "torqueMax": 50,
-            "brakeRate": 30,
-            "brakeMax": 50,
+            "thrustRate": 8, // thrust and brake is N, N/s for whole car, not per wheel.
+            "thrustMax": 100,
+            "brakeRate": 60,
+            "brakeMax": 100,
+            "brakeFade": 0.5,
+            "downforceFade": 0.5,
             "colour": 'gold',
             "mechV": 2,
             "gamma": 12, // time multiplier
             "phys": {
+                "hAero": 0.1, //aerodynamic height
+                "CL": 0.1, //lift coefficient (downforce)
                 "CD": 100, // Surface Drag resistance
                 "Crr": 2, // Rolling resistance
                 "CA": 0.5, //Air resistance
@@ -222,33 +226,38 @@ export let p = {
         },
         {
             "design": 'wings',
-            "width": .20,
-            "frontLength": .25,
-            "rearLength": .05,
-            "height": 0.3 / 10,
-            "wheelWidth": 0.06,
+            "width": 2,
+            "frontLength": 1,
+            "rearLength": 2,
+            "height": .3,
+            "wheelWidth": 0.5,
             "wheelAspect": 2.0,
-            "mass": 2.0,
-            "momIfac": .9, // moment of intertia ratio to that of point masses at wheels
-            "steeringRate": 1,
-            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 5, // U scl of steering lock limiting
+            "mass": 300.0,
+            "momIfac": .5, // moment of intertia ratio to that of point masses at wheels
+            "steeringRate": .5,
+            "steeringMaxBase": 25 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 3, // U scl of steering lock limiting
             "steeringCentreRate": 10,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
-            "fade": 1.0, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "torqueRate": 20,
-            "torqueMax": 5,
-            "brakeRate": 40,
-            "brakeMax": 10,
+            "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
+            "brakeFade": 1.0,
+            "downforceFade":0.1,
+            "thrustRate": 4000,// thrust and brake is N, N/s for whole car, not per wheel.
+            "thrustMax": 1000,
+            "brakeRate": 8000,
+            "brakeMax": 2000,
             "colour": 'gold',
             "mechV": 3,
-            "gamma": 1, // time multiplier
+            "gamma": 3, // time multiplier
             "phys": {
-                "CD": 10.0, // Surface Drag resistance
-                "Crr": 0.0, // Rolling resistance
-                "CA": 0.001, //Air resistance
-                "mu": 2.0, // coeff of friction for lateral forces
-                "stiffness": 10, // Newtons (lateral friction) per Radian (slip angle)
+                "alpha0": 8, // max force slip angle
+                "hAero": 0.8, //aerodynamic height
+                "CA": 0.5, //Air resistance
+                "CL": 1.0, //lift coefficient (downforce),frac of air drag acting downwards
+                "CD": 200.0, // Surface Drag resistance
+                "Crr": 0.1, // Rolling resistance
+                "mu": 1.0, // coeff of friction for lateral forces
+                "stiffness": 0, // Newtons (lateral friction) per Radian (slip angle)
             },
         },
     ],
