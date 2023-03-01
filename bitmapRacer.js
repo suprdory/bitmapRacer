@@ -3120,7 +3120,7 @@ sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
 
 // set session parameters, seeded with daily session name, unless special case
-let setter = new SessionSetter(sessionLogger.version);
+let setter = new SessionSetter(sessionLogger.version+'-dev');
 setter.randGen();
 if (sessionLogger.version.includes('flip01-19416')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase1();
