@@ -1734,9 +1734,12 @@ class SessionLogger {
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
-        this.version = sessionPrefix + '-' + this.currentSesh;
+        this.versionBase = sessionPrefix + '-' + this.currentSesh;
         if (dev) {
-            this.version = this.version + '-' + 'dev'
+            this.version = this.versionBase + '-' + 'dev';
+        }
+        else{
+            this.version=this.versionBase;
         }
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
@@ -2049,12 +2052,12 @@ class SessionSetter {
 
     }
     specialCase2() {
-        this.scale = { ppm: 10, mpp: 0.2 };
-        this.yflip = false;
-        this.xflip = false;
+        this.scale = { ppm: 8, mpp: 0.35 };
+        this.yflip = true;
+        this.xflip = 1;
         this.reverse = true;
-        this.colour = '#AA66BB';
-        this.track = p.tracks[3];
+        this.colour = 'gold';
+        this.track = p.tracks[2];
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0];
 
@@ -3061,7 +3064,7 @@ function drawSpeedo() {
     ctx.stroke();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round(car.U * 10), x0 + rad, y0 - rad / 2)
+    ctx.fillText(Math.round(car.U * 5), x0 + rad, y0 - rad / 2)
 }
 
 
@@ -3120,13 +3123,13 @@ sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
 
 // set session parameters, seeded with daily session name, unless special case
-let setter = new SessionSetter(sessionLogger.version+'-dev');
+let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
 if (sessionLogger.version.includes('flip01-19416')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase1();
     log('case1')
 }
-if (sessionLogger.version.includes('flip01-19415')) {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19417')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase2();
     log('case2')
 }
