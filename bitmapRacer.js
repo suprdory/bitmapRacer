@@ -192,13 +192,13 @@ class Track {
 
         this.image2trackDat()
 
-        // this.canvasScl.height = this.Yi * this.trackScl;
-        // this.canvasScl.width = this.Xi * this.trackScl;
-        // this.ctxScl.imageSmoothingEnabled = false;
-        // this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
-        // this.ctxScl.scale(xFlip, yFlip);
-        // this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
-        // this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
+        this.canvasScl.height = this.Yi * this.trackScl;
+        this.canvasScl.width = this.Xi * this.trackScl;
+        this.ctxScl.imageSmoothingEnabled = false;
+        this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
+        this.ctxScl.scale(xFlip, yFlip);
+        this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
+        this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
     }
     drawGates(ctx, xc, yc) {
         let gate = this.gates[0]
@@ -1965,7 +1965,7 @@ class SessionLogger {
 }
 class SessionSetter {
     constructor(seedstr) {
-        this.colours = ['red', 'gold', 'orange', 'white', 'cornflowerblue', 'hotpink', 'blueviolet']
+        this.colours = ['red', 'gold', 'orange', 'greenyellow', 'cornflowerblue', 'hotpink', 'blueviolet']
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
@@ -3000,12 +3000,12 @@ function anim() {
 
     // this method scales track image live every frame, is too slow when smooth scaling is enables, maybe ok without?
 
-    ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
+    // ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
 
     // this method user prescaled track from 'offscreen' (but not officially) canvas, was sig faster when
-    // tha canvas smooth scaling was set to true. may be uncessary when smooth if false?
+    // tha canvas smooth scaling was set to true. may be uncessary when smooth is false?
     // prescaled track is too big for iphone (maybe, not tested).
-    // ctx.drawImage(track.canvasScl, xc, yc);
+    ctx.drawImage(track.canvasScl, xc, yc);
 
 
 
