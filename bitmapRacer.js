@@ -2039,6 +2039,9 @@ class SessionSetter {
         p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        let maxPPM=4096/this.track.x/p.trackSetup.metresPerPix;
+        log("PPM",PPM)
+        log("maxPPM",maxPPM)
     }
     specialCase1() {
         this.scale = { ppm: 10, mpp: 0.2 };
