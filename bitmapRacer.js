@@ -2543,8 +2543,9 @@ class FPS {
         // log('matched: ', this.fpsMatch);
         if (this.fpsMatch != this.fps) {
             this.setLocal(this.fpsMatch);
-            flash.flash(this.fps + " Hz detected");
+            // flash.flash(this.fps + " Hz detected");
         }
+        flash.flash(this.fps + " Hz detected");
         dt = p.car.gamma / Fps.fps;
     }
 }
