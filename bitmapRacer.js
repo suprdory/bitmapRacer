@@ -1965,7 +1965,7 @@ class SessionLogger {
 }
 class SessionSetter {
     constructor(seedstr) {
-        this.colours = ['red', 'gold', 'orange', 'white', 'cornflowerblue', 'hotpink', 'blueviolet']
+        this.colours = ['red', 'gold', 'orange', 'greenyellow','cornflowerblue', 'hotpink', 'blueviolet',]
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
