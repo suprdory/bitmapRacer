@@ -2447,7 +2447,7 @@ class Ghost {
         }
         if (this.toggleState == 1) {
             this.drawGhost = true;
-            this.drawWebGhost = false;
+            this.drawWebGhost = true;
             this.dispText = 'On';
         }
         if (this.toggleState == 2) {
@@ -2457,8 +2457,8 @@ class Ghost {
         }
         if (this.toggleState == 3) {
             this.drawGhost = true;
-            this.drawWebGhost = true;
-            this.dispText = 'Both';
+            this.drawWebGhost = false;
+            this.dispText = 'Local';
         }
         localStorage.setItem('ghostToggleState', this.toggleState)
     }
@@ -2551,9 +2551,9 @@ class FPS {
         // log('matched: ', this.fpsMatch);
         if (this.fpsMatch != this.fps) {
             this.setLocal(this.fpsMatch);
-            // flash.flash(this.fps + " Hz detected");
+            flash.flash(this.fps + " Hz detected");
         }
-        flash.flash(this.fps + " Hz detected");
+        // flash.flash(this.fps + " Hz detected");
         dt = p.car.gamma / Fps.fps;
     }
 }
