@@ -2412,7 +2412,7 @@ class Ghost {
                 // log(data)
                 if (data.avail) {
                     this.webLap.name = data.name;
-                    if (this.toggleState == 2) {
+                    if (this.toggleState == 1) {
                         this.dispText = data.name;
                     }
                     this.webLap.time = data.time;
