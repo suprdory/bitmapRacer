@@ -33,10 +33,10 @@ class Track {
         this.sfcTypes = p.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
-            console.log("track object img loaded")
+            // console.log("track object img loaded")
             this.getImageData();
             this.trackReady = 1;
-            console.log("track ready", this)
+            // console.log("track ready", this)
         }
         this.img.src = p.track.fname;
         this.Xi = 0; //img dimensions, obtained after load.
@@ -2044,15 +2044,12 @@ class SessionSetter {
         this.scale = this.randomElement(this.scales);
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
-        // this.yflip = 1;
-        // this.xflip = 0;
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(p.tracks);
         this.trackImgName = this.randomElement(this.track.fnames)
         // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
-        log(this.scale,this.yflip,this.xflip,this.reverse,this.colour,this.track,this.trackImgName)
 
     }
     apply(p) {
@@ -2066,8 +2063,15 @@ class SessionSetter {
         let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relatic to car0
         p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
-        PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        
+        let screenScl = Math.min(X / 1000, Y / 1000)
+        log(screenScl)
+        // PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        PPM = p.track.drawScale * p.draw.pixPerMetre*screenScl; // init scale, screen pixels per metre - pre zoom
+        
+
         let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
+
         log("target PPM", PPM)
         log("max PPM", maxPPM)
         if (PPM > maxPPM) {
@@ -2589,6 +2593,66 @@ class FPS {
         dt = p.car.gamma / Fps.fps;
     }
 }
+class ResetButton {
+    constructor() {
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+
+        this.x0 = X - this.w;
+        this.y0 = Y - isTouch * Y / 3 - this.h;
+        this.en = null;
+        this.text = 'Reset'
+
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+        this.ch = this.fontsize + 25 * pixRat;
+        this.cw = pixRat * 100;
+        this.cx0 = 0;
+        this.cy0 = Y - isTouch * Y / 3 - 85 * pixRat - this.ch;
+        // log(Y, isTouch,pixRat)
+        this.en = null;
+        this.active = false;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, 45 * pixRat, Y - isTouch * Y / 3 - 95 * pixRat)
+    }
+    contains(ex, ey) {
+        // log(ex,ey)
+        // log(this.cy0,this.cy0 + this.ch)
+        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
+    }
+    pointerDownHandler(ex, ey, en) {
+
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+            log('PD in reset box')
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "reset PU: " + en + " " + this.action;
+
+            this.en = null;
+            this.active = false;
+            // this.toggleDraw();
+            this.reset();
+            log('PU in reset box');
+        }
+    }
+    reset() {
+        car.reset();
+        lapCounter.reset();
+    }
+
+}
 let fs = function () {
     var matrixProd = (A, B) =>
         A.map((row, i) =>
@@ -2974,7 +3038,26 @@ let fs = function () {
         yc = 0
         isTouch = fs.isTouchDevice();
         yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
+        log('X',X,'Y',Y)
 
+    }
+    function drawSpeedo() {
+        let x0 = 10 * pixRat;
+        let y0 = Y - isTouch * Y / 3 - 20 * pixRat;
+        let rad = 35 * pixRat;
+        let th0 = Math.PI * 45 / 180;
+        let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
+        ctx.beginPath()
+        ctx.strokeStyle = 'white';
+        ctx.arc(x0 + rad, y0 - rad, rad, th0 + Math.PI / 2, Math.PI * 5 / 2 - th0)
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x0 + rad, y0 - rad);
+        ctx.lineTo(x0 + rad - .9 * rad * Math.cos(-th), y0 - rad + .9 * rad * Math.sin(-th));
+        ctx.stroke();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Math.round(car.U * 5), x0 + rad, y0 - rad / 2)
     }
     return {
         matrixProd: matrixProd,
@@ -2997,6 +3080,7 @@ let fs = function () {
         secsToString: secsToString,
         submitName: submitName,
         drawDebug: drawDebug,
+        drawSpeedo: drawSpeedo,
     }
 }();
 function anim() {
@@ -3087,89 +3171,13 @@ function anim() {
     // drawInfo(ctx);
     flash.draw(ctx);
     // fs.drawHUD();
-    drawSpeedo();
+    fs.drawSpeedo();
 
     ghost.addState(car.x, car.y, car.theta);
 
 }
-function drawSpeedo() {
-    let x0 = 10 * pixRat;
-    let y0 = Y - isTouch * Y / 3 - 20 * pixRat;
-    let rad = 35 * pixRat;
-    let th0 = Math.PI * 45 / 180;
-    let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
-    ctx.beginPath()
-    ctx.strokeStyle = 'white';
-    ctx.arc(x0 + rad, y0 - rad, rad, th0 + Math.PI / 2, Math.PI * 5 / 2 - th0)
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x0 + rad, y0 - rad);
-    ctx.lineTo(x0 + rad - .9 * rad * Math.cos(-th), y0 - rad + .9 * rad * Math.sin(-th));
-    ctx.stroke();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round(car.U * 5), x0 + rad, y0 - rad / 2)
-}
-class ResetButton{
-    constructor(){
-        this.fontsize = 15 * pixRat;
-        this.fontFamily = fontFamily;
 
-        this.x0 = X - this.w;
-        this.y0 = Y - isTouch * Y / 3 - this.h;
-        this.en = null;
-        this.text='Reset'
 
-        this.fontsize = 15 * pixRat;
-        this.fontFamily = fontFamily;
-        this.ch = this.fontsize + 25 * pixRat;
-        this.cw = pixRat * 100;
-        this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 85 * pixRat - this.ch;
-        // log(Y, isTouch,pixRat)
-        this.en = null;
-        this.active = false;
-    }
-    draw(){
-        ctx.beginPath();
-        ctx.textAlign = "center";
-        ctx.font = this.fontsize + 'px ' + this.fontFamily;
-        ctx.textBaseline = "bottom";
-        ctx.fillStyle = "white";
-        ctx.fillText(this.text, 45 * pixRat, Y - isTouch * Y / 3 - 95 * pixRat)
-    }
-    contains(ex, ey) {
-        // log(ex,ey)
-        // log(this.cy0,this.cy0 + this.ch)
-        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
-    }
-    pointerDownHandler(ex, ey, en) {
-
-        // log('PD')
-        if (this.contains(ex, ey)) {
-            // debugTxt = "PD: " + en + " " + this.action;
-            this.active = true;
-            this.en = en;
-            log('PD in reset box')
-        }
-    }
-    pointerUpHandler(en) {
-        if (en == this.en) {
-            // debugTxt = "reset PU: " + en + " " + this.action;
-
-            this.en = null;
-            this.active = false;
-            // this.toggleDraw();
-            this.reset();
-            log('PU in reset box');
-        }
-    }
-    reset(){
-        car.reset();
-        lapCounter.reset();
-    }
-
-}
 
 
 let log = console.log;
@@ -3182,7 +3190,7 @@ const trackDev = parseInt(urlParams.get('trackDev'));
 const revDev = parseInt(urlParams.get('revDev'));
 const carDev = parseInt(urlParams.get('carDev'));
 let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-const dev = urlParams.has('tt') || urlParams.has('trackDev') || parseInt(urlParams.has('carDev'));
+const dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev');
 log('Dev:', dev)
 // import parameter object
 import { p } from './params.js'
