@@ -208,7 +208,7 @@ export let p = {
             "thrustRate": 8, // thrust and brake is N, N/s for whole car, not per wheel.
             "thrustMax": 100,
             "brakeRate": 60,
-            "brakeMax": 100,
+            "brakeMax": 200,
             "brakeFade": 0.5,
             "downforceFade": 0.5,
             "colour": 'gold',

@@ -5,6 +5,8 @@ class Track {
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
         this.flipX = p.trackSetup.flipX;
         this.flipY = p.trackSetup.flipY;
+        // this.flipX = 0;
+        // this.flipY = 0;
         this.gates = p.track.gates;
         this.reverse = p.trackSetup.reverse;
         if (!this.reverse) {
@@ -15,6 +17,8 @@ class Track {
             this.startX = this.flipX ? (p.track.x - p.track.startXRev) / this.trackPPM : p.track.startXRev / this.trackPPM;
             this.startY = this.flipY ? (p.track.x - p.track.startYRev) / this.trackPPM : p.track.startYRev / this.trackPPM;
         }
+        // this.startX=220;
+        // this.startY=220;
         // log(p.ctrack)
         this.bgColour = p.track.bgColour;
         // log("track bgColour", this.bgColour)
@@ -29,10 +33,10 @@ class Track {
         this.sfcTypes = p.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
-            // console.log("track object img loaded")
+            console.log("track object img loaded")
             this.getImageData();
             this.trackReady = 1;
-            // console.log("track ready", this)
+            console.log("track ready", this)
         }
         this.img.src = p.track.fname;
         this.Xi = 0; //img dimensions, obtained after load.
@@ -42,7 +46,6 @@ class Track {
 
     flipGates() {
         // log(this.gates)
-
         if (this.flipY) {
             this.gates = this.gates.map(g => ({
                 'n': g.n,
@@ -81,7 +84,8 @@ class Track {
             return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
         }
         else {
-            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+            // return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+            return [0.01,1] // for debugging
         }
     }
     image2trackDat() {
@@ -182,6 +186,8 @@ class Track {
 
         let xFlip = this.flipX ? -1 : 1;
         let yFlip = this.flipY ? -1 : 1;
+
+        // log(xFlip,yFlip,this.img.width,this.img.height)
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.translate(0 + this.Xi * 1 / 2, 0 + this.Yi * 1 / 2);
         this.ctx.scale(xFlip, yFlip);
@@ -192,13 +198,14 @@ class Track {
 
         this.image2trackDat()
 
-        // this.canvasScl.height = this.Yi * this.trackScl;
-        // this.canvasScl.width = this.Xi * this.trackScl;
-        // this.ctxScl.imageSmoothingEnabled = false;
-        // this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
-        // this.ctxScl.scale(xFlip, yFlip);
-        // this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
-        // this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
+        // create prescaled canvas for faster track drawing;
+        this.canvasScl.height = this.Yi * this.trackScl;
+        this.canvasScl.width = this.Xi * this.trackScl;
+        this.ctxScl.imageSmoothingEnabled = false;
+        this.ctxScl.translate(0 + this.Xi * this.trackScl / 2, 0 + this.Yi * this.trackScl / 2);
+        this.ctxScl.scale(xFlip, yFlip);
+        this.ctxScl.translate(-(0 + this.Xi * this.trackScl / 2), -(0 + this.Yi * this.trackScl / 2));
+        this.ctxScl.drawImage(this.img, 0, 0, this.Xi * this.trackScl, this.Yi * this.trackScl)
     }
     drawGates(ctx, xc, yc) {
         let gate = this.gates[0]
@@ -273,7 +280,7 @@ class Car {
         this.downForceRear = 0;
         // log("airDragK", this.airDragK)
         // log("fade downforce", this.fadeDownforce)
-        
+
         //mechanics version
         this.mechV = p.car.mechV;
 
@@ -301,17 +308,19 @@ class Car {
         this.headOff = 0; // heading - velocity angle
 
         if (!track.reverse) {
-            this.theta = p.track.startTheta; // heading angle
+            this.thetaStart = p.track.startTheta; // heading angle
         }
         else {
-            this.theta = p.track.startThetaRev; // heading angle
+            this.thetaStart = p.track.startThetaRev; // heading angle
         }
         if (track.flipX) {
-            this.theta = -this.theta;
+            this.thetaStart = -this.thetaStart;
         }
         if (track.flipY) {
-            this.theta = Math.PI - this.theta;
+            this.thetaStart = Math.PI - this.thetaStart;
         }
+
+        this.theta=this.thetaStart;
 
 
         this.thetaDot = 0.0;//heading angle deriv
@@ -345,13 +354,13 @@ class Car {
 
         if (this.mechV == 2) {
             this.maxUth = (this.torqueMax / p.car.phys.CA) ** 0.5 // approx theroretical max speed
-            log('max speed:', this.maxUth)
+            // log('max speed:', this.maxUth)
         }
         if (this.mechV == 3) {
             log(this.airDragK, this.rollK, this.torqueMax)
             // this.maxUth = (-4 * this.rollK + ((4 * this.rollK) ** 2 + 4 * this.airDragK * this.torqueMax) ** 0.5) / (2 * this.airDragK);
             this.maxUth = ((this.torqueMax - 4 * this.rollK) / this.airDragK) ** 0.5
-            log('max speed:', this.maxUth)
+            // log('max speed:', this.maxUth)
         }
         this.rotMat = fs.calcRotMat(this.theta);
 
@@ -377,7 +386,7 @@ class Car {
         this.brakeWheelHUD = this.brakeFade <= 0.5 ? this.wheels[0] : this.wheels[2];
         this.maxTorqueHUD = Math.max(this.fade * this.torqueMax / 2, (1 - this.fade) * this.torqueMax / 2);
         this.maxBrakeHUD = Math.max(this.brakeFade * this.brakeMax / 2, (1 - this.fade) * this.brakeMax / 2);
-        log("maxTorqueHUD", this.maxTorqueHUD)
+        // log("maxTorqueHUD", this.maxTorqueHUD)
     }
     readTrack() {
         this.wheels.forEach(function (wheel) {
@@ -385,6 +394,22 @@ class Car {
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
             [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
         })
+    }
+    reset(){
+        // mech + kin
+        this.x = track.startX; // x pos 
+        this.y = track.startY; // y pos
+        this.Fxy = [0, 0]; //resultant Force on car as column vector;
+        this.ax = 0; // x accel
+        this.ay = 0; // y accel
+        this.to = 0; //heading torque;
+        this.theta=this.thetaStart;
+        this.thetaDot = 0.0;//heading angle deriv
+
+        this.U=0;
+
+        this.ux = this.U * Math.sin(this.theta); // x vel
+        this.uy = this.U * Math.cos(this.theta); // y vel
     }
     draw(ctx, xc, yc) {
         let x;
@@ -606,7 +631,7 @@ class Car {
             }
             else {
                 wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * this.rollK * cosTh;
-                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK *  sinTh;
+                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK * sinTh;
             }
             //surface drag
             wh.n.Fdrag.lon = -wh.n.u.lonWheel * wh.sfc_drag * this.CD;
@@ -1738,8 +1763,8 @@ class SessionLogger {
         if (dev) {
             this.version = this.versionBase + '-' + 'dev';
         }
-        else{
-            this.version=this.versionBase;
+        else {
+            this.version = this.versionBase;
         }
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
@@ -1965,7 +1990,7 @@ class SessionLogger {
 }
 class SessionSetter {
     constructor(seedstr) {
-        this.colours = ['red', 'gold', 'orange', 'greenyellow','cornflowerblue', 'hotpink', 'blueviolet',]
+        this.colours = ['red', 'gold', 'orange', 'greenyellow', 'cornflowerblue', 'hotpink', 'blueviolet']
         this.xflips = [false, true]
         this.yflips = [false, true]
         this.reverses = [false, true]
@@ -2019,12 +2044,15 @@ class SessionSetter {
         this.scale = this.randomElement(this.scales);
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
+        // this.yflip = 1;
+        // this.xflip = 0;
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(p.tracks);
         this.trackImgName = this.randomElement(this.track.fnames)
         // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
+        log(this.scale,this.yflip,this.xflip,this.reverse,this.colour,this.track,this.trackImgName)
 
     }
     apply(p) {
@@ -2039,6 +2067,15 @@ class SessionSetter {
         p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
+        let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
+        log("target PPM", PPM)
+        log("max PPM", maxPPM)
+        if (PPM > maxPPM) {
+            log('targetPPM', PPM,'limited to', maxPPM);
+            // PPM = Math.floor(maxPPM);
+            PPM= maxPPM;
+        }
+        log("final PPM", PPM)
     }
     specialCase1() {
         this.scale = { ppm: 10, mpp: 0.2 };
@@ -2405,7 +2442,7 @@ class Ghost {
                 // log(data)
                 if (data.avail) {
                     this.webLap.name = data.name;
-                    if (this.toggleState == 2) {
+                    if (this.toggleState == 1) {
                         this.dispText = data.name;
                     }
                     this.webLap.time = data.time;
@@ -2434,24 +2471,26 @@ class Ghost {
             this.toggleState = 0;
         }
         if (this.toggleState == 0) {
-            this.drawGhost = false;
-            this.drawWebGhost = false;
-            this.dispText = 'Off';
-        }
-        if (this.toggleState == 1) {
             this.drawGhost = true;
-            this.drawWebGhost = false;
+            this.drawWebGhost = true;
             this.dispText = 'On';
         }
-        if (this.toggleState == 2) {
+
+        if (this.toggleState == 1) {
             this.drawGhost = false;
             this.drawWebGhost = true;
             this.dispText = this.webLap.name;
         }
-        if (this.toggleState == 3) {
+        if (this.toggleState == 2) {
             this.drawGhost = true;
-            this.drawWebGhost = true;
-            this.dispText = 'Both';
+            this.drawWebGhost = false;
+            this.dispText = 'Local';
+        }
+
+        if (this.toggleState == 3) {
+            this.drawGhost = false;
+            this.drawWebGhost = false;
+            this.dispText = 'Off';
         }
         localStorage.setItem('ghostToggleState', this.toggleState)
     }
@@ -2505,7 +2544,8 @@ class FPS {
         this.maxfps = 0;
         this.fpsMatch = 0;
         this.matchTime = this.fps * 3;//get fps after 2 secs
-        this.fpss = [30, 60, 90, 120, 144, 240];
+        // this.fpss = [30, 60, 90, 120, 144, 240];
+        this.fpss = [60, 90, 120, 144, 240]; // trial no 30
         // log(this.fdtarr)
 
     }
@@ -2545,6 +2585,7 @@ class FPS {
             this.setLocal(this.fpsMatch);
             flash.flash(this.fps + " Hz detected");
         }
+        // flash.flash(this.fps + " Hz detected");
         dt = p.car.gamma / Fps.fps;
     }
 }
@@ -2818,6 +2859,7 @@ let fs = function () {
         }
         addPointerListeners(name);
         addPointerListeners(ghost);
+        addPointerListeners(resetButton);
         addEventListener('keydown', (event) => { inputState.set(event) });
         addEventListener('keyup', (event) => { inputState.set(event) });
     }
@@ -2998,14 +3040,15 @@ function anim() {
 
     //draw track
 
+    // log( -xc , -yc)
     // this method scales track image live every frame, is too slow when smooth scaling is enables, maybe ok without?
-
-    ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
+    // ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
 
     // this method user prescaled track from 'offscreen' (but not officially) canvas, was sig faster when
-    // tha canvas smooth scaling was set to true. may be uncessary when smooth if false?
+    // the canvas smooth scaling was set to true. may be uncessary when smooth is false?
     // prescaled track is too big for iphone (maybe, not tested).
-    // ctx.drawImage(track.canvasScl, xc, yc);
+    
+    ctx.drawImage(track.canvasScl, xc, yc);
 
 
 
@@ -3040,6 +3083,7 @@ function anim() {
     hiScoresWeb.draw(ctx);
     sessionLogger.draw(ctx);
     name.draw(ctx);
+    resetButton.draw();
     // drawInfo(ctx);
     flash.draw(ctx);
     // fs.drawHUD();
@@ -3066,6 +3110,66 @@ function drawSpeedo() {
     ctx.textBaseline = 'middle';
     ctx.fillText(Math.round(car.U * 5), x0 + rad, y0 - rad / 2)
 }
+class ResetButton{
+    constructor(){
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+
+        this.x0 = X - this.w;
+        this.y0 = Y - isTouch * Y / 3 - this.h;
+        this.en = null;
+        this.text='Reset'
+
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+        this.ch = this.fontsize + 25 * pixRat;
+        this.cw = pixRat * 100;
+        this.cx0 = 0;
+        this.cy0 = Y - isTouch * Y / 3 - 85 * pixRat - this.ch;
+        // log(Y, isTouch,pixRat)
+        this.en = null;
+        this.active = false;
+    }
+    draw(){
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, 45 * pixRat, Y - isTouch * Y / 3 - 95 * pixRat)
+    }
+    contains(ex, ey) {
+        // log(ex,ey)
+        // log(this.cy0,this.cy0 + this.ch)
+        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
+    }
+    pointerDownHandler(ex, ey, en) {
+
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+            log('PD in reset box')
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "reset PU: " + en + " " + this.action;
+
+            this.en = null;
+            this.active = false;
+            // this.toggleDraw();
+            this.reset();
+            log('PU in reset box');
+        }
+    }
+    reset(){
+        car.reset();
+        lapCounter.reset();
+    }
+
+}
 
 
 let log = console.log;
@@ -3078,14 +3182,14 @@ const trackDev = parseInt(urlParams.get('trackDev'));
 const revDev = parseInt(urlParams.get('revDev'));
 const carDev = parseInt(urlParams.get('carDev'));
 let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-const dev = urlParams.has('tt') || urlParams.get('trackDev') || parseInt(urlParams.get('carDev'));
-log('Dev:', (parseInt(dev)))
+const dev = urlParams.has('tt') || urlParams.has('trackDev') || parseInt(urlParams.has('carDev'));
+log('Dev:', dev)
 // import parameter object
 import { p } from './params.js'
 const sessionPrefix = p.version.n
 
 let serverOveride = false;
-// serverOveride=true;
+serverOveride=true;
 
 let apiURL;
 if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
@@ -3114,6 +3218,7 @@ let flash = new Flash();
 
 let sessionLogger = new SessionLogger(timeTravelDays, dev);
 let name = new Name();
+let resetButton=new ResetButton();
 
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
