@@ -5,6 +5,8 @@ class Track {
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
         this.flipX = p.trackSetup.flipX;
         this.flipY = p.trackSetup.flipY;
+        // this.flipX = 0;
+        // this.flipY = 0;
         this.gates = p.track.gates;
         this.reverse = p.trackSetup.reverse;
         if (!this.reverse) {
@@ -15,6 +17,8 @@ class Track {
             this.startX = this.flipX ? (p.track.x - p.track.startXRev) / this.trackPPM : p.track.startXRev / this.trackPPM;
             this.startY = this.flipY ? (p.track.x - p.track.startYRev) / this.trackPPM : p.track.startYRev / this.trackPPM;
         }
+        // this.startX=220;
+        // this.startY=220;
         // log(p.ctrack)
         this.bgColour = p.track.bgColour;
         // log("track bgColour", this.bgColour)
@@ -29,10 +33,10 @@ class Track {
         this.sfcTypes = p.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
-            // console.log("track object img loaded")
+            console.log("track object img loaded")
             this.getImageData();
             this.trackReady = 1;
-            // console.log("track ready", this)
+            console.log("track ready", this)
         }
         this.img.src = p.track.fname;
         this.Xi = 0; //img dimensions, obtained after load.
@@ -42,7 +46,6 @@ class Track {
 
     flipGates() {
         // log(this.gates)
-
         if (this.flipY) {
             this.gates = this.gates.map(g => ({
                 'n': g.n,
@@ -81,7 +84,8 @@ class Track {
             return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
         }
         else {
-            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+            // return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+            return [0.01,1] // for debugging
         }
     }
     image2trackDat() {
@@ -182,6 +186,8 @@ class Track {
 
         let xFlip = this.flipX ? -1 : 1;
         let yFlip = this.flipY ? -1 : 1;
+
+        // log(xFlip,yFlip,this.img.width,this.img.height)
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.translate(0 + this.Xi * 1 / 2, 0 + this.Yi * 1 / 2);
         this.ctx.scale(xFlip, yFlip);
@@ -192,6 +198,7 @@ class Track {
 
         this.image2trackDat()
 
+        // create prescaled canvas for faster track drawing;
         this.canvasScl.height = this.Yi * this.trackScl;
         this.canvasScl.width = this.Xi * this.trackScl;
         this.ctxScl.imageSmoothingEnabled = false;
@@ -307,10 +314,10 @@ class Car {
             this.thetaStart = p.track.startThetaRev; // heading angle
         }
         if (track.flipX) {
-            this.thetaStart = -this.theta;
+            this.thetaStart = -this.thetaStart;
         }
         if (track.flipY) {
-            this.thetaStart = Math.PI - this.theta;
+            this.thetaStart = Math.PI - this.thetaStart;
         }
 
         this.theta=this.thetaStart;
@@ -2035,10 +2042,10 @@ class SessionSetter {
     }
     randGen() {
         this.scale = this.randomElement(this.scales);
-        // this.yflip = this.randomElement(this.yflips);
-        // this.xflip = this.randomElement(this.xflips);
-        this.yflip = 0;
-        this.xflip = 0;
+        this.yflip = this.randomElement(this.yflips);
+        this.xflip = this.randomElement(this.xflips);
+        // this.yflip = 1;
+        // this.xflip = 0;
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(p.tracks);
@@ -3033,13 +3040,14 @@ function anim() {
 
     //draw track
 
+    // log( -xc , -yc)
     // this method scales track image live every frame, is too slow when smooth scaling is enables, maybe ok without?
-
     // ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
 
     // this method user prescaled track from 'offscreen' (but not officially) canvas, was sig faster when
-    // tha canvas smooth scaling was set to true. may be uncessary when smooth is false?
+    // the canvas smooth scaling was set to true. may be uncessary when smooth is false?
     // prescaled track is too big for iphone (maybe, not tested).
+    
     ctx.drawImage(track.canvasScl, xc, yc);
 
 
