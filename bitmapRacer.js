@@ -301,17 +301,19 @@ class Car {
         this.headOff = 0; // heading - velocity angle
 
         if (!track.reverse) {
-            this.theta = p.track.startTheta; // heading angle
+            this.thetaStart = p.track.startTheta; // heading angle
         }
         else {
-            this.theta = p.track.startThetaRev; // heading angle
+            this.thetaStart = p.track.startThetaRev; // heading angle
         }
         if (track.flipX) {
-            this.theta = -this.theta;
+            this.thetaStart = -this.theta;
         }
         if (track.flipY) {
-            this.theta = Math.PI - this.theta;
+            this.thetaStart = Math.PI - this.theta;
         }
+
+        this.theta=this.thetaStart;
 
 
         this.thetaDot = 0.0;//heading angle deriv
@@ -385,6 +387,22 @@ class Car {
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
             [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
         })
+    }
+    reset(){
+        // mech + kin
+        this.x = track.startX; // x pos 
+        this.y = track.startY; // y pos
+        this.Fxy = [0, 0]; //resultant Force on car as column vector;
+        this.ax = 0; // x accel
+        this.ay = 0; // y accel
+        this.to = 0; //heading torque;
+        this.theta=this.thetaStart;
+        this.thetaDot = 0.0;//heading angle deriv
+
+        this.U=0;
+
+        this.ux = this.U * Math.sin(this.theta); // x vel
+        this.uy = this.U * Math.cos(this.theta); // y vel
     }
     draw(ctx, xc, yc) {
         let x;
@@ -2829,6 +2847,7 @@ let fs = function () {
         }
         addPointerListeners(name);
         addPointerListeners(ghost);
+        addPointerListeners(resetButton);
         addEventListener('keydown', (event) => { inputState.set(event) });
         addEventListener('keyup', (event) => { inputState.set(event) });
     }
@@ -3051,6 +3070,7 @@ function anim() {
     hiScoresWeb.draw(ctx);
     sessionLogger.draw(ctx);
     name.draw(ctx);
+    resetButton.draw();
     // drawInfo(ctx);
     flash.draw(ctx);
     // fs.drawHUD();
@@ -3076,6 +3096,66 @@ function drawSpeedo() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(Math.round(car.U * 5), x0 + rad, y0 - rad / 2)
+}
+class ResetButton{
+    constructor(){
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+
+        this.x0 = X - this.w;
+        this.y0 = Y - isTouch * Y / 3 - this.h;
+        this.en = null;
+        this.text='Reset'
+
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+        this.ch = this.fontsize + 25 * pixRat;
+        this.cw = pixRat * 100;
+        this.cx0 = 0;
+        this.cy0 = Y - isTouch * Y / 3 - 85 * pixRat - this.ch;
+        // log(Y, isTouch,pixRat)
+        this.en = null;
+        this.active = false;
+    }
+    draw(){
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, 45 * pixRat, Y - isTouch * Y / 3 - 95 * pixRat)
+    }
+    contains(ex, ey) {
+        // log(ex,ey)
+        // log(this.cy0,this.cy0 + this.ch)
+        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
+    }
+    pointerDownHandler(ex, ey, en) {
+
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+            log('PD in reset box')
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "reset PU: " + en + " " + this.action;
+
+            this.en = null;
+            this.active = false;
+            // this.toggleDraw();
+            this.reset();
+            log('PU in reset box');
+        }
+    }
+    reset(){
+        car.reset();
+        lapCounter.reset();
+    }
+
 }
 
 
@@ -3125,6 +3205,7 @@ let flash = new Flash();
 
 let sessionLogger = new SessionLogger(timeTravelDays, dev);
 let name = new Name();
+let resetButton=new ResetButton();
 
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
