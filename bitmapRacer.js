@@ -273,7 +273,7 @@ class Car {
         this.downForceRear = 0;
         // log("airDragK", this.airDragK)
         // log("fade downforce", this.fadeDownforce)
-        
+
         //mechanics version
         this.mechV = p.car.mechV;
 
@@ -606,7 +606,7 @@ class Car {
             }
             else {
                 wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * this.rollK * cosTh;
-                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK *  sinTh;
+                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK * sinTh;
             }
             //surface drag
             wh.n.Fdrag.lon = -wh.n.u.lonWheel * wh.sfc_drag * this.CD;
@@ -1738,8 +1738,8 @@ class SessionLogger {
         if (dev) {
             this.version = this.versionBase + '-' + 'dev';
         }
-        else{
-            this.version=this.versionBase;
+        else {
+            this.version = this.versionBase;
         }
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
@@ -2039,13 +2039,13 @@ class SessionSetter {
         p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
-        let maxPPM=4096/this.track.x/p.trackSetup.metresPerPix;
-        if (PPM>maxPPM){
-            log('PPM limited to',PPM);
-            PPM=maxPPM;
+        let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
+        if (PPM > maxPPM) {
+            log('PPM limited to', PPM);
+            PPM = maxPPM;
         }
-        log("PPM",PPM)
-        log("maxPPM",maxPPM)
+        log("PPM", PPM)
+        log("maxPPM", maxPPM)
     }
     specialCase1() {
         this.scale = { ppm: 10, mpp: 0.2 };
@@ -2441,24 +2441,26 @@ class Ghost {
             this.toggleState = 0;
         }
         if (this.toggleState == 0) {
-            this.drawGhost = false;
-            this.drawWebGhost = false;
-            this.dispText = 'Off';
-        }
-        if (this.toggleState == 1) {
             this.drawGhost = true;
             this.drawWebGhost = true;
             this.dispText = 'On';
         }
-        if (this.toggleState == 2) {
+
+        if (this.toggleState == 1) {
             this.drawGhost = false;
             this.drawWebGhost = true;
             this.dispText = this.webLap.name;
         }
-        if (this.toggleState == 3) {
+        if (this.toggleState == 2) {
             this.drawGhost = true;
             this.drawWebGhost = false;
             this.dispText = 'Local';
+        }
+
+        if (this.toggleState == 3) {
+            this.drawGhost = false;
+            this.drawWebGhost = false;
+            this.dispText = 'Off';
         }
         localStorage.setItem('ghostToggleState', this.toggleState)
     }
