@@ -347,13 +347,13 @@ class Car {
 
         if (this.mechV == 2) {
             this.maxUth = (this.torqueMax / p.car.phys.CA) ** 0.5 // approx theroretical max speed
-            log('max speed:', this.maxUth)
+            // log('max speed:', this.maxUth)
         }
         if (this.mechV == 3) {
             log(this.airDragK, this.rollK, this.torqueMax)
             // this.maxUth = (-4 * this.rollK + ((4 * this.rollK) ** 2 + 4 * this.airDragK * this.torqueMax) ** 0.5) / (2 * this.airDragK);
             this.maxUth = ((this.torqueMax - 4 * this.rollK) / this.airDragK) ** 0.5
-            log('max speed:', this.maxUth)
+            // log('max speed:', this.maxUth)
         }
         this.rotMat = fs.calcRotMat(this.theta);
 
@@ -379,7 +379,7 @@ class Car {
         this.brakeWheelHUD = this.brakeFade <= 0.5 ? this.wheels[0] : this.wheels[2];
         this.maxTorqueHUD = Math.max(this.fade * this.torqueMax / 2, (1 - this.fade) * this.torqueMax / 2);
         this.maxBrakeHUD = Math.max(this.brakeFade * this.brakeMax / 2, (1 - this.fade) * this.brakeMax / 2);
-        log("maxTorqueHUD", this.maxTorqueHUD)
+        // log("maxTorqueHUD", this.maxTorqueHUD)
     }
     readTrack() {
         this.wheels.forEach(function (wheel) {
@@ -2035,14 +2035,17 @@ class SessionSetter {
     }
     randGen() {
         this.scale = this.randomElement(this.scales);
-        this.yflip = this.randomElement(this.yflips);
-        this.xflip = this.randomElement(this.xflips);
+        // this.yflip = this.randomElement(this.yflips);
+        // this.xflip = this.randomElement(this.xflips);
+        this.yflip = 0;
+        this.xflip = 0;
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(p.tracks);
         this.trackImgName = this.randomElement(this.track.fnames)
         // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
+        log(this.scale,this.yflip,this.xflip,this.reverse,this.colour,this.track,this.trackImgName)
 
     }
     apply(p) {
@@ -2058,12 +2061,14 @@ class SessionSetter {
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
         let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
+        log("target PPM", PPM)
+        log("max PPM", maxPPM)
         if (PPM > maxPPM) {
-            log('PPM limited to', PPM);
-            PPM = maxPPM;
+            log('targetPPM', PPM,'limited to', maxPPM);
+            // PPM = Math.floor(maxPPM);
+            PPM= maxPPM;
         }
-        log("PPM", PPM)
-        log("maxPPM", maxPPM)
+        log("final PPM", PPM)
     }
     specialCase1() {
         this.scale = { ppm: 10, mpp: 0.2 };
@@ -3169,14 +3174,14 @@ const trackDev = parseInt(urlParams.get('trackDev'));
 const revDev = parseInt(urlParams.get('revDev'));
 const carDev = parseInt(urlParams.get('carDev'));
 let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-const dev = urlParams.has('tt') || urlParams.get('trackDev') || parseInt(urlParams.get('carDev'));
-log('Dev:', (parseInt(dev)))
+const dev = urlParams.has('tt') || urlParams.has('trackDev') || parseInt(urlParams.has('carDev'));
+log('Dev:', dev)
 // import parameter object
 import { p } from './params.js'
 const sessionPrefix = p.version.n
 
 let serverOveride = false;
-// serverOveride=true;
+serverOveride=true;
 
 let apiURL;
 if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
