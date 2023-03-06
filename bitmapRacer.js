@@ -84,8 +84,8 @@ class Track {
             return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
         }
         else {
-            // return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
-            return [0.01,1] // for debugging
+            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+            // return [0.01,1] // for debugging
         }
     }
     image2trackDat() {
