@@ -2021,27 +2021,27 @@ class SessionSetter {
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
-        this.colour = 'mustard';
-        this.track = p.tracks[4];
+        this.colour = 'white';
+        this.track = p.tracks[1];
         this.trackImgName = this.track.fnames[trackDev - 1]
-        this.car = p.cars[1];
+        this.car = p.cars[0];
         // this.track.startX= 500;
         // this.track.startY = 500;
     }
     setCarDev() {
-        this.scale = { ppm: 8, mpp: 0.35 };
-        this.yflip = false;
-        this.xflip = false;
-        this.reverse = false
+        // this.scale = { ppm: 8, mpp: 0.35 };
+        // this.yflip = false;
+        // this.xflip = false;
+        // this.reverse = false
         if (revDev) {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'grey';
-        this.track = p.tracks[0];
-        this.trackImgName = this.track.fnames[0]
-        this.car = p.cars[1];
-        this.track.startX = 135;
-        this.track.startY = 450;
+        // this.track = p.tracks[0];
+        // this.trackImgName = this.track.fnames[0]
+        // this.car = p.cars[1];
+        // this.track.startX = 135;
+        // this.track.startY = 450;
     }
     randGen() {
         this.scale = this.randomElement(this.scales);
@@ -2085,11 +2085,11 @@ class SessionSetter {
         log("final PPM", PPM)
     }
     specialCase1() {
-        this.scale = { ppm: 10, mpp: 0.2 };
-        this.yflip = 1;
+        this.scale = { ppm: 8, mpp: 0.35 };
+        this.yflip = 0;
         this.xflip = 0;
-        this.reverse = 1;
-        this.colour = '#FFC000';
+        this.reverse = 0;
+        this.colour = 'hotpink';
         this.track = p.tracks[1];
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0];
@@ -3241,7 +3241,7 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
-if (sessionLogger.version.includes('flip01-19420')) {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19424')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase1();
     log('case1')
 }

@@ -55,6 +55,32 @@ export let p = {
             ]
         },
         {
+            "fnames": ['tracks/track_Wlv.png'],
+            "bgColour": "#4f3019",
+            "drawScale": 0.6,
+            "trackScale": 1.3,
+
+            "x": 1000, // size, helpful for setting params before img loaded
+            "y": 1000,
+
+            "startTheta": 1.4,
+            "startX": 247,
+            "startY": 97,
+
+            "startThetaRev": 4.5,
+            "startXRev": 661,
+            "startYRev": 171,
+
+            "gates": [ // in track pixels
+                { 'n': 0, 'left': { 'x': 504, 'y': 82 }, 'right': { 'x': 472, 'y': 210 } },
+                { 'n': 1, 'left': { 'x': 802, 'y': 312 }, 'right': { 'x': 786, 'y': 208 } },
+                { 'n': 2, 'left': { 'x': 483, 'y': 976 }, 'right': { 'x': 475, 'y': 765 } },
+                { 'n': 3, 'left': { 'x': 175, 'y': 153 }, 'right': { 'x': 310, 'y': 181 } },
+            ]
+        },
+
+
+        {
             "fnames": ['tracks/square_track3_mark.png'],
             "bgColour": "#462402",
             "drawScale": 0.6,
