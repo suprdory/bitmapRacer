@@ -2067,7 +2067,7 @@ class SessionSetter {
         p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         
-        let screenScl = Math.min(X / 1000, Y / 1000)
+        let screenScl = Math.min(X / 800, Y / 800)
         log(screenScl)
         // PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
         PPM = p.track.drawScale * p.draw.pixPerMetre*screenScl; // init scale, screen pixels per metre - pre zoom
@@ -2197,7 +2197,7 @@ class Ghost {
 
         this.colour = p.car.colour;
         this.colourWeb = 'black';
-        this.alpha = 0.5;
+        this.alpha = 0.4;
         this.webAlpha = 0.3;
 
         this.rotMat = fs.calcRotMat(0);
