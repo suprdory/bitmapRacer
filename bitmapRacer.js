@@ -1144,6 +1144,9 @@ class InputState {
         if (event['type'] == "keyup" & (event['key'] == "ArrowRight" || event['key'] == "d")) {
             this.right = false;
         }
+        if (event['type'] == "keydown" & (event['key'] == "r")) {
+            resetButton.reset();
+        }
         // console.log(this.left, this.right, this.up, this.down);
         // if (forceBrake) {
         //     this.down = true;
