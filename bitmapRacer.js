@@ -1732,6 +1732,7 @@ class Flash {
         this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
         this.message = "Welcome!"
+        
         this.mTime = Date.now();
         this.fontFamily = fontFamily;
     }
@@ -3307,6 +3308,8 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
+if (lonBorMode){
+flash.flash( "Welcome to " + p.track.name)}
 // log('dt:',1/dt)
 // log(car)
 
