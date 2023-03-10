@@ -1769,6 +1769,10 @@ class SessionLogger {
         else {
             this.version = this.versionBase;
         }
+        if (lonBorMode){
+            this.version = this.version + '-LB'
+        }
+
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
         this.currentRank = 0;
         this.currentBestLap = 0;
@@ -2028,6 +2032,17 @@ class SessionSetter {
         // this.track.startX= 500;
         // this.track.startY = 500;
     }
+    setLondonBorough(){
+        this.scale = { ppm: 8, mpp: 0.35 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = false;
+        // this.colour = 'white';
+        this.track = tracksLB[lonBor];
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0];
+    }
+
     setCarDev() {
         // this.scale = { ppm: 8, mpp: 0.35 };
         // this.yflip = false;
@@ -3187,20 +3202,21 @@ function urlArgHandler()
     trackDev = parseInt(urlParams.get('trackDev'));
     revDev = parseInt(urlParams.get('revDev'));
     carDev = parseInt(urlParams.get('carDev'));
+    lonBorMode = urlParams.has('lb')
+    lonBor = parseInt(urlParams.get('lb'));
     timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev');
-
-   
+    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb');
 }
 
 let log = console.log;
-let showLapCount,carDev,revDev,trackDev,timeTravelDays,dev
+let showLapCount,carDev,revDev,trackDev,timeTravelDays,dev,lonBor,lonBorMode
 
 urlArgHandler();
 log('Dev:', dev)
 
  // import parameter object
 import { p } from './params.js'
+import { tracksLB } from './trackParmsLB.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS();
@@ -3258,6 +3274,11 @@ if (trackDev) {
 if (carDev) {
     setter.setCarDev();
 }
+if (lonBorMode) {
+    setter.setLondonBorough();
+}
+
+
 setter.apply(p);
 let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
 
