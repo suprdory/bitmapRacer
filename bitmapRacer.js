@@ -3179,29 +3179,36 @@ function anim() {
     ghost.addState(car.x, car.y, car.theta);
 
 }
+function urlArgHandler()
+{
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    showLapCount = urlParams.get('nLaps') || urlParams.has('tt');
+    trackDev = parseInt(urlParams.get('trackDev'));
+    revDev = parseInt(urlParams.get('revDev'));
+    carDev = parseInt(urlParams.get('carDev'));
+    timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
+    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev');
 
-
-
+   
+}
 
 let log = console.log;
+let showLapCount,carDev,revDev,trackDev,timeTravelDays,dev
 
-let Fps = new FPS();
-const queryString = window.location.search;
-const urlParams = new URLSearchParams(queryString);
-const showLapCount = urlParams.get('nLaps') || urlParams.has('tt');
-const trackDev = parseInt(urlParams.get('trackDev'));
-const revDev = parseInt(urlParams.get('revDev'));
-const carDev = parseInt(urlParams.get('carDev'));
-let timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-const dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev');
+urlArgHandler();
 log('Dev:', dev)
-// import parameter object
+
+ // import parameter object
 import { p } from './params.js'
 const sessionPrefix = p.version.n
 
+let Fps = new FPS();
+
+
+// set API URL
 let serverOveride = false;
 serverOveride=true;
-
 let apiURL;
 if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -3218,23 +3225,19 @@ fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
-
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
+
+
 let flash = new Flash();
-
-
 let sessionLogger = new SessionLogger(timeTravelDays, dev);
 let name = new Name();
 let resetButton=new ResetButton();
-
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
-
-
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
 
