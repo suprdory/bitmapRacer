@@ -1330,6 +1330,15 @@ class LapCounter {
         ghost.newLap();
         sessionLogger.setCountDown();
     }
+    resetStart() {
+        this.t0 = Date.now();
+        this.n0 = n - (1 - this.bez);
+        this.nextCheck = 0;
+
+        // ghost.started = true;
+        // ghost.newLap();
+        sessionLogger.setCountDown();
+    }
     updateLapTime() {
         // this.lapTime = Date.now() - this.t0;
         this.lapTimePh = (n - this.n0) * 1000 / Fps.fps;
@@ -1771,7 +1780,7 @@ class SessionLogger {
             this.version = this.versionBase;
         }
         if (lonBorMode){
-            this.version = '0-dev-LB' + lonBor
+            this.version = '01-dev-LB' + lonBor
         }
 
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
@@ -2034,7 +2043,7 @@ class SessionSetter {
         // this.track.startY = 500;
     }
     setLondonBorough(){
-        this.scale = { ppm: 8, mpp: 0.35 };
+        this.scale = { ppm: 7, mpp: 0.4 };
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
@@ -2668,7 +2677,7 @@ class ResetButton {
     }
     reset() {
         car.reset();
-        lapCounter.reset();
+        lapCounter.resetStart();
     }
 
 }
