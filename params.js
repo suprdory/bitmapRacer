@@ -6,9 +6,9 @@ export let p = {
         "flipY": false,
     },
     "draw": {
-        "pixPerMetre": 10,
-        "baseLW": 2,
-        "lookAhead": .5,
+        // "pixPerMetre": 10,
+        // "baseLW": 2,
+        "lookAhead": 0.8,
         "panSpeed": 0.15,
         "zoom": 1.0,
         "HUDscl": 25,
