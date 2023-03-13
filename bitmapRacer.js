@@ -2043,7 +2043,7 @@ class SessionSetter {
         // this.track.startY = 500;
     }
     setLondonBorough(){
-        this.scale = { ppm: 7, mpp: 0.4 };
+        this.scale = { ppm: 8, mpp: 0.4};
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
@@ -2093,7 +2093,7 @@ class SessionSetter {
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         
         let screenScl = Math.min(X / 700, Y / 700)
-        log(screenScl)
+        // log(screenScl)
         // PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
         PPM = p.track.drawScale * p.draw.pixPerMetre*screenScl; // init scale, screen pixels per metre - pre zoom
         
@@ -3066,7 +3066,7 @@ let fs = function () {
         yc = 0
         isTouch = fs.isTouchDevice();
         yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
-        log('X',X,'Y',Y)
+        // log('X',X,'Y',Y)
 
     }
     function drawSpeedo() {
@@ -3222,7 +3222,7 @@ let log = console.log;
 let showLapCount,carDev,revDev,trackDev,timeTravelDays,dev,lonBor,lonBorMode
 
 urlArgHandler();
-log('Dev:', dev)
+// log('Dev:', dev)
 
  // import parameter object
 import { p } from './params.js'
