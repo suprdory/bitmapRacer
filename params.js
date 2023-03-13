@@ -31,7 +31,7 @@ export let p = {
     },
     "tracks": [
         {
-            "fnames": ['tracks/square_track.png'],
+            "fnames": ['tracks/square_track_extramud.png', 'tracks/square_track_ice.png'],
             "bgColour": "#381b00",
             "drawScale": 1,
             "trackScale": 1.0,
