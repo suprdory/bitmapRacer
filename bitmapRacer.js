@@ -3139,7 +3139,7 @@ function anim() {
     yc = yc + (yct - yc) * panSpeed
 
     //draw scaled stuff
-    // ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
+    ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
 
     // clear screen
     // ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
@@ -3177,7 +3177,7 @@ function anim() {
     ghost.drawToggle();
 
     // draw unscaled scaled stuff
-    // ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // touchControl.draw(ctx);
     if (inputState.touch) {
