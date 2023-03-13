@@ -3075,8 +3075,11 @@ let fs = function () {
         let rad = 35 * pixRat;
         let th0 = Math.PI * 45 / 180;
         let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
+        ctx.lineWidth = baseLW * pixRat;
         ctx.beginPath()
         ctx.strokeStyle = 'white';
+        
+
         ctx.arc(x0 + rad, y0 - rad, rad, th0 + Math.PI / 2, Math.PI * 5 / 2 - th0)
         ctx.stroke();
         ctx.beginPath();
@@ -3170,15 +3173,16 @@ function anim() {
     }
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.updateLapTime();
-    lapCounter.draw(ctx);
+    
     car.draw(ctx, xc, yc);
     ghost.draw(ctx, xc, yc);
     ghost.drawWeb(ctx, xc, yc);
-    ghost.drawToggle();
+    
 
     // draw unscaled scaled stuff
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-
+    lapCounter.draw(ctx);
+    ghost.drawToggle();
     // touchControl.draw(ctx);
     if (inputState.touch) {
         accBtn.draw(ctx);
