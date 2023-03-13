@@ -10,7 +10,7 @@ export let p = {
         "baseLW": 2,
         "lookAhead": 0.5,
         "panSpeed": 0.15,
-        "zoom": 0.5,
+        "zoom": 0.9,
         "HUDscl": 25,
         "HUDforceScl": 1,
     },
