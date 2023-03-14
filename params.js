@@ -10,7 +10,7 @@ export let p = {
         "baseLW": 2,
         "lookAhead": 0.5,
         "panSpeed": 0.15,
-        "zoom": 0.9,
+        "zoom": 1.2,
         "HUDscl": 25,
         "HUDforceScl": 1,
     },
@@ -32,7 +32,7 @@ export let p = {
     "tracks": [
         {
             "fnames": ['tracks/square_track_extramud.png', 'tracks/square_track_ice.png'],
-            "bgColour": "#381b00",
+            "bgColour": "#4f3019",
             "drawScale": 1,
             "trackScale": 1.0,
 

@@ -5,8 +5,8 @@ export let tracksLB = [
             "tracksLBs/KingstonuponThames.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": -1.017291351714097,
@@ -79,8 +79,8 @@ export let tracksLB = [
             "tracksLBs/Croydon.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 3.233005989778411,
@@ -120,8 +120,8 @@ export let tracksLB = [
             "tracksLBs/Bromley.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 3.3139864394683842,
@@ -161,8 +161,8 @@ export let tracksLB = [
             "tracksLBs/Hounslow.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 0.28006206551872714,
@@ -213,8 +213,8 @@ export let tracksLB = [
             "tracksLBs/Ealing.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.5771587710479604,
@@ -265,8 +265,8 @@ export let tracksLB = [
             "tracksLBs/Havering.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.20971298125972,
@@ -317,8 +317,8 @@ export let tracksLB = [
             "tracksLBs/Hillingdon.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": -0.775223617331412,
@@ -358,8 +358,8 @@ export let tracksLB = [
             "tracksLBs/Harrow.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.9530060783769405,
@@ -399,8 +399,8 @@ export let tracksLB = [
             "tracksLBs/Brent.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.1170221291188074,
@@ -440,8 +440,8 @@ export let tracksLB = [
             "tracksLBs/Barnet.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 3.5496431023165522,
@@ -481,8 +481,8 @@ export let tracksLB = [
             "tracksLBs/Lambeth.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 3.115060964359828,
@@ -544,8 +544,8 @@ export let tracksLB = [
             "tracksLBs/Southwark.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.2286036689436204,
@@ -607,8 +607,8 @@ export let tracksLB = [
             "tracksLBs/Lewisham.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 2.7034639244203618,
@@ -659,8 +659,8 @@ export let tracksLB = [
             "tracksLBs/Greenwich.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 0.9206152481214176,
@@ -711,8 +711,8 @@ export let tracksLB = [
             "tracksLBs/Bexley.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.1756827085212433,
@@ -774,8 +774,8 @@ export let tracksLB = [
             "tracksLBs/Enfield.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 1.63169721802173,
@@ -826,8 +826,8 @@ export let tracksLB = [
             "tracksLBs/WalthamForest.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 0.7462158001062252,
@@ -878,8 +878,8 @@ export let tracksLB = [
             "tracksLBs/Redbridge.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": 2.99631133121277,
@@ -919,8 +919,8 @@ export let tracksLB = [
             "tracksLBs/Sutton.png"
         ],
         "bgColour": "#4C3319",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 0.8,
+        "trackScale": 1.2,
         "x": 1000,
         "y": 1000,
         "startTheta": -0.7259007033947562,
@@ -950,6 +950,701 @@ export let tracksLB = [
                 "right": {
                     "x": 780.1856538435112,
                     "y": 189.5192005950911
+                }
+            }
+        ]
+    },
+    {
+        "name": "Richmond upon Thames",
+        "fnames": [
+            "tracksLBs/RichmonduponThames.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 2.2752850209546085,
+        "startX": 381.8154293484997,
+        "startY": 360.7164513874425,
+        "startThetaRev": -1.2050052367756174,
+        "startXRev": 589.2186644052641,
+        "startYRev": 116.55667026201358,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 406.3832924291793,
+                    "y": 186.06283433555257
+                },
+                "right": {
+                    "x": 513.0123003677658,
+                    "y": 264.4691842320701
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 982.4891274828573,
+                    "y": 113.51208736350513
+                },
+                "right": {
+                    "x": 865.8588225403554,
+                    "y": 176.07943513437758
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 226.27302103838778,
+                    "y": 820.1238890708232
+                },
+                "right": {
+                    "x": 297.57857280271986,
+                    "y": 708.6213360702463
+                }
+            }
+        ]
+    },
+    {
+        "name": "Merton",
+        "fnames": [
+            "tracksLBs/Merton.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 3.4901214727967993,
+        "startX": 143.1956570512735,
+        "startY": 668.8632762361362,
+        "startThetaRev": 0.05270758835093314,
+        "startXRev": 59.294089647335205,
+        "startYRev": 391.0839107688246,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 33.30766307752964,
+                    "y": 566.8166186484433
+                },
+                "right": {
+                    "x": 157.92247389412137,
+                    "y": 522.2245794126409
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 980.7443621401848,
+                    "y": 561.5936928329154
+                },
+                "right": {
+                    "x": 869.6603014619161,
+                    "y": 633.5494605050699
+                }
+            }
+        ]
+    },
+    {
+        "name": "Wandsworth",
+        "fnames": [
+            "tracksLBs/Wandsworth.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 2.550448576215818,
+        "startX": 548.5992152909914,
+        "startY": 366.86610645041105,
+        "startThetaRev": 4.707719145394882,
+        "startXRev": 786.0764897902325,
+        "startYRev": 162.2908298990022,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 583.2766416478045,
+                    "y": 168.07141739179534
+                },
+                "right": {
+                    "x": 682.0896673871746,
+                    "y": 256.1241685259472
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 937.6368673737192,
+                    "y": 665.1225882704165
+                },
+                "right": {
+                    "x": 808.9899792448936,
+                    "y": 696.2237009970014
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 284.1173526404134,
+                    "y": 718.1336921330469
+                },
+                "right": {
+                    "x": 267.1350564485672,
+                    "y": 586.8747775629703
+                }
+            }
+        ]
+    },
+    {
+        "name": "Hammersmith and Fulham",
+        "fnames": [
+            "tracksLBs/HammersmithandFulham.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 0.8482218445790582,
+        "startX": 582.2438722026382,
+        "startY": 526.9974850359787,
+        "startThetaRev": 3.6509418026300073,
+        "startXRev": 782.5857614753572,
+        "startYRev": 718.4728966271574,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 736.0749087831513,
+                    "y": 567.7854721682245
+                },
+                "right": {
+                    "x": 649.8115684096357,
+                    "y": 668.1644398141677
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 355.03088441110435,
+                    "y": 677.970525370698
+                },
+                "right": {
+                    "x": 485.37837841811285,
+                    "y": 655.0177075882306
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 168.91441236824656,
+                    "y": 65.41973062479144
+                },
+                "right": {
+                    "x": 285.34148773515636,
+                    "y": 128.3644457291605
+                }
+            }
+        ]
+    },
+    {
+        "name": "Kensington and Chelsea",
+        "fnames": [
+            "tracksLBs/KensingtonandChelsea.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 0.7964843288969675,
+        "startX": 427.5618693732719,
+        "startY": 317.71287019210774,
+        "startThetaRev": 3.6467225251296664,
+        "startXRev": 571.4390081927717,
+        "startYRev": 517.0455512405035,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 572.1488321289016,
+                    "y": 362.57121268131965
+                },
+                "right": {
+                    "x": 462.20821503671226,
+                    "y": 436.2622009461737
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 765.0987611638856,
+                    "y": 900.333401046886
+                },
+                "right": {
+                    "x": 737.8184628602163,
+                    "y": 770.8224503032324
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 114.86765421059216,
+                    "y": 371.974193144699
+                },
+                "right": {
+                    "x": 227.5151034242818,
+                    "y": 302.4914382791103
+                }
+            }
+        ]
+    },
+    {
+        "name": "Westminster",
+        "fnames": [
+            "tracksLBs/Westminster.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 3.67290928347287,
+        "startX": 353.2340797663399,
+        "startY": 656.7060326088415,
+        "startThetaRev": 0.5770479335552177,
+        "startXRev": 199.80738764322479,
+        "startYRev": 453.938276278063,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 238.06255682056664,
+                    "y": 574.9367084316027
+                },
+                "right": {
+                    "x": 345.60735423317936,
+                    "y": 497.7912770209068
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 155.6150609127174,
+                    "y": 157.73792619610774
+                },
+                "right": {
+                    "x": 128.6413302994135,
+                    "y": 287.31307387058723
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 903.4583139989655,
+                    "y": 713.8756639037596
+                },
+                "right": {
+                    "x": 771.5770742621713,
+                    "y": 702.7114512782102
+                }
+            }
+        ]
+    },
+    {
+        "name": "Camden",
+        "fnames": [
+            "tracksLBs/Camden.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 0.6328571095373393,
+        "startX": 681.845700771907,
+        "startY": 327.7148404458367,
+        "startThetaRev": 3.586089397806691,
+        "startXRev": 818.600015480694,
+        "startYRev": 630.9686645016598,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 843.5644218269996,
+                    "y": 453.7369752867114
+                },
+                "right": {
+                    "x": 716.871940190374,
+                    "y": 492.02948284126495
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 543.2253383843397,
+                    "y": 709.0228357042296
+                },
+                "right": {
+                    "x": 671.2555486151062,
+                    "y": 675.4733751075526
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 127.17456977099847,
+                    "y": 281.0790571670783
+                },
+                "right": {
+                    "x": 192.65558125946302,
+                    "y": 396.09878665949986
+                }
+            }
+        ]
+    },
+    {
+        "name": "Tower Hamlets",
+        "fnames": [
+            "tracksLBs/TowerHamlets.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 3.4487009042749475,
+        "startX": 90.48264039919654,
+        "startY": 445.908999334605,
+        "startThetaRev": -0.8446282736798081,
+        "startXRev": 241.819607575542,
+        "startYRev": 213.8725288526463,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 80.68221708480587,
+                    "y": 241.5895193072929
+                },
+                "right": {
+                    "x": 173.3197193167807,
+                    "y": 336.11779136535574
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 801.683991435569,
+                    "y": 395.9410467715596
+                },
+                "right": {
+                    "x": 727.0831122050666,
+                    "y": 505.2662947982542
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 525.6714766234924,
+                    "y": 770.3933352973726
+                },
+                "right": {
+                    "x": 654.9993318864861,
+                    "y": 798.5288447318297
+                }
+            }
+        ]
+    },
+    {
+        "name": "Islington",
+        "fnames": [
+            "tracksLBs/Islington.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 3.4209111478361898,
+        "startX": 386.7838334293761,
+        "startY": 724.743393296209,
+        "startThetaRev": 0.6881348321897294,
+        "startXRev": 305.75476639743397,
+        "startYRev": 473.6444371916092,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 298.95655515611475,
+                    "y": 609.6929869561293
+                },
+                "right": {
+                    "x": 428.5738078810478,
+                    "y": 582.9223158008683
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 559.7008131703789,
+                    "y": 162.08775071548777
+                },
+                "right": {
+                    "x": 484.45937274283807,
+                    "y": 270.9731339423063
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 715.8514154415446,
+                    "y": 744.7817255633917
+                },
+                "right": {
+                    "x": 648.6786996853428,
+                    "y": 858.8217505370772
+                }
+            }
+        ]
+    },
+    {
+        "name": "Hackney",
+        "fnames": [
+            "tracksLBs/Hackney.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 0.4992288024650604,
+        "startX": 524.3164717539316,
+        "startY": 121.66486323081472,
+        "startThetaRev": 4.5208772735324905,
+        "startXRev": 769.1016495160841,
+        "startYRev": 303.725117703476,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 655.3152791633927,
+                    "y": 203.81767121799336
+                },
+                "right": {
+                    "x": 581.7350677124921,
+                    "y": 313.8324589553837
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 510.44242390651067,
+                    "y": 784.0886803780587
+                },
+                "right": {
+                    "x": 425.0601878422778,
+                    "y": 682.9591851616093
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 230.36897192028317,
+                    "y": 495.0581595873223
+                },
+                "right": {
+                    "x": 283.301996959409,
+                    "y": 373.7511280587684
+                }
+            }
+        ]
+    },
+    {
+        "name": "Haringey",
+        "fnames": [
+            "tracksLBs/Haringey.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": -0.39556278942157674,
+        "startX": 932.9418310884648,
+        "startY": 318.86152882600913,
+        "startThetaRev": 2.5001263468510926,
+        "startXRev": 833.349213546316,
+        "startYRev": 578.2545688806786,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 939.974540926654,
+                    "y": 477.84162739394935
+                },
+                "right": {
+                    "x": 812.0953074029165,
+                    "y": 443.72121310215516
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 270.9307196879467,
+                    "y": 773.9707738212745
+                },
+                "right": {
+                    "x": 232.75547514492584,
+                    "y": 647.2429089211554
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 233.19334228221086,
+                    "y": 221.5592206405548
+                },
+                "right": {
+                    "x": 300.5674891365473,
+                    "y": 335.4803572821481
+                }
+            }
+        ]
+    },
+    {
+        "name": "Newham",
+        "fnames": [
+            "tracksLBs/Newham.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": -1.5648838285978763,
+        "startX": 674.7489716678277,
+        "startY": 891.6432180334918,
+        "startThetaRev": 0.8171926254162764,
+        "startXRev": 339.9201257874388,
+        "startYRev": 868.3976883744159,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 495.410916665625,
+                    "y": 943.0356519912817
+                },
+                "right": {
+                    "x": 483.17381297389295,
+                    "y": 811.2496347842196
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 351.9356844436472,
+                    "y": 143.5833504680452
+                },
+                "right": {
+                    "x": 355.7955916430846,
+                    "y": 275.87999500022534
+                }
+            }
+        ]
+    },
+    {
+        "name": "Barking and Dagenham",
+        "fnames": [
+            "tracksLBs/BarkingandDagenham.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 2.248226146118374,
+        "startX": 368.9066925575819,
+        "startY": 542.6182134463036,
+        "startThetaRev": -0.335766079511046,
+        "startXRev": 507.36759984101303,
+        "startYRev": 345.4225345540953,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 380.6697503837184,
+                    "y": 423.60284169566387
+                },
+                "right": {
+                    "x": 495.0084903339762,
+                    "y": 490.2658268122155
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 474.56710883850155,
+                    "y": 64.46746421671455
+                },
+                "right": {
+                    "x": 573.1699819835314,
+                    "y": 152.7554840473089
+                }
+            },
+            {
+                "n": 2,
+                "left": {
+                    "x": 807.68516119298,
+                    "y": 847.67883214561
+                },
+                "right": {
+                    "x": 676.5088757188715,
+                    "y": 830.0696536503624
+                }
+            }
+        ]
+    },
+    {
+        "name": "City of London",
+        "fnames": [
+            "tracksLBs/CityofLondon.png"
+        ],
+        "bgColour": "#4C3319",
+        "drawScale": 0.8,
+        "trackScale": 1.2,
+        "x": 1000,
+        "y": 1000,
+        "startTheta": 4.331449126094073,
+        "startX": 635.6304084548001,
+        "startY": 711.7250413396898,
+        "startThetaRev": 1.757314421452934,
+        "startXRev": 376.9854325556817,
+        "startYRev": 677.7431181210129,
+        "gates": [
+            {
+                "n": 0,
+                "left": {
+                    "x": 499.01342301456674,
+                    "y": 736.4125747892647
+                },
+                "right": {
+                    "x": 520.668314300124,
+                    "y": 605.8431805137569
+                }
+            },
+            {
+                "n": 1,
+                "left": {
+                    "x": 607.749338083115,
+                    "y": 266.4504215676541
+                },
+                "right": {
+                    "x": 532.7218293203379,
+                    "y": 375.48332470663166
                 }
             }
         ]

@@ -3141,6 +3141,13 @@ function anim() {
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
+    
+    let zoomBase=1.2;
+    let zoomMax = 0.5;
+    let zoomSpeed=0.2;
+    let zoomTarget = zoomBase - zoomMax * car.U / car.maxUth;
+
+    zoom=zoom+(zoomTarget-zoom)*zoomSpeed;
     //draw scaled stuff
     ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
 
