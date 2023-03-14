@@ -1780,7 +1780,7 @@ class SessionLogger {
             this.version = this.versionBase;
         }
         if (lonBorMode){
-            this.version = '01-dev-LB' + lonBor
+            this.version = '02-dev-LB' + lonBor
         }
 
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
