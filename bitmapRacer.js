@@ -2043,7 +2043,7 @@ class SessionSetter {
         // this.track.startY = 500;
     }
     setLondonBorough(){
-        this.scale = { ppm: 8, mpp: 0.4};
+        this.scale = { ppm: 7, mpp: 0.4};
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
