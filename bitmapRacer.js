@@ -2703,7 +2703,7 @@ class ResetButton {
             // log('PU in reset box');
         }
     }
-    reset() {git 
+    reset() {
         car.reset();
         lapCounter.resetStart();
     }
