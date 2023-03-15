@@ -1808,7 +1808,7 @@ class SessionLogger {
             this.version = this.versionBase;
         }
         if (lonBorMode) {
-            this.version = '02-dev-LB' + lonBor
+            this.version = '03-dev-LB' + lonBor
         }
 
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
@@ -2077,7 +2077,7 @@ class SessionSetter {
         this.reverse = false;
         // this.colour = 'white';
         this.track = tracksLB[lonBor];
-        this.trackImgName = this.track.fnames[0]
+        this.trackImgName = this.track.fnames[1]
         this.car = p.cars[0];
     }
 
