@@ -320,7 +320,7 @@ class Car {
             this.thetaStart = Math.PI - this.thetaStart;
         }
 
-        this.theta=this.thetaStart;
+        this.theta = this.thetaStart;
 
 
         this.thetaDot = 0.0;//heading angle deriv
@@ -393,9 +393,12 @@ class Car {
             // wheel.sfc_mu=track.get_mu(wheel.xa,wheel.ya);
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
             [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
+            if (wheel.sfc_drag >= 0.2) {
+                lapCounter.voidLap();
+            }
         })
     }
-    reset(){
+    reset() {
         // mech + kin
         this.x = track.startX; // x pos 
         this.y = track.startY; // y pos
@@ -403,14 +406,19 @@ class Car {
         this.ax = 0; // x accel
         this.ay = 0; // y accel
         this.to = 0; //heading torque;
-        this.theta=this.thetaStart;
+        this.theta = this.thetaStart;
         this.thetaDot = 0.0;//heading angle deriv
 
-        this.U=0;
+        this.U = 0;
 
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
+        for (let i = 0; i < 4; i++) {
+            this.wheels[i].xa= this.x;
+            this.wheels[i].ya = this.y;
+        }
     }
+        
     draw(ctx, xc, yc) {
         let x;
 
@@ -559,6 +567,7 @@ class Car {
             this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
         }
     }
+
 
     mech() {
         if (this.mechV == 2) {
@@ -945,6 +954,8 @@ class Wheel {
         this.xa = x; // x pos absolute
         this.ya = y; // y pos
 
+        // this.void = false; // wheel is voided by touching high friction surface (i.e. dirt), maybe generalize
+
         this.n = {};
         this.n.Fthrust = {};
         this.n.Fthrust.lat = 0;
@@ -1268,8 +1279,14 @@ class LapCounter {
         this.tstr = {};
         this.yPos = 0;
         this.fontFamily = fontFamily;
+        this.void=false
+        this.voidText='';
     }
-
+    voidLap(){
+        // log('voiding')
+        this.void=true;
+        this.voidText="Void";
+    }
     draw(ctx) {
         ctx.beginPath();
         ctx.textAlign = "center";
@@ -1280,6 +1297,13 @@ class LapCounter {
         // ctx.fillText(fs.formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
+
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
+        ctx.fillText(this.voidText, X / 2, Y-Y/3*isTouch-5*pixRat);
 
     }
 
@@ -1304,8 +1328,8 @@ class LapCounter {
     gateCrossed(n) {
         // log("gate", n, "next", this.nextCheck, "final", this.finalCheck)
         if (n == 0) {
-
-            if (this.nextCheck == this.finalCheck) {
+            // log('lapcomplete:', this.nextCheck == this.finalCheck, !this.void)
+            if ((this.nextCheck == this.finalCheck)& !this.void) {
                 this.lapComplete()
             }
             else {
@@ -1317,27 +1341,31 @@ class LapCounter {
         else if (n == this.nextCheck) {
             // log('forward next')
             this.nextCheck++;
-
         }
         // log("newNext", this.nextCheck)
     }
-    reset() {
+    reset() { // finish line cross reset
         this.t0 = Date.now();
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 1;
-
+        this.void = false;
+        this.voidText = '';
+        
         ghost.started = true;
         ghost.newLap();
         sessionLogger.setCountDown();
     }
-    resetStart() {
+    resetStart() { // button reset, dont trigger ghost
         this.t0 = Date.now();
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 0;
+        this.void=false;
+        this.voidText='';
+        sessionLogger.setCountDown();
 
         // ghost.started = true;
         // ghost.newLap();
-        sessionLogger.setCountDown();
+
     }
     updateLapTime() {
         // this.lapTime = Date.now() - this.t0;
@@ -1741,7 +1769,7 @@ class Flash {
         this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
         this.message = "Welcome!"
-        
+
         this.mTime = Date.now();
         this.fontFamily = fontFamily;
     }
@@ -1779,7 +1807,7 @@ class SessionLogger {
         else {
             this.version = this.versionBase;
         }
-        if (lonBorMode){
+        if (lonBorMode) {
             this.version = '02-dev-LB' + lonBor
         }
 
@@ -2042,8 +2070,8 @@ class SessionSetter {
         // this.track.startX= 500;
         // this.track.startY = 500;
     }
-    setLondonBorough(){
-        this.scale = { ppm: 7, mpp: 0.4};
+    setLondonBorough() {
+        this.scale = { ppm: 7, mpp: 0.4 };
         this.yflip = false;
         this.xflip = false;
         this.reverse = false;
@@ -2091,21 +2119,21 @@ class SessionSetter {
         let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relatic to car0
         p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
-        
+
         let screenScl = Math.min(X / 700, Y / 700)
         // log(screenScl)
         // PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
-        PPM = p.track.drawScale * p.draw.pixPerMetre*screenScl; // init scale, screen pixels per metre - pre zoom
-        
+        PPM = p.track.drawScale * p.draw.pixPerMetre * screenScl; // init scale, screen pixels per metre - pre zoom
+
 
         let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
 
         log("target PPM", PPM)
         log("max PPM", maxPPM)
         if (PPM > maxPPM) {
-            log('targetPPM', PPM,'limited to', maxPPM);
+            log('targetPPM', PPM, 'limited to', maxPPM);
             // PPM = Math.floor(maxPPM);
-            PPM= maxPPM;
+            PPM = maxPPM;
         }
         log("final PPM", PPM)
     }
@@ -2661,7 +2689,7 @@ class ResetButton {
             // debugTxt = "PD: " + en + " " + this.action;
             this.active = true;
             this.en = en;
-            log('PD in reset box')
+            // log('PD in reset box')
         }
     }
     pointerUpHandler(en) {
@@ -2672,10 +2700,10 @@ class ResetButton {
             this.active = false;
             // this.toggleDraw();
             this.reset();
-            log('PU in reset box');
+            // log('PU in reset box');
         }
     }
-    reset() {
+    reset() {git 
         car.reset();
         lapCounter.resetStart();
     }
@@ -3078,7 +3106,7 @@ let fs = function () {
         ctx.lineWidth = baseLW * pixRat;
         ctx.beginPath()
         ctx.strokeStyle = 'white';
-        
+
 
         ctx.arc(x0 + rad, y0 - rad, rad, th0 + Math.PI / 2, Math.PI * 5 / 2 - th0)
         ctx.stroke();
@@ -3141,13 +3169,13 @@ function anim() {
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
-    
-    let zoomBase=1.2;
+
+    let zoomBase = 1.2;
     let zoomMax = 0.5;
-    let zoomSpeed=0.2;
+    let zoomSpeed = 0.2;
     let zoomTarget = zoomBase - zoomMax * car.U / car.maxUth;
 
-    zoom=zoom+(zoomTarget-zoom)*zoomSpeed;
+    zoom = zoom + (zoomTarget - zoom) * zoomSpeed;
     //draw scaled stuff
     ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
 
@@ -3169,7 +3197,7 @@ function anim() {
     // this method user prescaled track from 'offscreen' (but not officially) canvas, was sig faster when
     // the canvas smooth scaling was set to true. may be uncessary when smooth is false?
     // prescaled track is too big for iphone (maybe, not tested).
-    
+
     ctx.drawImage(track.canvasScl, xc, yc);
 
 
@@ -3180,11 +3208,11 @@ function anim() {
     }
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.updateLapTime();
-    
+
     car.draw(ctx, xc, yc);
     ghost.draw(ctx, xc, yc);
     ghost.drawWeb(ctx, xc, yc);
-    
+
 
     // draw unscaled scaled stuff
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -3215,8 +3243,7 @@ function anim() {
     ghost.addState(car.x, car.y, car.theta);
 
 }
-function urlArgHandler()
-{
+function urlArgHandler() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     showLapCount = urlParams.get('nLaps') || urlParams.has('tt');
@@ -3230,12 +3257,12 @@ function urlArgHandler()
 }
 
 let log = console.log;
-let showLapCount,carDev,revDev,trackDev,timeTravelDays,dev,lonBor,lonBorMode
+let showLapCount, carDev, revDev, trackDev, timeTravelDays, dev, lonBor, lonBorMode
 
 urlArgHandler();
 // log('Dev:', dev)
 
- // import parameter object
+// import parameter object
 import { p } from './params.js'
 import { tracksLB } from './trackParmsLB.js'
 const sessionPrefix = p.version.n
@@ -3245,7 +3272,7 @@ let Fps = new FPS();
 
 // set API URL
 let serverOveride = false;
-serverOveride=true;
+serverOveride = true;
 let apiURL;
 if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -3272,7 +3299,7 @@ let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust
 let flash = new Flash();
 let sessionLogger = new SessionLogger(timeTravelDays, dev);
 let name = new Name();
-let resetButton=new ResetButton();
+let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
@@ -3328,8 +3355,9 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
-if (lonBorMode){
-flash.flash( "Welcome to " + p.track.name)}
+if (lonBorMode) {
+    flash.flash("Welcome to " + p.track.name)
+}
 // log('dt:',1/dt)
 // log(car)
 
