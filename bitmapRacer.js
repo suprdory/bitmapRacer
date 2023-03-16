@@ -1771,8 +1771,8 @@ class Flash {
         this.y = 15 * pixRat * 2.1
         this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
-        this.message = "Happy Birthday Fumi!"
-
+        // this.message = "Happy Birthday Fumi!"
+        this.message = "Welcome!";
         this.mTime = Date.now();
         this.fontFamily = fontFamily;
     }
@@ -2080,7 +2080,7 @@ class SessionSetter {
         this.reverse = false;
         // this.colour = 'white';
         this.track = tracksLB[lonBor];
-        this.trackImgName = this.track.fnames[1]
+        this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0];
     }
 
@@ -2143,11 +2143,12 @@ class SessionSetter {
     specialCase1() {
         this.scale = { ppm: 8, mpp: 0.35 };
         this.yflip = 1;
-        this.xflip = 1;
+        this.xflip = 0;
         this.reverse = 1;
-        this.colour = 'hotpink';
-        this.track = p.tracks[0];
-        this.trackImgName = this.track.fnames[1]
+        this.colour = 'gold';
+        // this.track = tracksLB[0];
+        this.track = p.tracks[2];
+        this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0];
 
     }
@@ -3312,7 +3313,7 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
-if (sessionLogger.version.includes('flip01-19430')) {//use to 'cue' up setting for day e.g. tomor
+if (sessionLogger.version.includes('flip01-19433')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase1();
     log('case1')
 }
