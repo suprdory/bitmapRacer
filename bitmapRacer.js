@@ -393,10 +393,13 @@ class Car {
             // wheel.sfc_mu=track.get_mu(wheel.xa,wheel.ya);
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
             [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
-            if (wheel.sfc_drag >= 0.2) {
-                lapCounter.voidLap();
-            }
         })
+    }
+    checkVoid(){
+        //void condition - both front wheels in the rough
+        if (this.wheels[0].sfc_drag >= 0.2 & this.wheels[1].sfc_drag >= 0.2) {
+            lapCounter.voidLap();
+        }
     }
     reset() {
         // mech + kin
@@ -3159,6 +3162,7 @@ function anim() {
     car.control(inputState);
     if (track.trackReady) {
         car.readTrack();
+        car.checkVoid();
         car.mech();
     }
     let Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM;
