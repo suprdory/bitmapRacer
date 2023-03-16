@@ -1768,7 +1768,7 @@ class Flash {
         this.y = 15 * pixRat * 2.1
         this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
-        this.message = "Welcome!"
+        this.message = "Happy Birthday Fumi!"
 
         this.mTime = Date.now();
         this.fontFamily = fontFamily;
