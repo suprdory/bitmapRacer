@@ -92,7 +92,7 @@ export let p = {
             "startX": 240,
             "startY": 60,
 
-            "startThetaRev": -1.6,
+            "startThetaRev": -1.7,
             "startXRev": 800,
             "startYRev": 136,
 
@@ -274,7 +274,7 @@ export let p = {
             "brakeMax": 2000,
             "colour": 'gold',
             "mechV": 3,
-            "gamma": 3, // time multiplier
+            "gamma": 4, // time multiplier
             "phys": {
                 "alpha0": 8, // max force slip angle
                 "hAero": 0.8, //aerodynamic height
