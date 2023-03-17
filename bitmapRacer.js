@@ -2080,7 +2080,7 @@ class SessionSetter {
         this.reverse = false;
         // this.colour = 'white';
         this.track = tracksLB[lonBor];
-        this.trackImgName = this.track.fnames[0]
+        this.trackImgName = this.track.fnames[1]
         this.car = p.cars[0];
     }
 
@@ -2109,8 +2109,25 @@ class SessionSetter {
         this.trackImgName = this.randomElement(this.track.fnames)
         // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
-
     }
+    boroughSeries(){
+        // this.scale = this.randomElement(this.scales);
+        // this.yflip = this.randomElement(this.yflips);
+        // this.xflip = this.randomElement(this.xflips);
+        // this.reverse = this.randomElement(this.reverses);
+        this.scale = { ppm: 7, mpp: 0.4 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = false;
+        this.colour = this.randomElement(this.colours);
+        this.track = this.randomElement(tracksLB);
+        this.track = tracksLB[sessionLogger.currentSesh-19434]
+        // this.trackImgName = this.randomElement(this.track.fnames)
+        this.trackImgName = this.track.fnames[0]
+        // this.car = this.randomElement(p.cars);
+        this.car = p.cars[0]
+    }
+
     apply(p) {
         p.track = this.track;
         p.track.fname = this.trackImgName;
@@ -3313,6 +3330,10 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
+if (sessionLogger.currentSesh > 19433){
+    setter.boroughSeries();
+}
+
 if (sessionLogger.version.includes('flip01-19433')) {//use to 'cue' up setting for day e.g. tomor
     setter.specialCase1();
     log('case1')
@@ -3360,21 +3381,7 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
-if (lonBorMode) {
+if (lonBorMode || sessionLogger.currentSesh>19433) {
     flash.flash("Welcome to " + p.track.name)
 }
-// log('dt:',1/dt)
-// log(car)
-
-// flash.flash("v:" + sessionLogger.version + " " + location.hostname);
-
-
-
-// hiScoresWeb.postLap('0.1', 'NJS', 1001)
-// getTimes('vTest')
-// log(name)
-// let t=Date.now()
-// let tloc=t.getTimezoneOffset()
-// log(t,tloc)
-
-// let date = new Date();
+// flash.flash("Welcome to " + p.track.name)
