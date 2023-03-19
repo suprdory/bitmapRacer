@@ -211,7 +211,7 @@ class Track {
         let gate = this.gates[0]
         ctx.beginPath();
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = baseLW / zoom * pixRat;
+        ctx.lineWidth = baseLW  * pixRat;
         ctx.moveTo(gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
         ctx.lineTo(gate.right.x * this.trackScl + xc, gate.right.y * this.trackScl + yc);
         ctx.stroke();
@@ -225,7 +225,7 @@ class Track {
         this.gates.forEach(gate => {
             ctx.beginPath();
             ctx.strokeStyle = 'white';
-            ctx.lineWidth = baseLW / zoom * pixRat;
+            ctx.lineWidth = baseLW * pixRat;
             ctx.moveTo(gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
             ctx.lineTo(gate.right.x * this.trackScl + xc, gate.right.y * this.trackScl + yc);
             ctx.stroke();
@@ -1200,6 +1200,7 @@ class TouchButton {
     draw(ctx) {
         ctx.beginPath()
         ctx.strokeStyle = "white";
+        ctx.lineWidth = baseLW * pixRat;
         ctx.rect(this.x0, this.y0, this.w, this.h)
         ctx.stroke();
         if (this.active) {
@@ -1771,7 +1772,7 @@ class ViewMode {
         this.h = this.fontsize + 8 * pixRat;
         this.w = pixRat * 70;
         this.x0 = X - this.w;
-        this.y0 = Y - isTouch * Y / 3 - this.fontsize * pixRat * 6 - this.h;
+        this.y0 = Y - isTouch * Y / 3 - this.fontsize *  6 - this.h;
         this.en = null;
 
         if (localStorage.follow) {
@@ -1795,7 +1796,7 @@ class ViewMode {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * pixRat * 6)
+        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize *  6)
     }
     contains(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
@@ -3262,10 +3263,6 @@ function anim() {
     yc = yc + (yct - yc) * panSpeed
 
 
-
-
-
-
     let zoomBase = 1.2;
     let zoomMax = 0.5;
     let zoomSpeed = 0.2;
@@ -3284,9 +3281,9 @@ function anim() {
         ctx.fill()
     }
     else {
-        zoom = Math.min(X / track.Xi, Y / track.Yi) / track.trackScl
+        zoom = Math.min(X / track.Xi, (Y-Y/3*isTouch )/ track.Yi) / track.trackScl
         xc = X/2/zoom-track.Xi/2*track.trackScl
-        yc = Y / 2 / zoom - track.Yi / 2 * track.trackScl
+        yc = (Y - Y / 3 * isTouch) / 2 / zoom - track.Yi / 2 * track.trackScl
         ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
         
         // clear screen
