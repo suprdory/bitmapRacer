@@ -395,7 +395,7 @@ class Car {
             [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
         })
     }
-    checkVoid(){
+    checkVoid() {
         //void condition - both front wheels in the rough
         if (this.wheels[0].sfc_drag >= 0.2 & this.wheels[1].sfc_drag >= 0.2) {
             lapCounter.voidLap();
@@ -417,11 +417,11 @@ class Car {
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
         for (let i = 0; i < 4; i++) {
-            this.wheels[i].xa= this.x;
+            this.wheels[i].xa = this.x;
             this.wheels[i].ya = this.y;
         }
     }
-        
+
     draw(ctx, xc, yc) {
         let x;
 
@@ -1282,13 +1282,13 @@ class LapCounter {
         this.tstr = {};
         this.yPos = 0;
         this.fontFamily = fontFamily;
-        this.void=false
-        this.voidText='';
+        this.void = false
+        this.voidText = '';
     }
-    voidLap(){
+    voidLap() {
         // log('voiding')
-        this.void=true;
-        this.voidText="Void";
+        this.void = true;
+        this.voidText = "Void";
     }
     draw(ctx) {
         ctx.beginPath();
@@ -1306,7 +1306,7 @@ class LapCounter {
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
         ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(this.voidText, X / 2, Y-Y/3*isTouch-5*pixRat);
+        ctx.fillText(this.voidText, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
 
     }
 
@@ -1332,7 +1332,7 @@ class LapCounter {
         // log("gate", n, "next", this.nextCheck, "final", this.finalCheck)
         if (n == 0) {
             // log('lapcomplete:', this.nextCheck == this.finalCheck, !this.void)
-            if ((this.nextCheck == this.finalCheck)& !this.void) {
+            if ((this.nextCheck == this.finalCheck) & !this.void) {
                 this.lapComplete()
             }
             else {
@@ -1353,7 +1353,7 @@ class LapCounter {
         this.nextCheck = 1;
         this.void = false;
         this.voidText = '';
-        
+
         ghost.started = true;
         ghost.newLap();
         sessionLogger.setCountDown();
@@ -1362,8 +1362,8 @@ class LapCounter {
         this.t0 = Date.now();
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 0;
-        this.void=false;
-        this.voidText='';
+        this.void = false;
+        this.voidText = '';
         sessionLogger.setCountDown();
 
         // ghost.started = true;
@@ -1764,6 +1764,75 @@ class Name {
         form.visibility = "hidden"
     }
 }
+class ViewMode {
+    constructor() {
+        this.fontsize = 15 * pixRat;
+        this.fontFamily = fontFamily;
+        this.h = this.fontsize + 8 * pixRat;
+        this.w = pixRat * 70;
+        this.x0 = X - this.w;
+        this.y0 = Y - isTouch * Y / 3 - this.fontsize * pixRat * 6 - this.h;
+        this.en = null;
+
+        if (localStorage.follow) {
+            this.follow = JSON.parse(localStorage.getItem('follow'))
+        }
+        else {
+            this.follow = true;
+        }
+        this.setText();
+        log("Follow:", this.follow, this.text)
+
+    }
+    draw(ctx) {
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.x0, this.y0, this.w, this.h)
+        // ctx.stroke();
+
+        ctx.beginPath();
+        ctx.textAlign = "right";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * pixRat * 6)
+    }
+    contains(ex, ey) {
+        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    pointerDownHandler(ex, ey, en) {
+        // log('PD')
+        if (this.contains(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en = en;
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.en = null;
+            this.active = false;
+            this.toggle();
+        }
+    }
+    toggle() {
+        this.follow = !this.follow;
+        localStorage.setItem('follow', this.follow)
+        this.setText();
+        log("Follow:", this.follow, this.text)
+    }
+    setText() {
+        if (this.follow) {
+            this.text = "Follow";
+        }
+        else {
+            this.text = "Fixed";
+        }
+    }
+
+
+}
 class Flash {
     constructor() {
         this.x = X / 2;
@@ -2110,7 +2179,7 @@ class SessionSetter {
         // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
     }
-    boroughSeries(){
+    boroughSeries() {
         // this.scale = this.randomElement(this.scales);
         // this.yflip = this.randomElement(this.yflips);
         // this.xflip = this.randomElement(this.xflips);
@@ -2121,7 +2190,7 @@ class SessionSetter {
         this.reverse = false;
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(tracksLB);
-        this.track = tracksLB[sessionLogger.currentSesh-19434]
+        this.track = tracksLB[sessionLogger.currentSesh - 19434]
         // this.trackImgName = this.randomElement(this.track.fnames)
         this.trackImgName = this.track.fnames[0]
         // this.car = this.randomElement(p.cars);
@@ -3001,6 +3070,7 @@ let fs = function () {
         addPointerListeners(name);
         addPointerListeners(ghost);
         addPointerListeners(resetButton);
+        addPointerListeners(viewMode)
         addEventListener('keydown', (event) => { inputState.set(event) });
         addEventListener('keyup', (event) => { inputState.set(event) });
     }
@@ -3192,27 +3262,45 @@ function anim() {
     yc = yc + (yct - yc) * panSpeed
 
 
+
+
+
+
     let zoomBase = 1.2;
     let zoomMax = 0.5;
     let zoomSpeed = 0.2;
     let zoomTarget = zoomBase - zoomMax * car.U / car.maxUth;
 
     zoom = zoom + (zoomTarget - zoom) * zoomSpeed;
+
+
+
     //draw scaled stuff
-    ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
+    if (viewMode.follow) {
+        ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
+        ctx.beginPath()
+        ctx.fillStyle = track.bgColour;
+        ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
+        ctx.fill()
+    }
+    else {
+        zoom = Math.min(X / track.Xi, Y / track.Yi) / track.trackScl
+        xc = X/2/zoom-track.Xi/2*track.trackScl
+        yc = Y / 2 / zoom - track.Yi / 2 * track.trackScl
+        ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+        
+        // clear screen
+        ctx.beginPath()
+        ctx.fillStyle = track.bgColour;
+        ctx.rect(0, 0, X / zoom, Y / zoom)
+        ctx.fill()
+    }
 
-    // clear screen
-    // ctx.clearRect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom);
 
-    // flat background for icon making
-    ctx.beginPath()
-    ctx.fillStyle = track.bgColour;
-    ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
-    ctx.fill()
 
     //draw track
 
-    // log( -xc , -yc)
+    // log( xc , yc)
     // this method scales track image live every frame, is too slow when smooth scaling is enables, maybe ok without?
     // ctx.drawImage(track.canvas, -xc / track.trackScl, -yc / track.trackScl, X / track.trackScl, Y / track.trackScl, 0, 0, X, Y);
 
@@ -3256,6 +3344,7 @@ function anim() {
     hiScoresWeb.draw(ctx);
     sessionLogger.draw(ctx);
     name.draw(ctx);
+    viewMode.draw(ctx);
     resetButton.draw();
     // drawInfo(ctx);
     flash.draw(ctx);
@@ -3321,6 +3410,7 @@ let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust
 let flash = new Flash();
 let sessionLogger = new SessionLogger(timeTravelDays, dev);
 let name = new Name();
+let viewMode = new ViewMode();
 let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
@@ -3330,7 +3420,7 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
-if (sessionLogger.currentSesh > 19433){
+if (sessionLogger.currentSesh > 19433) {
     setter.boroughSeries();
 }
 
@@ -3381,7 +3471,7 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
-if (lonBorMode || sessionLogger.currentSesh>19433) {
+if (lonBorMode || sessionLogger.currentSesh > 19433) {
     flash.flash("Welcome to " + p.track.name)
 }
 // flash.flash("Welcome to " + p.track.name)
