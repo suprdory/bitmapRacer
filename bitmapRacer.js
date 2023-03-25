@@ -3481,3 +3481,11 @@ else {
     flash.flash("Welcome")
 }
 // flash.flash("Welcome to " + p.track.name)
+document.addEventListener('touchstart', function (e) {
+
+    // is not near edge of view, exit
+    if (e.pageX > 100 && e.pageX < window.innerWidth - 100) return;
+    // prevent swipe to navigate gesture
+    e.preventDefault();
+
+},{passive:false});
