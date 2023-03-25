@@ -1498,8 +1498,6 @@ class HiScores {
             ctx.fillText((i + 1).toString() + " " + fs.formatDuration(this.times[i]), this.x, this.y + (i + 1.2) * this.dy);
         }
 
-
-
         // ctx.fillText("P " + fs.formatDuration(lapCounter.completeLapTimePh), this.x, this.y+(6 + 1.2) * this.dy);
         // ctx.fillText("L: " + this.last + " P: " + lapCounter.completeLapTimePh, this.x, this.y + (7 + 1.2) * this.dy);
     }
@@ -1575,42 +1573,70 @@ class HiScoresWeb {
         this.dy = 15 * pixRat;
         this.n = 0;
         this.nMax = 5;
-        this.times;
+        // this.times;
 
 
         this.nMaxLapCounts = showLapCount ? 10 : 5;
         this.nLapCounts = 0
         this.lapCounts = [];
-        this.showLapCounts = true;
+        // this.showLapCounts = true;
         this.countStr = '';
 
         // this.version = p.version.n;
         this.version = sessionLogger.version;
-        this.getTimes(this.version);
-        this.getLaps(this.version, name.name);
+        // this.getTimes(this.version);
+        this.getLaps(this.version, hiScores.times[0]);
     }
 
-    getTimes(version) {
-        fetch(apiURL + '/get_times?version=' + version)
-            .then(response => response.json())
-            .then(data => {
-                this.times = data
-                this.n = Math.min(this.nMax, data.length);
-                // log("response:")
-                // log(data)
-            });
-    }
-    getLaps(version, name) {
-        fetch(apiURL + '/get_nlaps?version=' + version + '&name=' + name)
+    // getTimes(version) {
+    //     fetch(apiURL + '/get_times?version=' + version)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             this.times = data
+    //             this.n = Math.min(this.nMax, data.length);
+    //             // log("response:")
+    //             // log(data)
+    //         });
+    // }
+    // getLaps(version, name) {
+    //     fetch(apiURL + '/get_nlaps?version=' + version + '&name=' + name)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             this.lapCounts = data
+    //             this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
+    //             // log("response:")
+    //             // log(data)
+
+    //         });
+    // }
+    getLaps(version, time) {
+        if (showLapCount == 1){
+            fetch(apiURL + '/get_nlaps?version=' + version + '&time=' + time)
+                .then(response => response.json())
+                .then(data => {
+                    this.lapCounts = data
+                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
+                    // log("response:")
+                    log('nLaps', data)
+
+                });  
+        }
+        else{
+        fetch(apiURL + '/get_competingLaps?version=' + version + '&time=' + time)
             .then(response => response.json())
             .then(data => {
                 this.lapCounts = data
                 this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
                 // log("response:")
-                // log(data)
+                log('competingLaps',data)
 
             });
+
+        }
     }
+
+
+
     postLap(version, name, time) {
         let formData = new FormData();
         formData.append('name', name);
@@ -1624,8 +1650,8 @@ class HiScoresWeb {
         })
             .then(response => response.json())
             .then(data => {
-                this.getTimes(this.version);
-                this.getLaps(this.version);
+                // this.getTimes(this.version);
+                this.getLaps(this.version, hiScores.times[0]);
                 sessionLogger.updateRank();
                 // console.log(data);
             })
@@ -1635,25 +1661,8 @@ class HiScoresWeb {
     }
 
     draw(ctx) {
-        // if (this.times) {
-        //     if (this.times.length > 0) {
-        //         ctx.beginPath();
-        //         ctx.textAlign = "right";
-        //         ctx.font = this.fontsize + 'px ' + this.fontFamily;
-        //         ctx.textBaseline = "top";
-        //         ctx.fillStyle = "white";
-        //         // ctx.fillText("Best Laps",this.x,this.y)
-        //         for (let i = 0; i < this.n; i++) {
-        //             ctx.fillText(
-        //                 (i + 1).toString() + " " +
-        //                 fs.formatDuration(this.times[i].time) + " " +
-        //                 fs.pad(this.times[i].name, 3, ' ')
-        //                 , X, this.y + (i + 0) * this.dy);
-        //         }
-        //         // ctx.fillText("L " + fs.formatDuration(this.last), this.x, this.y + (this.n + 0.2) * this.dy);
-        //     }
-        // }
-        if (this.showLapCounts) {
+
+        // if (this.showLapCounts) {
             if (this.lapCounts.length > 0) {
                 ctx.beginPath();
                 ctx.textAlign = "right";
@@ -1663,22 +1672,23 @@ class HiScoresWeb {
                 for (let i = 0; i < this.nLapCounts; i++) {
                     if (showLapCount == 1) {
                         this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
+                        this.posStr=i+1;
                     }
                     else {
                         this.countStr = '';
+                        this.posStr = (this.lapCounts[i][3]).toString()
                     }
 
                     ctx.fillText(
                         this.countStr + " " + // nLaps
-                        (i + 1).toString() + " " + //position
+                        this.posStr + " " + //position
                         fs.pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                         fs.formatDuration(this.lapCounts[i][0])   //best lap time
-
                         , X,
-                        this.y + (i + 0) * this.dy//this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
+                        this.y + (i + (i!=0)*.2) * this.dy//this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
                     );
                 }
-            }
+            // }
         }
     }
 
@@ -3386,7 +3396,7 @@ let Fps = new FPS();
 
 // set API URL
 let serverOveride = false;
-serverOveride = true;
+// serverOveride = true;
 let apiURL;
 if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -3481,6 +3491,8 @@ if (lonBorMode || sessionLogger.currentSesh > 19433) {
 else {
     flash.flash("Welcome")
 }
+
+// log(hiScores.times)
 
 // // flash.flash("Welcome to " + p.track.name)
 // document.addEventListener('touchstart', function (e) {
