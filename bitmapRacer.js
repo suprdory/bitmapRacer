@@ -211,7 +211,7 @@ class Track {
         let gate = this.gates[0]
         ctx.beginPath();
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = baseLW  * pixRat;
+        ctx.lineWidth = baseLW * pixRat;
         ctx.moveTo(gate.left.x * this.trackScl + xc, gate.left.y * this.trackScl + yc)
         ctx.lineTo(gate.right.x * this.trackScl + xc, gate.right.y * this.trackScl + yc);
         ctx.stroke();
@@ -1218,7 +1218,6 @@ class TouchButton {
         ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
 
     }
-
     contains(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
     }
@@ -1772,7 +1771,7 @@ class ViewMode {
         this.h = this.fontsize + 8 * pixRat;
         this.w = pixRat * 70;
         this.x0 = X - this.w;
-        this.y0 = Y - isTouch * Y / 3 - this.fontsize *  6 - this.h;
+        this.y0 = Y - isTouch * Y / 3 - this.fontsize * 6 - this.h;
         this.en = null;
 
         if (localStorage.follow) {
@@ -1796,7 +1795,7 @@ class ViewMode {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize *  6)
+        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 6)
     }
     contains(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
@@ -1842,7 +1841,7 @@ class Flash {
         this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
         //this.message = "Happy Birthday Fumi!"
-        this.message = "Welcome!";
+        this.message = "";
         this.mTime = Date.now();
         this.fontFamily = fontFamily;
     }
@@ -3019,7 +3018,10 @@ let fs = function () {
         //     setSize()
         // }
         // );
-
+        window.addEventListener("touchmove", function (event) {
+            event.preventDefault();
+           
+        }, { passive: false });
         if (isTouchDevice()) {
             canvas.addEventListener("touchstart", e => {
                 e.preventDefault();
@@ -3281,11 +3283,11 @@ function anim() {
         ctx.fill()
     }
     else {
-        zoom = Math.min(X / track.Xi, (Y-Y/3*isTouch )/ track.Yi) / track.trackScl
-        xc = X/2/zoom-track.Xi/2*track.trackScl
+        zoom = Math.min(X / track.Xi, (Y - Y / 3 * isTouch) / track.Yi) / track.trackScl
+        xc = X / 2 / zoom - track.Xi / 2 * track.trackScl
         yc = (Y - Y / 3 * isTouch) / 2 / zoom - track.Yi / 2 * track.trackScl
         ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
-        
+
         // clear screen
         ctx.beginPath()
         ctx.fillStyle = track.bgColour;
@@ -3470,5 +3472,8 @@ log(sessionLogger.version)
 anim();
 if (lonBorMode || sessionLogger.currentSesh > 19433) {
     flash.flash("Welcome to " + p.track.name)
+}
+else {
+    flash.flash("Welcome")
 }
 // flash.flash("Welcome to " + p.track.name)
