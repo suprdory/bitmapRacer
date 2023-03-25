@@ -19,6 +19,10 @@
 
  }
 
+ html, body {
+   overscroll-behavior-x: none;
+ }
+
  #nameForm {
    position: fixed;
    top: 5%;
