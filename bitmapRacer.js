@@ -1709,6 +1709,7 @@ class Name {
             this.name = localStorage.name
             // hiScoresWeb.name=this.name;
             this.text = this.name;
+            document.getElementById('name').value=this.name
         }
         this.hideNameForm()
         document.getElementById("submit").addEventListener("click", fs.submitName, { passive: true })
