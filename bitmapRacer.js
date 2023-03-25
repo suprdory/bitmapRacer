@@ -1709,7 +1709,7 @@ class Name {
             this.name = localStorage.name
             // hiScoresWeb.name=this.name;
             this.text = this.name;
-            document.getElementById('name').value=this.name
+            document.getElementById('name').value = this.name
         }
         this.hideNameForm()
         document.getElementById("submit").addEventListener("click", fs.submitName, { passive: true })
@@ -3021,8 +3021,11 @@ let fs = function () {
         // );
         window.addEventListener("touchmove", function (event) {
             event.preventDefault();
-           
         }, { passive: false });
+        window.addEventListener("touchstart", function (event) {
+            event.preventDefault();
+        }, { passive: false });
+
         if (isTouchDevice()) {
             canvas.addEventListener("touchstart", e => {
                 e.preventDefault();
