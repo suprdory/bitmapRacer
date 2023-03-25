@@ -2307,14 +2307,14 @@ class Ghost {
         this.loadFromLocal();
         // toggle
         this.toggleState = 0;
-        this.drawGhost = false;
-        this.drawWebGhost = false;
+        // this.drawGhost = true;
+        // this.drawWebGhost = ;
         this.dispText = "Off";
         if ("ghostToggleState" in localStorage) {
             this.toggleState = localStorage.getItem("ghostToggleState");
-            this.toggleState--;
-            this.toggleDraw();
         }
+        this.toggleState--;
+        this.toggleDraw();
         // log(this.drawGhost,this.dispText)
 
         this.fontsize = 15 * pixRat;
