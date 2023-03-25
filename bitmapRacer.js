@@ -3019,12 +3019,12 @@ let fs = function () {
         //     setSize()
         // }
         // );
-        window.addEventListener("touchmove", function (event) {
-            event.preventDefault();
-        }, { passive: false });
-        window.addEventListener("touchstart", function (event) {
-            event.preventDefault();
-        }, { passive: false });
+        // window.addEventListener("touchmove", function (event) {
+        //     event.preventDefault();
+        // }, { passive: false });
+        // window.addEventListener("touchstart", function (event) {
+        //     event.preventDefault();
+        // }, { passive: false });
 
         if (isTouchDevice()) {
             canvas.addEventListener("touchstart", e => {
@@ -3474,18 +3474,38 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
+
 if (lonBorMode || sessionLogger.currentSesh > 19433) {
     flash.flash("Welcome to " + p.track.name)
 }
 else {
     flash.flash("Welcome")
 }
-// flash.flash("Welcome to " + p.track.name)
-document.addEventListener('touchstart', function (e) {
 
-    // is not near edge of view, exit
-    if (e.pageX > 100 && e.pageX < window.innerWidth - 100) return;
-    // prevent swipe to navigate gesture
-    e.preventDefault();
+// // flash.flash("Welcome to " + p.track.name)
+// document.addEventListener('touchstart', function (e) {
 
-},{passive:false});
+//     // is not near edge of view, exit
+//     if (e.pageX > 100 && e.pageX < window.innerWidth - 100) return;
+//     // prevent swipe to navigate gesture
+//     e.preventDefault();
+
+// },{passive:false});
+
+// navigation.addEventListener('navigate', (e) => {
+//     // Prevent default behavior of leaving the screen
+//     e.preventDefault();
+//     flash.flash('Never Give Up');
+//     log('navigation')
+// })
+
+// window.onbeforeunload = function () {
+//     return "Noooooooo";
+// }
+
+// window.addEventListener('beforeunload', (event) => {
+//     // Cancel the event as stated by the standard.
+//     event.preventDefault();
+//     // Chrome requires returnValue to be set.
+//     event.returnValue = 'meow';
+// });
