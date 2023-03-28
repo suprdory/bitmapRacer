@@ -2147,8 +2147,12 @@ class SessionSetter {
             this.reverse = Boolean(revDev);
         }
         this.colour = 'white';
-        this.track = p.tracks[1];
+        // this.track = p.tracks[1];
+        // this.trackImgName = this.track.fnames[trackDev - 1]
+
+        this.track = tracksLB[10];
         this.trackImgName = this.track.fnames[trackDev - 1]
+
         this.car = p.cars[0];
         // this.track.startX= 500;
         // this.track.startY = 500;
@@ -3103,7 +3107,7 @@ let fs = function () {
             s = seconds % 60,
             ms = duration % 1000;
         // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-        return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
+        return pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
     }
     function formatDurationTenth(duration) {
         var seconds = Math.abs(Math.floor(duration / 1000)),
