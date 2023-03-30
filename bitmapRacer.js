@@ -2150,7 +2150,7 @@ class SessionSetter {
         // this.track = p.tracks[1];
         // this.trackImgName = this.track.fnames[trackDev - 1]
 
-        this.track = tracksLB[10];
+        this.track = tracksLB[18];
         this.trackImgName = this.track.fnames[trackDev - 1]
 
         this.car = p.cars[0];
