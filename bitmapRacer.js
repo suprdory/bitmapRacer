@@ -1280,7 +1280,7 @@ class LapCounter {
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
-        this.yPos = 1*pixRat;
+        this.yPos = 1 * pixRat;
         this.fontFamily = fontFamily;
         this.void = false
         this.voidText = '';
@@ -1424,7 +1424,7 @@ class LapCounter {
 class HiScores {
     constructor() {
         this.x = 0;
-        this.y = 1*pixRat;
+        this.y = 1 * pixRat;
         this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.dy = fontSizeBase * pixRat;
@@ -1567,7 +1567,7 @@ class HiScores {
 class HiScoresWeb {
     constructor() {
 
-        this.y = 1*pixRat;
+        this.y = 1 * pixRat;
         this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.dy = fontSizeBase * pixRat;
@@ -1610,7 +1610,7 @@ class HiScoresWeb {
     //         });
     // }
     getLaps(version, time) {
-        if (showLapCount == 1){
+        if (showLapCount == 1) {
             fetch(apiURL + '/get_nlaps?version=' + version + '&time=' + time)
                 .then(response => response.json())
                 .then(data => {
@@ -1619,18 +1619,18 @@ class HiScoresWeb {
                     // log("response:")
                     log('nLaps', data)
 
-                });  
+                });
         }
-        else{
-        fetch(apiURL + '/get_competingLaps?version=' + version + '&time=' + time)
-            .then(response => response.json())
-            .then(data => {
-                this.lapCounts = data
-                this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-                // log("response:")
-                log('competingLaps',data)
+        else {
+            fetch(apiURL + '/get_competingLaps?version=' + version + '&time=' + time)
+                .then(response => response.json())
+                .then(data => {
+                    this.lapCounts = data
+                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
+                    // log("response:")
+                    log('competingLaps', data)
 
-            });
+                });
 
         }
     }
@@ -1663,31 +1663,31 @@ class HiScoresWeb {
     draw(ctx) {
 
         // if (this.showLapCounts) {
-            if (this.lapCounts.length > 0) {
-                ctx.beginPath();
-                ctx.textAlign = "right";
-                ctx.font = this.fontsize + 'px ' + this.fontFamily;
-                ctx.textBaseline = "top";
-                ctx.fillStyle = "white";
-                for (let i = 0; i < this.nLapCounts; i++) {
-                    if (showLapCount == 1) {
-                        this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
-                        this.posStr=i+1;
-                    }
-                    else {
-                        this.countStr = '';
-                        this.posStr = (this.lapCounts[i][3]).toString()
-                    }
-
-                    ctx.fillText(
-                        this.countStr + " " + // nLaps
-                        this.posStr + " " + //position
-                        fs.pad(this.lapCounts[i][2], 3, ' ') + " " +//name
-                        fs.formatDuration(this.lapCounts[i][0])   //best lap time
-                        , X,
-                        this.y + (i + (i!=0)*.2) * this.dy//this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
-                    );
+        if (this.lapCounts.length > 0) {
+            ctx.beginPath();
+            ctx.textAlign = "right";
+            ctx.font = this.fontsize + 'px ' + this.fontFamily;
+            ctx.textBaseline = "top";
+            ctx.fillStyle = "white";
+            for (let i = 0; i < this.nLapCounts; i++) {
+                if (showLapCount == 1) {
+                    this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
+                    this.posStr = i + 1;
                 }
+                else {
+                    this.countStr = '';
+                    this.posStr = (this.lapCounts[i][3]).toString()
+                }
+
+                ctx.fillText(
+                    this.countStr + " " + // nLaps
+                    this.posStr + " " + //position
+                    fs.pad(this.lapCounts[i][2], 3, ' ') + " " +//name
+                    fs.formatDuration(this.lapCounts[i][0])   //best lap time
+                    , X,
+                    this.y + (i + (i != 0) * .2) * this.dy//this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
+                );
+            }
             // }
         }
     }
@@ -1784,16 +1784,12 @@ class ViewMode {
         this.x0 = X - this.w;
         this.y0 = Y - isTouch * Y / 3 - this.fontsize * 6 - this.h;
         this.en = null;
-
-        if (localStorage.follow) {
-            this.follow = JSON.parse(localStorage.getItem('follow'))
-        }
-        else {
-            this.follow = true;
+        this.vState = 0;
+        if (localStorage.vState) {
+            this.vState = JSON.parse(localStorage.getItem('vState'))
         }
         this.setText();
-        log("Follow:", this.follow, this.text)
-
+        log("vState:", this.vState, this.text)
     }
     draw(ctx) {
         // ctx.beginPath()
@@ -1806,7 +1802,7 @@ class ViewMode {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 6)
+        ctx.fillText('Camera: ' + this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 6)
     }
     contains(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
@@ -1828,18 +1824,37 @@ class ViewMode {
         }
     }
     toggle() {
-        this.follow = !this.follow;
-        localStorage.setItem('follow', this.follow)
+        this.vState++;
+        if (this.vState > 2) {
+            this.vState = 0;
+        }
         this.setText();
-        log("Follow:", this.follow, this.text)
+        localStorage.setItem('vState', this.vState)
+        log("vState:", this.vState, this.text)
+
+
+        // this.follow = !this.follow;
+        // localStorage.setItem('follow', this.follow)
+        // this.setText();
+        // log("Follow:", this.follow, this.text)
     }
     setText() {
-        if (this.follow) {
-            this.text = "Camera: Dynamic";
+        if (this.vState == 0) {
+            this.text = 'Dynamic';
         }
-        else {
-            this.text = "Camera: Overview";
+        if (this.vState == 1) {
+            this.text = 'Overview';
         }
+        if (this.vState == 2) {
+            this.text = 'Fixed';
+        }
+
+        // if (this.follow) {
+        //     this.text = "Camera: Dynamic";
+        // }
+        // else {
+        //     this.text = "Camera: Overview";
+        // }
     }
 
 
@@ -3274,26 +3289,30 @@ function anim() {
         car.checkVoid();
         car.mech();
     }
-    let Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM;
-    let dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax)
+    Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM; //max look ahead distance
+    dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) //desired look ahead distance
     // calc screen centre coords
-    let xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
-    let yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
+    xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
+    yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
     xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
     yc = yc + (yct - yc) * panSpeed
 
 
-    let zoomBase = 1.2;
-    let zoomMax = 0.5;
-    let zoomSpeed = 0.2;
-    let zoomTarget = zoomBase - zoomMax * car.U / car.maxUth;
 
-    zoom = zoom + (zoomTarget - zoom) * zoomSpeed;
+    if (viewMode.vState == 0) {
+        zoomTarget = zoomBase - zoomMax * car.U / car.maxUth;
+        zoom = zoom + (zoomTarget - zoom) * zoomSpeed;
+    }
+    else {
+        zoom = zoomMax;
+    }
+
 
 
 
     //draw scaled stuff
-    if (viewMode.follow) {
+    if (viewMode.vState == 0 | viewMode.vState == 2) {
+        //either dynamic or fixed zoom mode
         ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
         ctx.beginPath()
         ctx.fillStyle = track.bgColour;
@@ -3301,6 +3320,7 @@ function anim() {
         ctx.fill()
     }
     else {
+        //overview mode
         zoom = Math.min(X / track.Xi, (Y - Y / 3 * isTouch) / track.Yi) / track.trackScl
         xc = X / 2 / zoom - track.Xi / 2 * track.trackScl
         yc = (Y - Y / 3 * isTouch) / 2 / zoom - track.Yi / 2 * track.trackScl
@@ -3411,7 +3431,7 @@ else {
 log(apiURL)
 
 // screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, yOff, halfMinDim;
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc,xct,yct, yOff, halfMinDim,dynLookAhead,Lmax;
 let PPM;// init drawing scale, screen pixels per metre - pre zoom
 fs.resize();
 
@@ -3421,7 +3441,13 @@ const fontSizeBase = 15;
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
-let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
+
+const zoomBase=1.2
+const zoomMax=0.5
+const zoomSpeed=0.2
+let zoom,zoomTarget;
+
+// let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 
 
