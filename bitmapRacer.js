@@ -1280,7 +1280,7 @@ class LapCounter {
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
-        this.yPos = 0;
+        this.yPos = 1*pixRat;
         this.fontFamily = fontFamily;
         this.void = false
         this.voidText = '';
@@ -1295,8 +1295,8 @@ class LapCounter {
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
-        ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(fs.formatDurationTenth(this.lapTimePh), X / 2, this.yPos * pixRat);
+        ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
+        ctx.fillText(fs.formatDurationTenth(this.lapTimePh), X / 2, this.yPos);
         // ctx.fillText(fs.formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
@@ -1424,10 +1424,10 @@ class LapCounter {
 class HiScores {
     constructor() {
         this.x = 0;
-        this.y = 0;
-        this.fontsize = 15 * pixRat;
+        this.y = 1*pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
-        this.dy = 15 * pixRat;
+        this.dy = fontSizeBase * pixRat;
         this.n = 5;
         this.last = 0;
         this.versionTimesList;
@@ -1567,10 +1567,10 @@ class HiScores {
 class HiScoresWeb {
     constructor() {
 
-        this.y = 0;
-        this.fontsize = 15 * pixRat;
+        this.y = 1*pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
-        this.dy = 15 * pixRat;
+        this.dy = fontSizeBase * pixRat;
         this.n = 0;
         this.nMax = 5;
         // this.times;
@@ -1780,7 +1780,7 @@ class ViewMode {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.h = this.fontsize + 8 * pixRat;
-        this.w = pixRat * 70;
+        this.w = pixRat * 150;
         this.x0 = X - this.w;
         this.y0 = Y - isTouch * Y / 3 - this.fontsize * 6 - this.h;
         this.en = null;
@@ -1835,10 +1835,10 @@ class ViewMode {
     }
     setText() {
         if (this.follow) {
-            this.text = "Follow";
+            this.text = "Camera: Dynamic";
         }
         else {
-            this.text = "Fixed";
+            this.text = "Camera: Overview";
         }
     }
 
@@ -2104,7 +2104,7 @@ class SessionLogger {
             ctx.fillText("Current Rank: " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
         }
         if (this.yesterRank) {
-            ctx.fillText("Last Rank: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
+            ctx.fillText("Yester Rank: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
 
         }
         if (this.qualified) {
@@ -2321,7 +2321,7 @@ class Ghost {
         this.loadFromWeb();
         this.loadFromLocal();
         // toggle
-        this.toggleState = 0;
+        this.toggleState = 2;
         // this.drawGhost = true;
         // this.drawWebGhost = ;
         this.dispText = "Off";
@@ -2638,7 +2638,7 @@ class Ghost {
         if (this.toggleState == 0) {
             this.drawGhost = true;
             this.drawWebGhost = true;
-            this.dispText = 'On';
+            this.dispText = 'Both';
         }
 
         if (this.toggleState == 1) {
@@ -2649,7 +2649,7 @@ class Ghost {
         if (this.toggleState == 2) {
             this.drawGhost = true;
             this.drawWebGhost = false;
-            this.dispText = 'Local';
+            this.dispText = 'On';
         }
 
         if (this.toggleState == 3) {
@@ -3400,7 +3400,7 @@ let Fps = new FPS();
 
 // set API URL
 let serverOveride = false;
-// serverOveride = true;
+serverOveride = true;
 let apiURL;
 if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "") & !serverOveride) {
     apiURL = 'http://127.0.0.1:5000'
@@ -3417,6 +3417,7 @@ fs.resize();
 
 // draw constants
 const fontFamily = 'monospace';
+const fontSizeBase = 15;
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
