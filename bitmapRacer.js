@@ -3289,52 +3289,48 @@ function anim() {
         car.checkVoid();
         car.mech();
     }
-    Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM; //max look ahead distance
-    dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) //desired look ahead distance
-    // calc screen centre coords
-    xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
-    yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
-    xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
-    yc = yc + (yct - yc) * panSpeed
 
 
-
-    if (viewMode.vState == 0) {
+    // set zoom depending on view mode
+    if (viewMode.vState == 0) { // dynamic zoom tracking
         zoomTarget = zoomBase - zoomMax * car.U / car.maxUth;
         zoom = zoom + (zoomTarget - zoom) * zoomSpeed;
     }
-    else {
+    if (viewMode.vState == 1) { // overview
+        zoom = Math.min(X / track.Xi, (Y - Y / 3 * isTouch) / track.Yi) / track.trackScl
+    }
+    if (viewMode.vState == 2) {// fixed zoom tracking
         zoom = zoomMax;
     }
 
 
-
-
-    //draw scaled stuff
-    if (viewMode.vState == 0 | viewMode.vState == 2) {
-        //either dynamic or fixed zoom mode
+    // clear screen
+    ctx.beginPath()
+    ctx.fillStyle = track.bgColour;
+    ctx.rect(0, 0, X, Y)
+    ctx.fill()
+    // set screen centre coords and transform
+    if (viewMode.vState == 0 | viewMode.vState == 2) {//either dynamic or fixed zoom mode
+        //look ahead
+        Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM; //max look ahead distance
+        dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) //desired look ahead distance
+        
+        // calc screen centre coords
+        xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
+        yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
+        xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
+        yc = yc + (yct - yc) * panSpeed
+        
         ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
-        ctx.beginPath()
-        ctx.fillStyle = track.bgColour;
-        ctx.rect(X / 2 - X / 2 / zoom, Y / 2 - Y / 2 / zoom, X / zoom, Y / zoom)
-        ctx.fill()
     }
-    else {
-        //overview mode
-        zoom = Math.min(X / track.Xi, (Y - Y / 3 * isTouch) / track.Yi) / track.trackScl
+    else {//overview mode
         xc = X / 2 / zoom - track.Xi / 2 * track.trackScl
         yc = (Y - Y / 3 * isTouch) / 2 / zoom - track.Yi / 2 * track.trackScl
         ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
-
-        // clear screen
-        ctx.beginPath()
-        ctx.fillStyle = track.bgColour;
-        ctx.rect(0, 0, X / zoom, Y / zoom)
-        ctx.fill()
     }
 
 
-
+    //draw scaled stuff
     //draw track
 
     // log( xc , yc)
@@ -3346,8 +3342,6 @@ function anim() {
     // prescaled track is too big for iphone (maybe, not tested).
 
     ctx.drawImage(track.canvasScl, xc, yc);
-
-
 
     track.drawGates(ctx, xc, yc);
     if (trackDev) {
