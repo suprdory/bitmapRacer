@@ -3300,7 +3300,8 @@ function anim() {
         zoom = Math.min(X / track.Xi, (Y - Y / 3 * isTouch) / track.Yi) / track.trackScl
     }
     if (viewMode.vState == 2) {// fixed zoom tracking
-        zoom = zoomMax;
+        zoom = zoomBase - zoomMax * 1;
+        // zoom = zoomMax * 1;
     }
 
 
