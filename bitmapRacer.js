@@ -1828,6 +1828,16 @@ class ViewMode {
         if (this.vState > 2) {
             this.vState = 0;
         }
+        if (this.vState==2){
+            // when switching to fixed, change screen centre manually for smoothness
+            // log('manual sc')
+            xct = X / 2 - PPM * (car.x )  //centre target, pan to this, screen pixel units
+            yct = Y / 2 - PPM * (car.y ) - yOff
+            xc = xct
+            yc = yct
+
+        }
+
         this.setText();
         localStorage.setItem('vState', this.vState)
         log("vState:", this.vState, this.text)
