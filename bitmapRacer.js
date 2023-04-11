@@ -1802,7 +1802,7 @@ class ViewMode {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Camera: ' + this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 6)
+        ctx.fillText('Cam: ' + this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 6)
     }
     contains(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
@@ -1840,13 +1840,13 @@ class ViewMode {
     }
     setText() {
         if (this.vState == 0) {
-            this.text = 'Dynamic';
+            this.text = 'Dyn';
         }
         if (this.vState == 1) {
             this.text = 'Overview';
         }
         if (this.vState == 2) {
-            this.text = 'Fixed';
+            this.text = 'Fix';
         }
 
         // if (this.follow) {
@@ -2116,10 +2116,10 @@ class SessionLogger {
         ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
         // ctx.fillText("Streak: " + this.streak + " days", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
         if (this.currentRank) {
-            ctx.fillText("Current Rank: " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
+            ctx.fillText("Rank: " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
         }
         if (this.yesterRank) {
-            ctx.fillText("Yester Rank: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
+            ctx.fillText("Yesterday: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
 
         }
         if (this.qualified) {
