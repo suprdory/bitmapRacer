@@ -1842,11 +1842,6 @@ class ViewMode {
         localStorage.setItem('vState', this.vState)
         log("vState:", this.vState, this.text)
 
-
-        // this.follow = !this.follow;
-        // localStorage.setItem('follow', this.follow)
-        // this.setText();
-        // log("Follow:", this.follow, this.text)
     }
     setText() {
         if (this.vState == 0) {
@@ -1859,12 +1854,6 @@ class ViewMode {
             this.text = 'Fix';
         }
 
-        // if (this.follow) {
-        //     this.text = "Camera: Dynamic";
-        // }
-        // else {
-        //     this.text = "Camera: Overview";
-        // }
     }
 
 
@@ -3450,7 +3439,7 @@ const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 const zoomBase=1.2
 const zoomMax=0.5
 const zoomSpeed=0.2
-let zoom,zoomTarget;
+let zoom=1,zoomTarget;
 
 // let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
