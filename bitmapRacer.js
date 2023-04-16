@@ -1617,7 +1617,7 @@ class HiScoresWeb {
                     this.lapCounts = data
                     this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
                     // log("response:")
-                    log('nLaps', data)
+                    // log('nLaps', data)
 
                 });
         }
@@ -1789,7 +1789,7 @@ class ViewMode {
             this.vState = JSON.parse(localStorage.getItem('vState'))
         }
         this.setText();
-        log("vState:", this.vState, this.text)
+        // log("vState:", this.vState, this.text)
     }
     draw(ctx) {
         // ctx.beginPath()
@@ -1840,7 +1840,7 @@ class ViewMode {
 
         this.setText();
         localStorage.setItem('vState', this.vState)
-        log("vState:", this.vState, this.text)
+        // log("vState:", this.vState, this.text)
 
     }
     setText() {
@@ -2182,6 +2182,7 @@ class SessionSetter {
         this.car = p.cars[0];
     }
 
+
     setCarDev() {
         // this.scale = { ppm: 8, mpp: 0.35 };
         // this.yflip = false;
@@ -2209,10 +2210,6 @@ class SessionSetter {
         this.car = p.cars[0]
     }
     boroughSeries() {
-        // this.scale = this.randomElement(this.scales);
-        // this.yflip = this.randomElement(this.yflips);
-        // this.xflip = this.randomElement(this.xflips);
-        // this.reverse = this.randomElement(this.reverses);
         this.scale = { ppm: 7, mpp: 0.4 };
         this.yflip = false;
         this.xflip = false;
@@ -2220,11 +2217,21 @@ class SessionSetter {
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(tracksLB);
         this.track = tracksLB[sessionLogger.currentSesh - 19434]
-        // this.trackImgName = this.randomElement(this.track.fnames)
         this.trackImgName = this.track.fnames[0]
-        // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
     }
+    boroughSeriesRev() {
+        this.scale = { ppm: 7, mpp: 0.4 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = true;
+        this.colour = this.randomElement(this.colours);
+        this.track = this.randomElement(tracksLB);
+        this.track = tracksLB[33-(sessionLogger.currentSesh - 19466)]
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+    }
+
 
     apply(p) {
         p.track = this.track;
@@ -2235,9 +2242,9 @@ class SessionSetter {
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
         let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relatic to car0
-        p.trackSetup.metresPerPix = this.scale.mpp * p.track.trackScale * carScale;
+        p.trackSetup.metresPerPix = 1*this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
-
+        // log('trackScale',p.track.trackScale)
         let screenScl = Math.min(X / 700, Y / 700)
         // log(screenScl)
         // PPM = p.track.drawScale * p.draw.pixPerMetre * (1 + (pixRat - 1) / 2); // init scale, screen pixels per metre - pre zoom
@@ -2246,14 +2253,14 @@ class SessionSetter {
 
         let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
 
-        log("target PPM", PPM)
-        log("max PPM", maxPPM)
+        // log("target PPM", PPM)
+        // log("max PPM", maxPPM)
         if (PPM > maxPPM) {
-            log('targetPPM', PPM, 'limited to', maxPPM);
+            // log('targetPPM', PPM, 'limited to', maxPPM);
             // PPM = Math.floor(maxPPM);
             PPM = maxPPM;
         }
-        log("final PPM", PPM)
+        // log("final PPM", PPM)
     }
     specialCase1() {
         this.scale = { ppm: 8, mpp: 0.35 };
@@ -2633,7 +2640,7 @@ class Ghost {
                     // log(this.webLap.time)
                 }
                 else {
-                    log("no web ghost avail")
+                    // log("no web ghost avail")
                 }
 
                 // log(this.name)
@@ -3422,7 +3429,7 @@ if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.
 else {
     apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
 }
-log(apiURL)
+// log(apiURL)
 
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc,xct,yct, yOff, halfMinDim,dynLookAhead,Lmax;
@@ -3458,18 +3465,24 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
-if (sessionLogger.currentSesh > 19433) {
+if (sessionLogger.currentSesh > 19433 & sessionLogger.currentSesh <= 19466) {
+    log('borough ')
     setter.boroughSeries();
 }
+if (sessionLogger.currentSesh >= 19467) {
+    log('borough rev')
+    setter.boroughSeriesRev();
+}
 
-if (sessionLogger.version.includes('flip01-19433')) {//use to 'cue' up setting for day e.g. tomor
-    setter.specialCase1();
-    log('case1')
-}
-if (sessionLogger.version.includes('flip01-19417')) {//use to 'cue' up setting for day e.g. tomor
-    setter.specialCase2();
-    log('case2')
-}
+
+// if (sessionLogger.version.includes('flip01-19433')) {//use to 'cue' up setting for day e.g. tomor
+//     setter.specialCase1();
+//     log('case1')
+// }
+// if (sessionLogger.version.includes('flip01-19417')) {//use to 'cue' up setting for day e.g. tomor
+//     setter.specialCase2();
+//     log('case2')
+// }
 if (trackDev) {
     setter.setDev();
 }
