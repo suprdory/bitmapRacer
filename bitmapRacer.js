@@ -1509,6 +1509,8 @@ class HiScores {
         // sessionLogger.currentnLaps++;
 
         this.last = t;
+
+        if (timeTravel.ttDays==0){
         if (this.times[0] == 0) {
             flash.flash("First Lap")
             // ghost.saveLap();
@@ -1525,7 +1527,6 @@ class HiScores {
         else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
             flash.flash("Good Lap")
         }
-
         if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
 
             this.times[this.n - 1] = t;
@@ -1561,6 +1562,8 @@ class HiScores {
             localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
 
         }
+    }
+
         sessionLogger.newLap(t);
     }
 }
@@ -1693,7 +1696,8 @@ class HiScoresWeb {
     }
 
     newLap(t) {
-        this.postLap(this.version, name.name, t);
+        if (timeTravel.ttDays==0){
+        this.postLap(this.version, name.name, t);}
         // if (this.lapCounts){
         // if (t < this.lapCounts[0][0]) {
         //     log(this.lapCounts)
@@ -1802,7 +1806,7 @@ class ViewMode {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Cam: ' + this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 6)
+        ctx.fillText('Cam: ' + this.text, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize * 5)
     }
     contains(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
@@ -1893,7 +1897,7 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        this.timeTravelDays = timeTravelDays;
+        this.timeTravelDays = timeTravel.ttDays;
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
@@ -2100,6 +2104,7 @@ class SessionLogger {
             });
     }
     draw(ctx) {
+
         if (this.currentnLaps >= this.nLaps2Qualify) {
             this.qText = 'Qualified!';
         }
@@ -2111,21 +2116,31 @@ class SessionLogger {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
+        if (timeTravel.ttDays != 0) {
+            ctx.fillStyle = "dimGrey";
+        }
         ctx.fillText(this.qText, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize);
+        if (timeTravel.ttDays != 0) {
+            ctx.fillStyle = "dimGrey";
+        }
         ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
         // ctx.fillText("Streak: " + this.streak + " days", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
+        ctx.fillStyle = "white";
         if (this.currentRank) {
-            ctx.fillText("Rank: " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 5 * this.fontsize)
+            ctx.fillText("Rank: " + this.currentRank[0] + "/" + this.currentRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
         }
-        if (this.yesterRank) {
-            ctx.fillText("Yesterday: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
+        // if (this.yesterRank) {
+        //     ctx.fillText("Yesterday: " + this.yesterRank[0] + "/" + this.yesterRank[1], X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 4 * this.fontsize)
 
-        }
+        // }
         if (this.qualified) {
             ctx.fillStyle = "white";
         }
         else {
             ctx.fillStyle = "darkRed";
+        }
+        if (timeTravel.ttDays!=0){
+            ctx.fillStyle = "dimGrey";
         }
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
     }
@@ -2402,11 +2417,11 @@ class Ghost {
 
         // log('ghost new lap, t=',t)
         // log(t, this.savedLap.time)
-        if ((t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
+        if ((timeTravel.ttDays == 0) &(t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
             this.saveGhost(t);
         }
         // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
-        if (!trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+        if ((timeTravel.ttDays==0)&!trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
             this.postGhost(t);
         }
 
@@ -3112,7 +3127,8 @@ let fs = function () {
         addPointerListeners(name);
         addPointerListeners(ghost);
         addPointerListeners(resetButton);
-        addPointerListeners(viewMode)
+        addPointerListeners(viewMode);
+        addPointerListeners(timeTravel)
         addEventListener('keydown', (event) => { inputState.set(event) });
         addEventListener('keyup', (event) => { inputState.set(event) });
     }
@@ -3388,6 +3404,7 @@ function anim() {
     flash.draw(ctx);
     // fs.drawHUD();
     fs.drawSpeedo();
+    timeTravel.draw()
 
     ghost.addState(car.x, car.y, car.theta);
 
@@ -3404,6 +3421,135 @@ function urlArgHandler() {
     timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb');
 }
+class TimeTravel{
+    constructor(){
+        this.ttLim=-100;
+
+        this.yPos = (1+1.0*fontSizeBase * pixRat);
+        this.y0 = this.yPos - 0.5 * fontSizeBase * pixRat;
+        this.x0 = X / 2 - fontSizeBase * 3 * pixRat/2;
+        this.h=2*fontSizeBase*pixRat;
+        this.w=fontSizeBase*3*pixRat
+
+        this.xL = X / 2 - fontSizeBase * (3/2+3) * pixRat;
+        this.xR = X / 2 - fontSizeBase * (3 / 2 - 3) * pixRat;
+
+        if ("ttDays" in localStorage) {
+            this.ttDays = JSON.parse(localStorage.getItem("ttDays"));
+        }
+        else{
+            this.ttDays=0;
+        }
+    }
+    draw(){
+
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.x0, this.y0, this.w, this.h)
+        // ctx.stroke();
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.xL, this.y0, this.w, this.h)
+        // ctx.stroke();
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.xR, this.y0, this.w, this.h)
+        // ctx.stroke();
+
+        this.text="t"+this.ttDays
+        if (this.ttDays==0){
+            this.text="Live"
+        }
+        ctx.beginPath();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, X / 2, this.yPos);
+        
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        if (timeTravel.ttDays <= this.ttLim) {
+            ctx.fillStyle = "darkGrey";
+        }
+        ctx.fillText("<", this.xL + this.w / 2, this.yPos);
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        if (timeTravel.ttDays>=0){
+            ctx.fillStyle = "darkGrey";
+        }
+        ctx.fillText(">", this.xR + this.w/2, this.yPos);
+
+
+        // ctx.beginPath();
+        // ctx.textAlign = "center";
+        // ctx.textBaseline = "bottom";
+        // ctx.fillStyle = "white";
+        // ctx.font = 15 * pixRat + 'px ' + fontFamily;
+        // ctx.fillText(this.voidText, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
+    }
+    contains0(ex, ey) {
+        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    containsL(ex, ey) {
+        return ((ex > this.xL) & ex < (this.xL + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    containsR(ex, ey) {
+        return ((ex > this.xR) & ex < (this.xR + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+    }
+    pointerDownHandler(ex, ey, en) {
+        // log('PD')
+        if (this.contains0(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.en0 = en;
+        }
+        if (this.containsL(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.enL = en;
+        }
+        if (this.containsR(ex, ey)) {
+            // debugTxt = "PD: " + en + " " + this.action;
+            this.active = true;
+            this.enR = en;
+        }
+
+    }
+    pointerUpHandler(en) {
+        if (en == this.en0) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.en0 = null;
+            this.active = false;
+            this.settt(0);
+        }
+        if (en == this.enL) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.enL = null;
+            this.active = false;
+            this.settt(this.ttDays-1);
+        }
+        if (en == this.enR) {
+            // debugTxt = "PU: " + en + " " + this.action;
+            this.enR = null;
+            this.active = false;
+            this.settt(this.ttDays + 1);
+        }
+
+
+    }
+
+    settt(tt){
+        tt=Math.min(0,Math.max(tt,this.ttLim))
+        log("Setting tt",tt)
+        localStorage.setItem('ttDays',tt)
+        if (this.ttDays !=tt){
+            this.ttDays = tt;
+            location.reload()
+        }
+
+    }
+}
+
 
 let log = console.log;
 let showLapCount, carDev, revDev, trackDev, timeTravelDays, dev, lonBor, lonBorMode
@@ -3417,6 +3563,7 @@ import { tracksLB } from './trackParmsLB.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS();
+
 
 
 // set API URL
@@ -3450,7 +3597,7 @@ let zoom=1,zoomTarget;
 
 // let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
-
+let timeTravel = new TimeTravel();
 
 let flash = new Flash();
 let sessionLogger = new SessionLogger(timeTravelDays, dev);
