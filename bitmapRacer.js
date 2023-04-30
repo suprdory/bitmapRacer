@@ -1892,12 +1892,18 @@ class Flash {
     }
 }
 class SessionLogger {
-    constructor(timeTravelDays, dev) {
+    constructor(timeTravelDaysURL, dev) {
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        this.timeTravelDays = timeTravel.ttDays;
+        if (timeTravelDaysURL!=0){ // tt url arg overides session browser
+            this.timeTravelDays = timeTravelDaysURL;
+        }
+        else{
+            this.timeTravelDays = timeTravel.ttDays;
+        }
+       
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         this.yesterSesh = this.currentSesh - 1;
@@ -2230,8 +2236,19 @@ class SessionSetter {
         this.xflip = false;
         this.reverse = false;
         this.colour = this.randomElement(this.colours);
-        this.track = this.randomElement(tracksLB);
+        // this.track = this.randomElement(tracksLB);
         this.track = tracksLB[sessionLogger.currentSesh - 19434]
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+    }
+    countySeries() {
+        this.scale = { ppm: 7, mpp: 0.4 };
+        this.yflip = false;
+        this.xflip = false;
+        this.reverse = false;
+        this.colour = this.randomElement(this.colours);
+        // this.track = this.randomElement(tracksEC);
+        this.track = tracksEC[sessionLogger.currentSesh - 19500]
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
@@ -2241,12 +2258,11 @@ class SessionSetter {
         this.xflip = false;
         this.reverse = true;
         this.colour = this.randomElement(this.colours);
-        this.track = this.randomElement(tracksLB);
+        // this.track = this.randomElement(tracksLB);
         this.track = tracksLB[33-(sessionLogger.currentSesh - 19466)]
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-
 
     apply(p) {
         p.track = this.track;
@@ -3418,7 +3434,7 @@ function urlArgHandler() {
     carDev = parseInt(urlParams.get('carDev'));
     lonBorMode = urlParams.has('lb')
     lonBor = parseInt(urlParams.get('lb'));
-    timeTravelDays = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
+    timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb');
 }
 class TimeTravel{
@@ -3552,7 +3568,7 @@ class TimeTravel{
 
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDays, dev, lonBor, lonBorMode
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode
 
 urlArgHandler();
 // log('Dev:', dev)
@@ -3560,11 +3576,10 @@ urlArgHandler();
 // import parameter object
 import { p } from './params.js'
 import { tracksLB } from './trackParmsLB.js'
+import { tracksEC } from './trackParmsEC.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS();
-
-
 
 // set API URL
 let serverOveride = false;
@@ -3579,7 +3594,7 @@ else {
 // log(apiURL)
 
 // screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc,xct,yct, yOff, halfMinDim,dynLookAhead,Lmax;
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc,xct,yct, yOff, halfMinDim,dynLookAhead,Lmax,isNamedTrack=false
 let PPM;// init drawing scale, screen pixels per metre - pre zoom
 fs.resize();
 
@@ -3600,7 +3615,7 @@ let zoom=1,zoomTarget;
 let timeTravel = new TimeTravel();
 
 let flash = new Flash();
-let sessionLogger = new SessionLogger(timeTravelDays, dev);
+let sessionLogger = new SessionLogger(timeTravelDaysURL, dev);
 let name = new Name();
 let viewMode = new ViewMode();
 let resetButton = new ResetButton();
@@ -3612,14 +3627,22 @@ sessionLogger.updateYesterRank();
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
 setter.randGen();
-if (sessionLogger.currentSesh > 19433 & sessionLogger.currentSesh <= 19466) {
+if (sessionLogger.currentSesh >= 19434 & sessionLogger.currentSesh <= 19466) {
     log('borough ')
+    isNamedTrack = true;
     setter.boroughSeries();
 }
-if (sessionLogger.currentSesh >= 19467) {
+if (sessionLogger.currentSesh >= 19467 & sessionLogger.currentSesh <= 19499) {
     log('borough rev')
+    isNamedTrack = true;
     setter.boroughSeriesRev();
 }
+if (sessionLogger.currentSesh >= 19500 & sessionLogger.currentSesh <= 19534) {
+    log('county')
+    isNamedTrack=true;
+    setter.countySeries();
+}
+
 
 
 // if (sessionLogger.version.includes('flip01-19433')) {//use to 'cue' up setting for day e.g. tomor
@@ -3670,7 +3693,7 @@ let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
 
-if (lonBorMode || sessionLogger.currentSesh > 19433) {
+if (lonBorMode || isNamedTrack) {
     flash.flash("Welcome to " + p.track.name)
 }
 else {
