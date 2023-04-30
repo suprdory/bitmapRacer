@@ -2827,10 +2827,10 @@ class ResetButton {
         this.active = false;
     }
     draw() {
-        ctx.beginPath()
-        ctx.strokeStyle = "white";
-        ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
-        ctx.stroke();
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
+        // ctx.stroke();
 
         ctx.beginPath();
         ctx.textAlign = "center";
