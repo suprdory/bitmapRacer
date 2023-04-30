@@ -1280,7 +1280,7 @@ class LapCounter {
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
-        this.yPos = 1 * pixRat +1*fontSizeBase*pixRat;
+        this.yPos = (1  +1.2*fontSizeBase)*pixRat;
         this.fontFamily = fontFamily;
         this.void = false
         this.voidText = '';
