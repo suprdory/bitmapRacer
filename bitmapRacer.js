@@ -3446,7 +3446,7 @@ class TimeTravel{
     constructor(){
         this.ttLim=-100;
 
-        this.yPos = (1*+0.0*fontSizeBase) * pixRat;
+        this.yPos = (1+0.0*fontSizeBase) * pixRat;
         this.y0 = this.yPos - 0.5 * fontSizeBase * pixRat;
         this.x0 = X / 2 - fontSizeBase * 3 * pixRat/2;
         this.h=2*fontSizeBase*pixRat;
