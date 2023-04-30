@@ -1280,7 +1280,7 @@ class LapCounter {
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
-        this.yPos = 1 * pixRat;
+        this.yPos = 1 * pixRat +1*fontSizeBase*pixRat;
         this.fontFamily = fontFamily;
         this.void = false
         this.voidText = '';
@@ -1786,7 +1786,7 @@ class ViewMode {
         this.h = this.fontsize + 8 * pixRat;
         this.w = pixRat * 150;
         this.x0 = X - this.w;
-        this.y0 = Y - isTouch * Y / 3 - this.fontsize * 6 - this.h;
+        this.y0 = Y - isTouch * Y / 3 - this.fontsize * 5 - this.h;
         this.en = null;
         this.vState = 0;
         if (localStorage.vState) {
@@ -2818,21 +2818,26 @@ class ResetButton {
 
         this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
-        this.ch = this.fontsize + 25 * pixRat;
+        this.ch = this.fontsize + 20 * pixRat;
         this.cw = pixRat * 100;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 85 * pixRat - this.ch;
+        this.cy0 = Y - isTouch * Y / 3 - 65 * pixRat - this.ch;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
     }
     draw() {
+        ctx.beginPath()
+        ctx.strokeStyle = "white";
+        ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
+        ctx.stroke();
+
         ctx.beginPath();
         ctx.textAlign = "center";
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, 45 * pixRat, Y - isTouch * Y / 3 - 95 * pixRat)
+        ctx.fillText(this.text, 35 * pixRat, Y - isTouch * Y / 3 - 75 * pixRat)
     }
     contains(ex, ey) {
         // log(ex,ey)
@@ -3265,7 +3270,7 @@ let fs = function () {
     function drawSpeedo() {
         let x0 = 10 * pixRat;
         let y0 = Y - isTouch * Y / 3 - 20 * pixRat;
-        let rad = 35 * pixRat;
+        let rad = 25 * pixRat;
         let th0 = Math.PI * 45 / 180;
         let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
         ctx.lineWidth = baseLW * pixRat;
@@ -3441,7 +3446,7 @@ class TimeTravel{
     constructor(){
         this.ttLim=-100;
 
-        this.yPos = (1+1.0*fontSizeBase * pixRat);
+        this.yPos = (1+0.0*fontSizeBase * pixRat);
         this.y0 = this.yPos - 0.5 * fontSizeBase * pixRat;
         this.x0 = X / 2 - fontSizeBase * 3 * pixRat/2;
         this.h=2*fontSizeBase*pixRat;
