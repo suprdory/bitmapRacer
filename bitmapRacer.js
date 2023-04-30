@@ -3446,7 +3446,7 @@ class TimeTravel{
     constructor(){
         this.ttLim=-100;
 
-        this.yPos = (1+0.0*fontSizeBase * pixRat);
+        this.yPos = (1*+0.0*fontSizeBase) * pixRat;
         this.y0 = this.yPos - 0.5 * fontSizeBase * pixRat;
         this.x0 = X / 2 - fontSizeBase * 3 * pixRat/2;
         this.h=2*fontSizeBase*pixRat;
@@ -3460,6 +3460,10 @@ class TimeTravel{
         }
         else{
             this.ttDays=0;
+        }
+        this.text = "T:" + this.ttDays
+        if (this.ttDays == 0) {
+            this.text = "Live"
         }
     }
     draw(){
@@ -3477,10 +3481,7 @@ class TimeTravel{
         // ctx.rect(this.xR, this.y0, this.w, this.h)
         // ctx.stroke();
 
-        this.text="t"+this.ttDays
-        if (this.ttDays==0){
-            this.text="Live"
-        }
+
         ctx.beginPath();
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
