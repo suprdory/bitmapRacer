@@ -3149,7 +3149,8 @@ let fs = function () {
         addPointerListeners(ghost);
         addPointerListeners(resetButton);
         addPointerListeners(viewMode);
-        addPointerListeners(timeTravel)
+        addPointerListeners(timeTravel);
+        addPointerListeners(docPanel);
         addEventListener('keydown', (event) => { inputState.set(event) });
         addEventListener('keyup', (event) => { inputState.set(event) });
     }
@@ -3421,6 +3422,7 @@ function anim() {
     name.draw(ctx);
     viewMode.draw(ctx);
     resetButton.draw();
+    docPanel.draw();
     // drawInfo(ctx);
     flash.draw(ctx);
     // fs.drawHUD();
@@ -3573,6 +3575,80 @@ class TimeTravel{
 }
 
 
+class DocPanel{
+    constructor(){
+        this.x0 = X * 0;
+        // this.y0 = Y - isTouch * Y / 3 - 5 * pixRat;
+        this.y0=fontSizeBase*pixRat*6.5
+        this.en = null;
+        this.text = '?'
+
+        this.ch = (fontSizeBase *2) * pixRat;
+        this.cw = pixRat * fontSizeBase;
+        this.cx0 = this.x0
+        this.cy0 =this.y0-this.ch*0.3;
+        if ("showDocs" in localStorage) {
+            this.showDocs = JSON.parse(localStorage.getItem("showDocs"));
+        }
+        else {
+            this.showDocs = true;
+        }
+
+        document.getElementById("closeDocs").addEventListener("click", this.hideDocs, { passive: true })
+        if (this.showDocs){
+            this.unhideDocs()
+        }
+        log("showDocs:",this.showDocs)
+    }
+    unhideDocs(){
+        let docs = document.getElementById("docs").style
+        docs.visibility = "visible"
+        this.showDocs = true;
+        localStorage.setItem("showDocs",true)
+    }
+    hideDocs(){
+        let docs = document.getElementById("docs").style
+        docs.visibility = "hidden"
+        this.showDocs = false;  
+        localStorage.setItem("showDocs", false)
+    }
+    draw(){
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
+        // ctx.stroke();
+
+        ctx.beginPath();
+        ctx.textAlign = "left";
+        ctx.font = this.fontsize + 'px ' + this.fontFamily;
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "white";
+        ctx.fillText(this.text, this.x0,this.y0) 
+    }
+    contains(ex, ey) {
+        log("contains doc")
+        log("x:",this.cx0, ex, this.cx0 + this.cw)
+        log("y:", this.cy0, ey, this.cy0 + this.ch)
+        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
+    }
+    pointerDownHandler(ex, ey, en) {
+        log('PD')
+        if (this.contains(ex, ey)) {
+            this.active = true;
+            this.en = en;
+        }
+    }
+    pointerUpHandler(en) {
+        if (en == this.en) {
+    
+            this.en = null;
+            this.active = false;
+            this.unhideDocs();
+        }
+    }
+}
+
+
 let log = console.log;
 let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode
 
@@ -3604,6 +3680,8 @@ let canvas, ctx, pixRat, isTouch, X, Y, xc, yc,xct,yct, yOff, halfMinDim,dynLook
 let PPM;// init drawing scale, screen pixels per metre - pre zoom
 fs.resize();
 
+
+
 // draw constants
 const fontFamily = 'monospace';
 const fontSizeBase = 15;
@@ -3615,7 +3693,8 @@ const zoomBase=1.2
 const zoomMax=0.5
 const zoomSpeed=0.2
 let zoom=1,zoomTarget;
-
+//docs
+let docPanel = new DocPanel();
 // let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
 
 let timeTravel = new TimeTravel();

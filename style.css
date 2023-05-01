@@ -1,7 +1,12 @@
  :root {
-   --bgColor: #000000;
+   /* --bgColor: #000000;
    --fgColor: #ffffff;
-   --textSize: 20px;
+   --textSize: 20px; */
+
+   --bgColor: #201611;
+   --fgColor: #8d5d2a;
+   --textSize: 15px;
+   font-family: sans-serif;
  }
 
  #cw {
@@ -79,4 +84,121 @@
 
  #submit:active {
    background-color: var(--fgColor);
+ }
+
+ #docs {
+   position: absolute;
+   top: 5%;
+   width: min(90%, 500px);
+   left: max(calc(5% - 4px), calc((100% - 500px)/2));
+
+   height: 90%;
+   border-style: solid;
+   border-color: var(--fgColor);
+   background-color: var(--bgColor);
+   color: white;
+   visibility: hidden;
+   font-size: var(--textSize);
+   z-index: 1;
+   padding: 1px;
+ }
+
+ /* Hide scrollbar for Chrome, Safari and Opera */
+ .hiddenScroll::-webkit-scrollbar {
+   display: none;
+ }
+
+ /* Hide scrollbar for IE, Edge and Firefox */
+ .hiddenScroll {
+   -ms-overflow-style: none;
+   /* IE and Edge */
+   scrollbar-width: none;
+   /* Firefox */
+
+ }
+
+ .centred {
+   text-align: center;
+ }
+
+ #close {
+   position: absolute;
+   top: 85%;
+   left: 10%;
+   width: 80%;
+   height: 10%;
+
+   background-color: inherit;
+   font-size: inherit;
+   border-style: inherit;
+   border-width: inherit;
+   border-color: inherit;
+   color: inherit;
+   padding: inherit;
+ }
+
+
+
+ #closeDocs {
+   position: absolute;
+   top: 10px;
+   width: 200px;
+   /* min-width: 200px; */
+   height: 50px;
+   left: calc(50% - 100px);
+
+   /* margin-left: auto; */
+   /* margin-right: auto; */
+
+   background-color: inherit;
+   font-size: inherit;
+   border-style: inherit;
+   border-width: inherit;
+   border-color: inherit;
+   color: inherit;
+   padding: inherit;
+ }
+
+
+ #close:active {
+   background-color: var(--fgColor);
+ }
+
+ #submit:active {
+   background-color: var(--fgColor);
+ }
+
+ #closeDocs:active {
+   background-color: var(--fgColor);
+ }
+
+ /* unvisited link */
+ a:link {
+   color: var(--fgColor);
+ }
+
+ /* visited link */
+ a:visited {
+   color: var(--fgColor);
+ }
+
+
+ .docText {
+   position: absolute;
+   top: 70px;
+   height: calc(100% - 90px);
+   text-align: left;
+   padding: 10px;
+   overflow-y: auto;
+
+ }
+
+ h4 {
+   margin-bottom: 0px;
+   border-bottom: 0px;
+   bottom: 0px;
+ }
+
+ p {
+   margin-top: 5px;
  }
