@@ -2242,11 +2242,12 @@ class SessionSetter {
         this.car = p.cars[0]
     }
     countySeries() {
-        this.scale = { ppm: 7, mpp: 0.4 };
+        this.mult=this.randomElement([0.7,0.8,0.9,0.95,1.0,1.1,1.25,1.5,2.0])
+        this.scale = { ppm: 5*this.mult, mpp: 0.4/this.mult };
         this.yflip = false;
         this.xflip = false;
-        this.reverse = false;
         this.colour = this.randomElement(this.colours);
+        this.reverse = this.randomElement([true, false]);
         // this.track = this.randomElement(tracksEC);
         this.track = tracksEC[sessionLogger.currentSesh - 19500]
         this.trackImgName = this.track.fnames[0]
@@ -3573,7 +3574,6 @@ class TimeTravel{
 
     }
 }
-
 
 class DocPanel{
     constructor(){
