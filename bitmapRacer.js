@@ -2243,7 +2243,7 @@ class SessionSetter {
     }
     countySeries() {
         this.mult=this.randomElement([0.7,0.8,0.9,0.95,1.0,1.1,1.25,1.5,2.0])
-        this.scale = { ppm: 5*this.mult, mpp: 0.4/this.mult };
+        this.scale = { ppm: 7*this.mult, mpp: 0.4/this.mult };
         this.yflip = false;
         this.xflip = false;
         this.colour = this.randomElement(this.colours);
