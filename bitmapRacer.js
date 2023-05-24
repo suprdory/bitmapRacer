@@ -1410,6 +1410,9 @@ class LapCounter {
                 // log(nGate)
             }
             else {
+                if (nGate==0){ // wrong way over start line
+                    this.resetStart()
+                }
                 this.nWrongWay++;
                 if (this.nWrongWay > 3) {
                     flash.flash("Wrong way!")
