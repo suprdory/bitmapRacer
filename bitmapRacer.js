@@ -1327,6 +1327,7 @@ class LapCounter {
         else {
             flash.flash("Please enter name to submit lap times");
         }
+        sessionLogger.checkLive();
     }
     gateCrossed(n) {
         // log("gate", n, "next", this.nextCheck, "final", this.finalCheck)
@@ -1906,9 +1907,11 @@ class SessionLogger {
         else{
             this.timeTravelDays = timeTravel.ttDays;
         }
-       
+        
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
+    
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
+        // log(this.currentSesh, this.timeTravelDays)
         this.yesterSesh = this.currentSesh - 1;
         this.versionBase = sessionPrefix + '-' + this.currentSesh;
         if (dev) {
@@ -1940,6 +1943,15 @@ class SessionLogger {
         // log("yesterstreak:", this.yesterStreak,
         //     "yesterqual:", this.yesterQual,
         //     "current streak:", this.outStreak,);
+        this.checkLive()
+    }
+    checkLive(){
+        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
+        let currentSeshNow = Math.floor(currentTime); //integer, days since 1970
+        log('live', currentSeshNow==this.currentSesh)
+        if (currentSeshNow != this.currentSesh){
+            location.reload()
+        }
     }
 
     setCountDown() {
@@ -2872,6 +2884,7 @@ class ResetButton {
     reset() {
         car.reset();
         lapCounter.resetStart();
+        sessionLogger.checkLive();
     }
 
 }
@@ -3629,13 +3642,13 @@ class DocPanel{
         ctx.fillText(this.text, this.x0,this.y0) 
     }
     contains(ex, ey) {
-        log("contains doc")
-        log("x:",this.cx0, ex, this.cx0 + this.cw)
-        log("y:", this.cy0, ey, this.cy0 + this.ch)
+        // log("contains doc")
+        // log("x:",this.cx0, ex, this.cx0 + this.cw)
+        // log("y:", this.cy0, ey, this.cy0 + this.ch)
         return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
     }
     pointerDownHandler(ex, ey, en) {
-        log('PD')
+        // log('PD')
         if (this.contains(ex, ey)) {
             this.active = true;
             this.en = en;
