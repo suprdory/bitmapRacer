@@ -1280,7 +1280,7 @@ class LapCounter {
         this.bestLap = 0;
         this.lastLap = 0;
         this.tstr = {};
-        this.yPos = (1  +1.2*fontSizeBase)*pixRat;
+        this.yPos = (1 + 1.2 * fontSizeBase) * pixRat;
         this.fontFamily = fontFamily;
         this.void = false
         this.voidText = '';
@@ -1411,7 +1411,7 @@ class LapCounter {
                 // log(nGate)
             }
             else {
-                if (nGate==0){ // wrong way over start line
+                if (nGate == 0) { // wrong way over start line
                     this.resetStart()
                 }
                 this.nWrongWay++;
@@ -1514,59 +1514,59 @@ class HiScores {
 
         this.last = t;
 
-        if (timeTravel.ttDays==0){
-        if (this.times[0] == 0) {
-            flash.flash("First Lap")
-            // ghost.saveLap();
+        if (timeTravel.ttDays == 0) {
+            if (this.times[0] == 0) {
+                flash.flash("First Lap")
+                // ghost.saveLap();
 
-            sessionLogger.currentBestLap = t;
-            sessionLogger.updateRank();
-        }
-        else if (t < this.times[0]) {
-            // ghost.saveLap();
-            flash.flash("Best Lap!")
-            sessionLogger.currentBestLap = t;
-            sessionLogger.updateRank();
-        }
-        else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
-            flash.flash("Good Lap")
-        }
-        if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
+                sessionLogger.currentBestLap = t;
+                sessionLogger.updateRank();
+            }
+            else if (t < this.times[0]) {
+                // ghost.saveLap();
+                flash.flash("Best Lap!")
+                sessionLogger.currentBestLap = t;
+                sessionLogger.updateRank();
+            }
+            else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
+                flash.flash("Good Lap")
+            }
+            if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
 
-            this.times[this.n - 1] = t;
-            this.times.sort(function (a, b) {
-                if (a == 0 & b != 0) {
-                    return 1;
-                }
-                else if ((b == 0 & a != 0)) {
-                    return -1;
-                }
-                else {
-                    return (a - b);
-                }
-            });
+                this.times[this.n - 1] = t;
+                this.times.sort(function (a, b) {
+                    if (a == 0 & b != 0) {
+                        return 1;
+                    }
+                    else if ((b == 0 & a != 0)) {
+                        return -1;
+                    }
+                    else {
+                        return (a - b);
+                    }
+                });
 
-            // log(this.times);
-            // remove existing version entry
-            // log('creating newVersionTimes')
-            // log(this)
-            let newVersionTimes = this.versionTimesList.filter((obj) => {
-                // log(obj,this)
-                return obj.version !== this.version;
-            });
-            //add currect version
-            newVersionTimes.push({
-                'version': this.version,
-                'times': this.times,
-                'nLaps': this.nLaps,
-                'qualified': false,
-                'streak': 0,
-                'rank': [0, 0]
-            })
-            localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+                // log(this.times);
+                // remove existing version entry
+                // log('creating newVersionTimes')
+                // log(this)
+                let newVersionTimes = this.versionTimesList.filter((obj) => {
+                    // log(obj,this)
+                    return obj.version !== this.version;
+                });
+                //add currect version
+                newVersionTimes.push({
+                    'version': this.version,
+                    'times': this.times,
+                    'nLaps': this.nLaps,
+                    'qualified': false,
+                    'streak': 0,
+                    'rank': [0, 0]
+                })
+                localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
 
+            }
         }
-    }
 
         sessionLogger.newLap(t);
     }
@@ -1700,8 +1700,9 @@ class HiScoresWeb {
     }
 
     newLap(t) {
-        if (timeTravel.ttDays==0){
-        this.postLap(this.version, name.name, t);}
+        if (timeTravel.ttDays == 0) {
+            this.postLap(this.version, name.name, t);
+        }
         // if (this.lapCounts){
         // if (t < this.lapCounts[0][0]) {
         //     log(this.lapCounts)
@@ -1836,11 +1837,11 @@ class ViewMode {
         if (this.vState > 2) {
             this.vState = 0;
         }
-        if (this.vState==2){
+        if (this.vState == 2) {
             // when switching to fixed, change screen centre manually for smoothness
             // log('manual sc')
-            xct = X / 2 - PPM * (car.x )  //centre target, pan to this, screen pixel units
-            yct = Y / 2 - PPM * (car.y ) - yOff
+            xct = X / 2 - PPM * (car.x)  //centre target, pan to this, screen pixel units
+            yct = Y / 2 - PPM * (car.y) - yOff
             xc = xct
             yc = yct
 
@@ -1873,16 +1874,40 @@ class Flash {
         this.y = 15 * pixRat * 2.1
         this.dy = 15 * pixRat;
         this.displayPeriod = 1500;
+        this.blankPeriod = 400;
         //this.message = "Happy Birthday Fumi!"
         this.message = "";
-        this.mTime = Date.now();
+        this.mTime = Date.now(); //message display time
+        this.bTime = Date.now(); //blank display time
         this.fontFamily = fontFamily;
+        this.queue = [];
+        log(this.message)
+
     }
     flash(message) {
-        this.message = message;
-        this.mTime = Date.now();
+        this.queue.push(message)
+        // this.message = message;
+        // this.mTime = Date.now();
     }
+
     draw(ctx) {
+        // log((Date.now() - this.bTime) > this.blankPeriod)
+        //no current message, blankPeriod expired but stuff in queue
+        if ((this.message == "") & (this.queue.length > 0) & ((Date.now() - this.bTime) > this.blankPeriod)) {
+            this.message = this.queue.shift()
+            this.mTime = Date.now();
+            log('shift:', this.message, this.queue)
+        }
+        //current message out of date
+        if (((Date.now() - this.mTime) > this.displayPeriod) & (this.message != "")) {
+            this.bTime = Date.now();
+            // this.mTime = Date.now();
+            this.message = ""
+            // log('shift:', this.message, this.queue)
+        }
+
+
+
         if ((Date.now() - this.mTime) < this.displayPeriod) {
             ctx.beginPath();
             ctx.textAlign = "center";
@@ -1901,15 +1926,15 @@ class SessionLogger {
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
-        if (timeTravelDaysURL!=0){ // tt url arg overides session browser
+        if (timeTravelDaysURL != 0) { // tt url arg overides session browser
             this.timeTravelDays = timeTravelDaysURL;
         }
-        else{
+        else {
             this.timeTravelDays = timeTravel.ttDays;
         }
-        
+
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
-    
+
         this.currentSesh = Math.floor(currentTime); //integer, days since 1970
         // log(this.currentSesh, this.timeTravelDays)
         this.yesterSesh = this.currentSesh - 1;
@@ -1945,11 +1970,11 @@ class SessionLogger {
         //     "current streak:", this.outStreak,);
         this.checkLive()
     }
-    checkLive(){
+    checkLive() {
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         let currentSeshNow = Math.floor(currentTime); //integer, days since 1970
-        log('live', currentSeshNow==this.currentSesh)
-        if (currentSeshNow != this.currentSesh){
+        log('live', currentSeshNow == this.currentSesh)
+        if (currentSeshNow != this.currentSesh) {
             location.reload()
         }
     }
@@ -2074,9 +2099,47 @@ class SessionLogger {
     }
     qualTest() {
         if (this.currentnLaps == this.nLaps2Qualify) {
-            flash.flash("Q-streak extended!");
-            this.qualified = true;
             this.outStreak = this.inStreak + 1;
+            if (!this.qualified) {
+                if (this.outStreak == 1) {
+                    flash.flash("New Q-streak Started");
+                    flash.flash("Extend it tomorrow!");
+                }
+                else {
+                    flash.flash("Q-streak extended!");
+                }
+                if (this.outStreak == 2) {
+                    flash.flash("Two Qs in a Row");
+                    flash.flash("Keep it up!");
+                }
+                if (this.outStreak == 7) {
+                    flash.flash("1-week Q-Streak!");
+                    flash.flash("Nearly there...");
+                }
+                if (this.outStreak == 14) {
+                    flash.flash("2-week Q-Streak!");
+                    flash.flash("Almost got it...");
+                }
+                if (this.outStreak == 30) {
+                    flash.flash("1-Month Q-Streak!");
+                    flash.flash("You can do it!");
+                }
+
+                if (this.outStreak == 50) {
+                    flash.flash("Half-Century Q-Streak!");
+                    flash.flash("Just wow");
+                }
+                if (this.outStreak == 100) {
+                    flash.flash("Centurian!");
+                    flash.flash("Incredible Streak");
+                }
+                if (this.outStreak == 365) {
+                    flash.flash("1-Year Streak!");
+                    flash.flash("Are you insane?");
+                    flash.flash("Time to stop.");
+                }
+            }
+            this.qualified = true;
         }
         if (this.currentnLaps >= this.nLaps2Qualify) {
             this.qualified = true;
@@ -2160,7 +2223,7 @@ class SessionLogger {
         else {
             ctx.fillStyle = "darkRed";
         }
-        if (timeTravel.ttDays!=0){
+        if (timeTravel.ttDays != 0) {
             ctx.fillStyle = "dimGrey";
         }
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
@@ -2257,8 +2320,8 @@ class SessionSetter {
         this.car = p.cars[0]
     }
     countySeries() {
-        this.mult=this.randomElement([0.7,0.8,0.9,0.95,1.0,1.1,1.25,1.5,2.0])
-        this.scale = { ppm: 7*this.mult, mpp: 0.4/this.mult };
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = false;
         this.xflip = false;
         this.colour = this.randomElement(this.colours);
@@ -2275,7 +2338,7 @@ class SessionSetter {
         this.reverse = true;
         this.colour = this.randomElement(this.colours);
         // this.track = this.randomElement(tracksLB);
-        this.track = tracksLB[33-(sessionLogger.currentSesh - 19466)]
+        this.track = tracksLB[33 - (sessionLogger.currentSesh - 19466)]
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
@@ -2289,7 +2352,7 @@ class SessionSetter {
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
         let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relatic to car0
-        p.trackSetup.metresPerPix = 1*this.scale.mpp * p.track.trackScale * carScale;
+        p.trackSetup.metresPerPix = 1 * this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         // log('trackScale',p.track.trackScale)
         let screenScl = Math.min(X / 700, Y / 700)
@@ -2449,11 +2512,11 @@ class Ghost {
 
         // log('ghost new lap, t=',t)
         // log(t, this.savedLap.time)
-        if ((timeTravel.ttDays == 0) &(t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
+        if ((timeTravel.ttDays == 0) & (t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
             this.saveGhost(t);
         }
         // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
-        if ((timeTravel.ttDays==0)&!trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+        if ((timeTravel.ttDays == 0) & !trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
             this.postGhost(t);
         }
 
@@ -3376,13 +3439,13 @@ function anim() {
         //look ahead
         Lmax = halfMinDim / Math.max(Math.abs(car.ux), Math.abs(car.uy)) / PPM; //max look ahead distance
         dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) //desired look ahead distance
-        
+
         // calc screen centre coords
         xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
         yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
         xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
         yc = yc + (yct - yc) * panSpeed
-        
+
         ctx.setTransform(zoom, 0, 0, zoom, (1 - zoom) * X / 2, (1 - zoom) * Y / 2);
     }
     else {//overview mode
@@ -3461,31 +3524,31 @@ function urlArgHandler() {
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb');
 }
-class TimeTravel{
-    constructor(){
-        this.ttLim=-100;
+class TimeTravel {
+    constructor() {
+        this.ttLim = -100;
 
-        this.yPos = (1+0.0*fontSizeBase) * pixRat;
+        this.yPos = (1 + 0.0 * fontSizeBase) * pixRat;
         this.y0 = this.yPos - 0.5 * fontSizeBase * pixRat;
-        this.x0 = X / 2 - fontSizeBase * 3 * pixRat/2;
-        this.h=2*fontSizeBase*pixRat;
-        this.w=fontSizeBase*3*pixRat
+        this.x0 = X / 2 - fontSizeBase * 3 * pixRat / 2;
+        this.h = 2 * fontSizeBase * pixRat;
+        this.w = fontSizeBase * 3 * pixRat
 
-        this.xL = X / 2 - fontSizeBase * (3/2+3) * pixRat;
+        this.xL = X / 2 - fontSizeBase * (3 / 2 + 3) * pixRat;
         this.xR = X / 2 - fontSizeBase * (3 / 2 - 3) * pixRat;
 
         if ("ttDays" in localStorage) {
             this.ttDays = JSON.parse(localStorage.getItem("ttDays"));
         }
-        else{
-            this.ttDays=0;
+        else {
+            this.ttDays = 0;
         }
         this.text = "T:" + this.ttDays
         if (this.ttDays == 0) {
             this.text = "Live"
         }
     }
-    draw(){
+    draw() {
 
         // ctx.beginPath()
         // ctx.strokeStyle = "white";
@@ -3506,7 +3569,7 @@ class TimeTravel{
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.fillText(this.text, X / 2, this.yPos);
-        
+
         ctx.beginPath();
         ctx.fillStyle = "white";
         if (timeTravel.ttDays <= this.ttLim) {
@@ -3515,10 +3578,10 @@ class TimeTravel{
         ctx.fillText("<", this.xL + this.w / 2, this.yPos);
         ctx.beginPath();
         ctx.fillStyle = "white";
-        if (timeTravel.ttDays>=0){
+        if (timeTravel.ttDays >= 0) {
             ctx.fillStyle = "darkGrey";
         }
-        ctx.fillText(">", this.xR + this.w/2, this.yPos);
+        ctx.fillText(">", this.xR + this.w / 2, this.yPos);
 
 
         // ctx.beginPath();
@@ -3567,7 +3630,7 @@ class TimeTravel{
             // debugTxt = "PU: " + en + " " + this.action;
             this.enL = null;
             this.active = false;
-            this.settt(this.ttDays-1);
+            this.settt(this.ttDays - 1);
         }
         if (en == this.enR) {
             // debugTxt = "PU: " + en + " " + this.action;
@@ -3579,11 +3642,11 @@ class TimeTravel{
 
     }
 
-    settt(tt){
-        tt=Math.min(0,Math.max(tt,this.ttLim))
-        log("Setting tt",tt)
-        localStorage.setItem('ttDays',tt)
-        if (this.ttDays !=tt){
+    settt(tt) {
+        tt = Math.min(0, Math.max(tt, this.ttLim))
+        log("Setting tt", tt)
+        localStorage.setItem('ttDays', tt)
+        if (this.ttDays != tt) {
             this.ttDays = tt;
             location.reload()
         }
@@ -3591,18 +3654,18 @@ class TimeTravel{
     }
 }
 
-class DocPanel{
-    constructor(){
+class DocPanel {
+    constructor() {
         this.x0 = X * 0;
         // this.y0 = Y - isTouch * Y / 3 - 5 * pixRat;
-        this.y0=fontSizeBase*pixRat*6.5
+        this.y0 = fontSizeBase * pixRat * 6.5
         this.en = null;
         this.text = '?'
 
-        this.ch = (fontSizeBase *2) * pixRat;
+        this.ch = (fontSizeBase * 2) * pixRat;
         this.cw = pixRat * fontSizeBase;
         this.cx0 = this.x0
-        this.cy0 =this.y0-this.ch*0.3;
+        this.cy0 = this.y0 - this.ch * 0.3;
         if ("showDocs" in localStorage) {
             this.showDocs = JSON.parse(localStorage.getItem("showDocs"));
         }
@@ -3611,24 +3674,24 @@ class DocPanel{
         }
 
         document.getElementById("closeDocs").addEventListener("click", this.hideDocs, { passive: true })
-        if (this.showDocs){
+        if (this.showDocs) {
             this.unhideDocs()
         }
-        log("showDocs:",this.showDocs)
+        log("showDocs:", this.showDocs)
     }
-    unhideDocs(){
+    unhideDocs() {
         let docs = document.getElementById("docs").style
         docs.visibility = "visible"
         this.showDocs = true;
-        localStorage.setItem("showDocs",true)
+        localStorage.setItem("showDocs", true)
     }
-    hideDocs(){
+    hideDocs() {
         let docs = document.getElementById("docs").style
         docs.visibility = "hidden"
-        this.showDocs = false;  
+        this.showDocs = false;
         localStorage.setItem("showDocs", false)
     }
-    draw(){
+    draw() {
         // ctx.beginPath()
         // ctx.strokeStyle = "white";
         // ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
@@ -3639,7 +3702,7 @@ class DocPanel{
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, this.x0,this.y0) 
+        ctx.fillText(this.text, this.x0, this.y0)
     }
     contains(ex, ey) {
         // log("contains doc")
@@ -3656,7 +3719,7 @@ class DocPanel{
     }
     pointerUpHandler(en) {
         if (en == this.en) {
-    
+
             this.en = null;
             this.active = false;
             this.unhideDocs();
@@ -3692,7 +3755,7 @@ else {
 // log(apiURL)
 
 // screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc,xct,yct, yOff, halfMinDim,dynLookAhead,Lmax,isNamedTrack=false
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, xct, yct, yOff, halfMinDim, dynLookAhead, Lmax, isNamedTrack = false
 let PPM;// init drawing scale, screen pixels per metre - pre zoom
 fs.resize();
 
@@ -3705,10 +3768,10 @@ const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 
-const zoomBase=1.2
-const zoomMax=0.5
-const zoomSpeed=0.2
-let zoom=1,zoomTarget;
+const zoomBase = 1.2
+const zoomMax = 0.5
+const zoomSpeed = 0.2
+let zoom = 1, zoomTarget;
 //docs
 let docPanel = new DocPanel();
 // let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
@@ -3740,7 +3803,7 @@ if (sessionLogger.currentSesh >= 19467 & sessionLogger.currentSesh <= 19499) {
 }
 if (sessionLogger.currentSesh >= 19500 & sessionLogger.currentSesh <= 19534) {
     log('county')
-    isNamedTrack=true;
+    isNamedTrack = true;
     setter.countySeries();
 }
 
@@ -3800,6 +3863,10 @@ if (lonBorMode || isNamedTrack) {
 else {
     flash.flash("Welcome")
 }
+
+// flash.flash("test 1")
+// flash.flash("test 2")
+// flash.flash("test 3")
 
 // log(hiScores.times)
 
