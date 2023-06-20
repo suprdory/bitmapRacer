@@ -1451,6 +1451,7 @@ class HiScores {
                 this.times = versionTimes[0].times;
                 this.nLaps = versionTimes[0].nLaps;
                 sessionLogger.setnLaps(this.nLaps);
+                sessionLogger.qualTest();
                 sessionLogger.currentBestLap = this.times[0];
             }
             else {
@@ -1964,6 +1965,7 @@ class SessionLogger {
         this.inStreak = this.yesterQual ? this.yesterStreak : 0;
         // out streak, 0 unless qual in which case this.inStreak+1 - saved to localStorage versionTimes when updated
         this.outStreak = this.qualified ? this.inStreak + 1 : 0
+        // this.qualTest();
         this.setLocalStreak(this.version, this.currentStreak);
         // log("yesterstreak:", this.yesterStreak,
         //     "yesterqual:", this.yesterQual,
@@ -2095,9 +2097,15 @@ class SessionLogger {
     }
     setnLaps(n) {
         this.currentnLaps = n;
-        this.qualTest();
     }
     qualTest() {
+        if (qdev) {
+            flash.flash('qtest ' +
+                this.currentnLaps + ' ' +
+                this.qualified + ' ' +
+                this.inStreak + ' ' +
+                this.outStreak)
+        }
         if (this.currentnLaps == this.nLaps2Qualify) {
             this.outStreak = this.inStreak + 1;
             if (!this.qualified) {
@@ -2142,6 +2150,9 @@ class SessionLogger {
             this.qualified = true;
         }
         if (this.currentnLaps >= this.nLaps2Qualify) {
+            if (qdev) {
+                flash.flash('q:' + this.currentnLaps)
+            }
             this.qualified = true;
             this.outStreak = this.inStreak + 1;
             this.setLocalQual(this.version, this.qualified);
@@ -3523,6 +3534,7 @@ function urlArgHandler() {
     lonBor = parseInt(urlParams.get('lb'));
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb');
+    qdev = urlParams.has('qdev')
 }
 class TimeTravel {
     constructor() {
@@ -3729,7 +3741,7 @@ class DocPanel {
 
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev
 
 urlArgHandler();
 // log('Dev:', dev)
