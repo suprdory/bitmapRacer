@@ -2150,13 +2150,18 @@ class SessionLogger {
             this.qualified = true;
         }
         if (this.currentnLaps >= this.nLaps2Qualify) {
-            if (qdev) {
-                flash.flash('q:' + this.currentnLaps)
-            }
+
             this.qualified = true;
             this.outStreak = this.inStreak + 1;
             this.setLocalQual(this.version, this.qualified);
             this.setLocalStreak(this.version, this.outStreak);
+            if (qdev) {
+                flash.flash('qset ' +
+                    this.currentnLaps + ' ' +
+                    this.qualified + ' ' +
+                    this.inStreak + ' ' +
+                    this.outStreak)
+            }
         }
         // log("qtest: yStreak", this.yesterStreak, "outStreak:", this.outStreak, "cQual:", this.qualified)
     }
