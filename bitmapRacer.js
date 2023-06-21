@@ -1340,6 +1340,10 @@ class LapCounter {
                 this.lastLap = 0;
                 hiScores.badLap();
             }
+            if ((this.nextCheck == this.finalCheck) & this.void) {
+                sessionLogger.stats.voids++;
+                sessionLogger.setLocalStats();
+            }
             this.reset()
         }
         else if (n == this.nextCheck) {
@@ -1636,7 +1640,7 @@ class HiScoresWeb {
                     this.lapCounts = data
                     this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
                     // log("response:")
-                    log('competingLaps', data)
+                    // log('competingLaps', data)
 
                 });
 
@@ -1882,7 +1886,7 @@ class Flash {
         this.bTime = Date.now(); //blank display time
         this.fontFamily = fontFamily;
         this.queue = [];
-        log(this.message)
+        // log(this.message)
 
     }
     flash(message) {
@@ -1897,7 +1901,7 @@ class Flash {
         if ((this.message == "") & (this.queue.length > 0) & ((Date.now() - this.bTime) > this.blankPeriod)) {
             this.message = this.queue.shift()
             this.mTime = Date.now();
-            log('shift:', this.message, this.queue)
+            // log('shift:', this.message, this.queue)
         }
         //current message out of date
         if (((Date.now() - this.mTime) > this.displayPeriod) & (this.message != "")) {
@@ -1970,12 +1974,14 @@ class SessionLogger {
         // log("yesterstreak:", this.yesterStreak,
         //     "yesterqual:", this.yesterQual,
         //     "current streak:", this.outStreak,);
+        this.stats=this.getLocalStats();
+
         this.checkLive()
     }
     checkLive() {
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         let currentSeshNow = Math.floor(currentTime); //integer, days since 1970
-        log('live', currentSeshNow == this.currentSesh)
+        // log('live', currentSeshNow == this.currentSesh)
         if (currentSeshNow != this.currentSesh) {
             location.reload()
         }
@@ -1987,6 +1993,50 @@ class SessionLogger {
         let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
         this.timeTillNextString = fs.secsToString(timeTillNext);
     }
+
+    getLocalStats() {
+        // log("gettingStats")
+        let stats0 = { 'laps': 0, 'voids': 0, 'resets': 0 }
+        if (localStorage.getItem('versionTimes')) {
+          
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let versionTimes = versionTimesList.filter(
+                obj => { return obj.version == this.version })
+            // log('versionTimes', versionTimesList)
+            if (versionTimes.length > 0) {
+                // log("gettingStats:")
+                // log('versionTimes[0]:', versionTimes)
+                if (versionTimes[0].nLapsStat !== undefined){// stats exist
+                    log('stats exist')
+                   return { 'laps': versionTimes[0].nLapsStat, 'voids': versionTimes[0].nVoidsStat, 'resets': versionTimes[0].nResetsStat }
+                }
+                return (stats0)
+            }
+            else { return( stats0); }
+        }
+        else { return (stats0); }
+    }
+    setLocalStats() {
+        if (localStorage.getItem('versionTimes')) {
+            // log("Setting local stats")
+            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+            let newVersionTimes = versionTimesList.filter((obj) => {
+                return obj.version !== this.version;
+            });
+            let versionTimes = versionTimesList.filter(obj => { return obj.version == this.version })
+            if (versionTimes.length > 0) {
+
+                versionTimes[0].nLapsStat = this.stats.laps;
+                versionTimes[0].nVoidsStat = this.stats.voids;
+                versionTimes[0].nResetsStat = this.stats.resets;
+                // log(versionTimes[0])
+
+                newVersionTimes.push(versionTimes[0]);
+                localStorage.setItem('versionTimes', JSON.stringify(newVersionTimes));
+            }
+        }
+    }
+
     setLocalQual(version, stat) {
         if (localStorage.getItem('versionTimes')) {
             // log("Setting local qual status")
@@ -2094,6 +2144,10 @@ class SessionLogger {
         this.currentnLaps++;
         if (t < this.currentBestLap) { this.currentBestLap = t }
         this.qualTest();
+
+        this.stats.laps++;
+        this.setLocalStats()
+
     }
     setnLaps(n) {
         this.currentnLaps = n;
@@ -2243,6 +2297,13 @@ class SessionLogger {
             ctx.fillStyle = "dimGrey";
         }
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
+    
+        ctx.fillStyle = "white";
+        ctx.textAlign = "left";
+        ctx.fillText("L:" + this.stats.laps+" V:"+this.stats.voids+" R:"+this.stats.resets, 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
+    
+    
+    
     }
 }
 class SessionSetter {
@@ -2479,12 +2540,12 @@ class Ghost {
         this.toggleDraw();
         // log(this.drawGhost,this.dispText)
 
-        this.fontsize = 15 * pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.ch = this.fontsize + 15 * pixRat;
         this.cw = pixRat * 100;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 0 * pixRat - this.ch;
+        this.cy0 = Y - isTouch * Y / 3 - 0 * pixRat - this.ch-this.fontsize;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
@@ -2807,12 +2868,17 @@ class Ghost {
         localStorage.setItem('ghostToggleState', this.toggleState)
     }
     drawToggle() {
+        // ctx.beginPath()
+        // ctx.strokeStyle = "white";
+        // ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
+        // ctx.stroke();
+
         ctx.beginPath();
         ctx.textAlign = "left";
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
+        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat-this.fontsize)
     }
     contains(ex, ey) {
         // log(ex,ey)
@@ -2916,7 +2982,7 @@ class ResetButton {
         this.ch = this.fontsize + 20 * pixRat;
         this.cw = pixRat * 100;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 65 * pixRat - this.ch;
+        this.cy0 = Y - isTouch * Y / 3 - 65 * pixRat - this.ch - this.fontsize;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
@@ -2932,7 +2998,7 @@ class ResetButton {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, 35 * pixRat, Y - isTouch * Y / 3 - 75 * pixRat)
+        ctx.fillText(this.text, 35 * pixRat, Y - isTouch * Y / 3 - 75 * pixRat - this.fontsize)
     }
     contains(ex, ey) {
         // log(ex,ey)
@@ -2964,6 +3030,8 @@ class ResetButton {
         car.reset();
         lapCounter.resetStart();
         sessionLogger.checkLive();
+        sessionLogger.stats.resets++;
+        sessionLogger.setLocalStats();
     }
 
 }
@@ -3366,7 +3434,7 @@ let fs = function () {
     }
     function drawSpeedo() {
         let x0 = 10 * pixRat;
-        let y0 = Y - isTouch * Y / 3 - 20 * pixRat;
+        let y0 = Y - isTouch * Y / 3 - 20 * pixRat - fontSizeBase*pixRat;
         let rad = 25 * pixRat;
         let th0 = Math.PI * 45 / 180;
         let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
@@ -3694,7 +3762,7 @@ class DocPanel {
         if (this.showDocs) {
             this.unhideDocs()
         }
-        log("showDocs:", this.showDocs)
+        // log("showDocs:", this.showDocs)
     }
     unhideDocs() {
         let docs = document.getElementById("docs").style
