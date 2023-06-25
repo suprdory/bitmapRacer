@@ -1945,6 +1945,7 @@ class SessionLogger {
         this.yesterSesh = this.currentSesh - 1;
         this.versionBase = sessionPrefix + '-' + this.currentSesh;
         if (dev) {
+            this.version = this.versionBase;
             this.version = this.versionBase + '-' + 'dev';
         }
         else {
@@ -2325,6 +2326,121 @@ class SessionSetter {
         this.seed = this.cyrb128(seedstr)[2]
         this.rand = this.mulberry32(this.seed);
     }
+    set(sesh){
+        this.randGenOG(); //required here to maintain rand call count for historical track sessions
+        
+        if (sesh >= 19401 & sesh <= 19433) {
+            this.randGenOG();
+        }
+        if (sesh >= 19434 & sesh <= 19466) {
+            log('borough ')
+            isNamedTrack = true;
+            this.boroughSeriesOG();
+        }
+        if (sesh >= 19467 & sesh <= 19499) {
+            log('borough rev')
+            isNamedTrack = true;
+            this.boroughSeriesRevOG();
+        }
+        if (sesh >= 19500 & sesh <= 19534) {
+            log('county')
+            isNamedTrack = true;
+            this.countySeriesOG();
+        }
+        if (sesh >= 19535) {
+            log('RandSel')
+            this.randSel();
+        }
+
+        if (trackDev) {
+            this.setDev();
+        }
+        if (carDev) {
+            this.setCarDev();
+        }
+        if (lonBorMode) {
+            this.setLondonBorough();
+        }
+
+        this.apply(p);
+    }
+
+    randSel(){
+        this.trackTypeRand=this.rand()*100;
+        if (this.trackTypeRand<10){
+            this.randGen()
+        }
+        else if (this.trackTypeRand<55){
+            this.randCounty();
+        }
+        else{
+            this.randBorough();
+        }
+        
+        log(this.trackTypeRand)
+    }
+    randGen() {
+
+        this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        // this.mult=2.0
+
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = this.randomElement(this.yflips);
+        this.xflip = this.randomElement(this.xflips);
+        this.reverse = this.randomElement(this.reverses);
+        this.colour = this.randomElement(this.colours);
+        this.car = p.cars[0]
+        this.trackSelRand=this.rand()
+        // this.trackSelRand=0.96;
+        if (this.trackSelRand < 0.3){
+            this.track = tracksOG[0]
+            this.trackImgName = this.track.fnames[0] 
+        }
+        else if (this.trackSelRand <0.6){
+            this.track = tracksOG[1]
+            this.trackImgName = this.track.fnames[0]   
+        }
+        else if (this.trackSelRand < 0.75) {
+            this.track = tracksOG[2]
+            this.trackImgName = this.track.fnames[0]
+        }
+        else if (this.trackSelRand < 0.9) {
+            this.track = tracksOG[3]
+            this.trackImgName = this.track.fnames[0]
+        }
+        else if (this.trackSelRand < 0.95) {
+            this.track = tracksOG[4]
+            this.trackImgName = this.track.fnames[0]
+        }
+        else if (this.trackSelRand < 1.0) {
+            this.track = tracksOG[5]
+            this.trackImgName = this.track.fnames[0]
+        }
+
+    }
+    randCounty() {
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = false;
+        this.xflip = false;
+        this.colour = this.randomElement(this.colours);
+        this.reverse = this.randomElement([true, false]);
+        this.track = this.randomElement(tracksEC);
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+    }
+    randBorough() {
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = false;
+        this.xflip = false;
+        this.colour = this.randomElement(this.colours);
+        this.reverse = this.randomElement([true, false]);
+        this.track = this.randomElement(tracksLB);
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+    }
+
     randomElement(array) {
         return array[Math.floor(this.rand() * array.length)];
     }
@@ -2357,8 +2473,6 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[1]
         this.car = p.cars[0];
     }
-
-
     setCarDev() {
         // this.scale = { ppm: 8, mpp: 0.35 };
         // this.yflip = false;
@@ -2374,18 +2488,18 @@ class SessionSetter {
         // this.track.startX = 135;
         // this.track.startY = 450;
     }
-    randGen() {
+    randGenOG() {
         this.scale = this.randomElement(this.scales);
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
-        this.track = this.randomElement(p.tracks);
-        this.trackImgName = this.randomElement(this.track.fnames)
+        this.track = this.randomElement(tracksOG);
+        this.trackImgName = this.randomElement(p.tracks)
         // this.car = this.randomElement(p.cars);
         this.car = p.cars[0]
     }
-    boroughSeries() {
+    boroughSeriesOG() {
         this.scale = { ppm: 7, mpp: 0.4 };
         this.yflip = false;
         this.xflip = false;
@@ -2396,7 +2510,7 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-    countySeries() {
+    countySeriesOG() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = false;
@@ -2408,7 +2522,9 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-    boroughSeriesRev() {
+
+
+    boroughSeriesRevOG() {
         this.scale = { ppm: 7, mpp: 0.4 };
         this.yflip = false;
         this.xflip = false;
@@ -3823,6 +3939,7 @@ urlArgHandler();
 import { p } from './params.js'
 import { tracksLB } from './trackParmsLB.js'
 import { tracksEC } from './trackParmsEC.js'
+import { tracksOG } from './trackParmsOG.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS();
@@ -3873,51 +3990,13 @@ let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
 
+
 // set session parameters, seeded with daily session name, unless special case
 let setter = new SessionSetter(sessionLogger.versionBase);
-setter.randGen();
-if (sessionLogger.currentSesh >= 19434 & sessionLogger.currentSesh <= 19466) {
-    log('borough ')
-    isNamedTrack = true;
-    setter.boroughSeries();
-}
-if (sessionLogger.currentSesh >= 19467 & sessionLogger.currentSesh <= 19499) {
-    log('borough rev')
-    isNamedTrack = true;
-    setter.boroughSeriesRev();
-}
-if (sessionLogger.currentSesh >= 19500 & sessionLogger.currentSesh <= 19534) {
-    log('county')
-    isNamedTrack = true;
-    setter.countySeries();
-}
+setter.set(sessionLogger.currentSesh)
 
-
-
-// if (sessionLogger.version.includes('flip01-19433')) {//use to 'cue' up setting for day e.g. tomor
-//     setter.specialCase1();
-//     log('case1')
-// }
-// if (sessionLogger.version.includes('flip01-19417')) {//use to 'cue' up setting for day e.g. tomor
-//     setter.specialCase2();
-//     log('case2')
-// }
-if (trackDev) {
-    setter.setDev();
-}
-if (carDev) {
-    setter.setCarDev();
-}
-if (lonBorMode) {
-    setter.setLondonBorough();
-}
-
-
-setter.apply(p);
 let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
-
-
-//control set up
+// control set up
 // const forceBrake = false;
 // const forceLeft = false;
 let inputState = new InputState;
@@ -3942,7 +4021,7 @@ let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
 
-if (lonBorMode || isNamedTrack) {
+if (lonBorMode || p.track.name) {
     flash.flash("Welcome to " + p.track.name)
 }
 else {
