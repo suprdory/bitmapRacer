@@ -2,7 +2,7 @@ export let tracksOG = [
     {
         "fnames": ['tracks/square_track_extramud.png', 'tracks/square_track_ice.png'],
         "bgColour": "#4f3019",
-        "drawScale": 0.6,
+        "drawScale": 1.2,
         "trackScale": 0.7,
 
         "x": 1000, // size, helpful for setting params before img loaded
@@ -26,7 +26,7 @@ export let tracksOG = [
     {
         "fnames": ['tracks/square_track2_allpath.png'],
         "bgColour": "#381b00",
-        "drawScale": 0.6,
+        "drawScale": 1.0,
         "trackScale": 0.6,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
@@ -51,8 +51,8 @@ export let tracksOG = [
     {
         "fnames": ['tracks/square_track3_mark.png'],
         "bgColour": "#462402",
-        "drawScale": 0.8,
-        "trackScale": 0.8,
+        "drawScale": 1.0,
+        "trackScale": 1.0,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
 
@@ -76,7 +76,7 @@ export let tracksOG = [
     {
         "fnames": ['tracks/BC1-Regular.png', 'tracks/BC1-GrassTrack.png', 'tracks/BC1-Overgrown.png',],
         "bgColour": "#B97A56",
-        "drawScale": 0.6,
+        "drawScale": 1.3,
         "trackScale": 0.5,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
@@ -104,7 +104,7 @@ export let tracksOG = [
     {
         "fnames": ['tracks/spiralator-0.png', 'tracks/spiralator-1.png'],
         "bgColour": "#4c0f00",
-        "drawScale": 0.6,
+        "drawScale": 1.0,
         "trackScale": 1.2,
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,
@@ -132,8 +132,8 @@ export let tracksOG = [
     {
         "fnames": ['tracks/track_Wlv.png'],
         "bgColour": "#4f3019",
-        "drawScale": 0.6,
-        "trackScale": 1.3,
+        "drawScale": 1.0,
+        "trackScale": 1.1,
 
         "x": 1000, // size, helpful for setting params before img loaded
         "y": 1000,

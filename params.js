@@ -21,13 +21,14 @@ export let p = {
         "nMax": 10000000,
     },
     "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
-        "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+        // "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+        "outOfBounds": { "mu": 0.8, "drag": 0.003 },
         "tarmac": { "mu": 0.8, "drag": 0.001 },
         // "tarmac": { "mu": 0.0, "drag": 0.000 },
         "grass": { "mu": 0.3, "drag": 0.02 },
         "mud": { "mu": 0.2, "drag": 0.3 },
         "ice": { "mu": 0.05, "drag": 0.001 },
-        "unknown": { "mu": 0.8, "drag": 0.01 },
+        "unknown": { "mu": 0.8, "drag": 0.003 },
     },
     "tracks": [
         {

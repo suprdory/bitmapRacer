@@ -160,7 +160,7 @@ class Track {
                 else if (hx >= 70 & hx <= 150) { // green
                     sfcType = 'grass';
                 }
-                else if ((hx > 330 | hx < 50) & lx < 75) { //dark red/yellow i.e. brown
+                else if ((hx > 330 | hx < 50) & lx < 75 & lx >10) { //dark red/yellow i.e. brown
                     sfcType = 'mud';
                 }
                 else {
@@ -2377,21 +2377,20 @@ class SessionSetter {
             this.randBorough();
         }
         
-        log(this.trackTypeRand)
+        // log(this.trackTypeRand)
     }
     randGen() {
 
         this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         // this.mult=2.0
-
-        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.scale = { ppm: 4+3 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.car = p.cars[0]
         this.trackSelRand=this.rand()
-        // this.trackSelRand=0.96;
+        // this.trackSelRand=0.97;
         if (this.trackSelRand < 0.3){
             this.track = tracksOG[0]
             this.trackImgName = this.track.fnames[0] 
@@ -2440,7 +2439,6 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-
     randomElement(array) {
         return array[Math.floor(this.rand() * array.length)];
     }
@@ -2556,12 +2554,16 @@ class SessionSetter {
 
         let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
 
-        // log("target PPM", PPM)
-        // log("max PPM", maxPPM)
+        log("target PPM", PPM)
+        log("max PPM", maxPPM)
         if (PPM > maxPPM) {
-            // log('targetPPM', PPM, 'limited to', maxPPM);
+            log('targetPPM', PPM, 'limited to', maxPPM);
+            // zoomMult = PPM / maxPPM;
+            // log('zoomMult:', zoomMult)
             // PPM = Math.floor(maxPPM);
             PPM = maxPPM;
+            // this.zoomLimFact = PPM / maxPPM;
+
         }
         // log("final PPM", PPM)
     }
@@ -3250,13 +3252,14 @@ let fs = function () {
         //     Math.round(car.wheels[0].s),
         //     Math.round(car.wheels[0].l)
         // ], 100, 100)
-        ctx.fillText(debugTxt1, 5, 110, 500)
-        ctx.fillText(debugTxt2, 5, 120, 500)
-        ctx.fillText(debugTxt3, 5, 130, 500)
-        ctx.fillText(debugTxt4, 5, 140, 500)
-        ctx.fillText(debugTxt5, 5, 150, 500)
-        ctx.fillText(debugTxt6, 5, 160, 500)
-        ctx.fillText(debugTxt7, 5, 170, 500)
+        let x0=100
+        ctx.fillText(debugTxt1, 5, x0+10, 500)
+        ctx.fillText(debugTxt2, 5, x0 + 20, 500)
+        ctx.fillText(debugTxt3, 5, x0+30, 500)
+        ctx.fillText(debugTxt4, 5, x0+40, 500)
+        ctx.fillText(debugTxt5, 5, x0+50, 500)
+        ctx.fillText(debugTxt6, 5, x0+60, 500)
+        ctx.fillText(debugTxt7, 5, x0 + 70, 500)
         // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
         // ctx.fillText(nX + " " + nY, 100, 140);
         // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
@@ -3641,8 +3644,8 @@ function anim() {
         dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) //desired look ahead distance
 
         // calc screen centre coords
-        xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
-        yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
+        xct = X / 2 - PPM  * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
+        yct = Y / 2 - PPM  * (car.y + car.uy * dynLookAhead) - yOff
         xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
         yc = yc + (yct - yc) * panSpeed
 
@@ -3854,7 +3857,6 @@ class TimeTravel {
 
     }
 }
-
 class DocPanel {
     constructor() {
         this.x0 = X * 0;
@@ -3973,7 +3975,7 @@ const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 const zoomBase = 1.2
 const zoomMax = 0.5
 const zoomSpeed = 0.2
-let zoom = 1, zoomTarget;
+let zoom=1, zoomTarget, zoomMult;
 //docs
 let docPanel = new DocPanel();
 // let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
