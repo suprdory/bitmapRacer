@@ -2347,10 +2347,20 @@ class SessionSetter {
             isNamedTrack = true;
             this.countySeriesOG();
         }
-        if (sesh >= 19535) {
+        if (sesh >= 19535 & sesh <= 19536) {
             log('RandSel')
             this.randSel();
         }
+        if (sesh >= 19537 & sesh <= 19547) {
+            log('RandOG')
+            this.randGen();
+        }
+        if (sesh >= 19548) {
+            log('RandCountry')
+            this.randCountry();
+        }
+
+
 
         if (trackDev) {
             this.setDev();
@@ -2361,6 +2371,9 @@ class SessionSetter {
         if (lonBorMode) {
             this.setLondonBorough();
         }
+        // if (countryMode){
+        //     this.setCountry();
+        // }
 
         this.apply(p);
     }
@@ -2403,11 +2416,11 @@ class SessionSetter {
             this.track = tracksOG[2]
             this.trackImgName = this.track.fnames[0]
         }
-        else if (this.trackSelRand < 0.9) {
+        else if (this.trackSelRand < 1.0) {
             this.track = tracksOG[3]
             this.trackImgName = this.track.fnames[0]
         }
-        else if (this.trackSelRand < 0.95) {
+        else if (this.trackSelRand < 1.0) {
             this.track = tracksOG[4]
             this.trackImgName = this.track.fnames[0]
         }
@@ -2428,6 +2441,20 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
+
+    randCountry() {
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = false;
+        this.xflip = false;
+        this.colour = this.randomElement(this.colours);
+        this.reverse = this.randomElement([true, false]);
+        this.track = this.randomElement(tracksWC);
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+    }
+
+
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
@@ -3942,6 +3969,7 @@ import { p } from './params.js'
 import { tracksLB } from './trackParmsLB.js'
 import { tracksEC } from './trackParmsEC.js'
 import { tracksOG } from './trackParmsOG.js'
+import { tracksWC } from './trackParmsWC.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS();
