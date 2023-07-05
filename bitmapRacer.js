@@ -1305,7 +1305,7 @@ class LapCounter {
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
+        ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
         ctx.fillText(this.voidText, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
 
     }
