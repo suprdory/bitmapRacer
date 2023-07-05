@@ -1718,7 +1718,7 @@ class HiScoresWeb {
 }
 class Name {
     constructor() {
-        this.fontsize = 15 * pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.h = this.fontsize + 5 * pixRat;
         this.w = pixRat * 70;
@@ -1791,7 +1791,7 @@ class Name {
 }
 class ViewMode {
     constructor() {
-        this.fontsize = 15 * pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.h = this.fontsize + 8 * pixRat;
         this.w = pixRat * 150;
@@ -1911,12 +1911,10 @@ class Flash {
             // log('shift:', this.message, this.queue)
         }
 
-
-
         if ((Date.now() - this.mTime) < this.displayPeriod) {
             ctx.beginPath();
             ctx.textAlign = "center";
-            ctx.font = 15 * pixRat + 'px ' + this.fontFamily;
+            ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
             ctx.textBaseline = "bottom";
             ctx.fillStyle = "white";
             // log(Y,this.y)
@@ -1927,7 +1925,7 @@ class Flash {
 }
 class SessionLogger {
     constructor(timeTravelDaysURL, dev) {
-        this.fontsize = 15 * pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
         this.nLaps2Qualify = 10;
@@ -2334,17 +2332,14 @@ class SessionSetter {
         }
         if (sesh >= 19434 & sesh <= 19466) {
             log('borough ')
-            isNamedTrack = true;
             this.boroughSeriesOG();
         }
         if (sesh >= 19467 & sesh <= 19499) {
             log('borough rev')
-            isNamedTrack = true;
             this.boroughSeriesRevOG();
         }
         if (sesh >= 19500 & sesh <= 19534) {
             log('county')
-            isNamedTrack = true;
             this.countySeriesOG();
         }
         if (sesh >= 19535 & sesh <= 19536) {
@@ -2355,13 +2350,18 @@ class SessionSetter {
             log('RandOG')
             this.randGen();
         }
-        if (sesh >= 19548) {
+        if (sesh >= 19544 & sesh <=19545) {
+            log('RandBC')
+            this.randBC();
+        }
+        if (sesh >= 19546 & sesh <= 19552) {
+            log('Rand1OG')
+            this.randGen1OG();
+        }
+        if (sesh >= 19553) {
             log('RandCountry')
             this.randCountry();
         }
-
-
-
         if (trackDev) {
             this.setDev();
         }
@@ -2371,13 +2371,8 @@ class SessionSetter {
         if (lonBorMode) {
             this.setLondonBorough();
         }
-        // if (countryMode){
-        //     this.setCountry();
-        // }
-
         this.apply(p);
     }
-
     randSel(){
         this.trackTypeRand=this.rand()*100;
         if (this.trackTypeRand<10){
@@ -2420,15 +2415,29 @@ class SessionSetter {
             this.track = tracksOG[3]
             this.trackImgName = this.track.fnames[0]
         }
-        else if (this.trackSelRand < 1.0) {
-            this.track = tracksOG[4]
-            this.trackImgName = this.track.fnames[0]
-        }
-        else if (this.trackSelRand < 1.0) {
-            this.track = tracksOG[5]
-            this.trackImgName = this.track.fnames[0]
-        }
+    }
+    randGen1OG() {
 
+        this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 4+3 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = this.randomElement(this.yflips);
+        this.xflip = this.randomElement(this.xflips);
+        this.reverse = this.randomElement(this.reverses);
+        this.colour = this.randomElement(this.colours);
+        this.car = p.cars[0]
+        this.track = tracksOG[0]
+        this.trackImgName = this.track.fnames[0] 
+    }
+    randBC() {
+        this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 4+3 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = this.randomElement(this.yflips);
+        this.xflip = this.randomElement(this.xflips);
+        this.reverse = this.randomElement(this.reverses);
+        this.colour = this.randomElement(this.colours);
+        this.car = p.cars[0]
+        this.track = tracksOG[3]
+        this.trackImgName = this.track.fnames[0] 
     }
     randCounty() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
@@ -2441,7 +2450,6 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-
     randCountry() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
@@ -2453,8 +2461,6 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-
-
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
@@ -2514,14 +2520,14 @@ class SessionSetter {
         // this.track.startY = 450;
     }
     randGenOG() {
+        // log("RandOG")
         this.scale = this.randomElement(this.scales);
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.track = this.randomElement(tracksOG);
-        this.trackImgName = this.randomElement(p.tracks)
-        // this.car = this.randomElement(p.cars);
+        this.trackImgName = this.randomElement(this.track.fnames)
         this.car = p.cars[0]
     }
     boroughSeriesOG() {
@@ -2547,8 +2553,6 @@ class SessionSetter {
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
     }
-
-
     boroughSeriesRevOG() {
         this.scale = { ppm: 7, mpp: 0.4 };
         this.yflip = false;
@@ -3114,7 +3118,7 @@ class FPS {
 }
 class ResetButton {
     constructor() {
-        this.fontsize = 15 * pixRat;
+        this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
 
         this.x0 = X - this.w;
@@ -3122,7 +3126,6 @@ class ResetButton {
         this.en = null;
         this.text = 'Reset'
 
-        this.fontsize = 15 * pixRat;
         this.fontFamily = fontFamily;
         this.ch = this.fontsize + 20 * pixRat;
         this.cw = pixRat * 100;
@@ -3794,7 +3797,6 @@ class TimeTravel {
         // ctx.rect(this.xR, this.y0, this.w, this.h)
         // ctx.stroke();
 
-
         ctx.beginPath();
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
@@ -3813,7 +3815,6 @@ class TimeTravel {
             ctx.fillStyle = "darkGrey";
         }
         ctx.fillText(">", this.xR + this.w / 2, this.yPos);
-
 
         // ctx.beginPath();
         // ctx.textAlign = "center";
@@ -3957,14 +3958,12 @@ class DocPanel {
     }
 }
 
-
 let log = console.log;
 let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev
 
 urlArgHandler();
-// log('Dev:', dev)
 
-// import parameter object
+// import parameter object, input data for car
 import { p } from './params.js'
 import { tracksLB } from './trackParmsLB.js'
 import { tracksEC } from './trackParmsEC.js'
@@ -3972,7 +3971,7 @@ import { tracksOG } from './trackParmsOG.js'
 import { tracksWC } from './trackParmsWC.js'
 const sessionPrefix = p.version.n
 
-let Fps = new FPS();
+let Fps = new FPS(); // frames per second handler
 
 // set API URL
 let serverOveride = false;
@@ -3984,18 +3983,15 @@ if ((dev || location.hostname === "localhost" || location.hostname === "127.0.0.
 else {
     apiURL = 'https://bitmapRacer.eu.pythonanywhere.com'
 }
-// log(apiURL)
 
 // screen set up
-let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, xct, yct, yOff, halfMinDim, dynLookAhead, Lmax, isNamedTrack = false
+let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, xct, yct, yOff, halfMinDim, dynLookAhead, Lmax
 let PPM;// init drawing scale, screen pixels per metre - pre zoom
 fs.resize();
 
-
-
 // draw constants
 const fontFamily = 'monospace';
-const fontSizeBase = 15;
+const fontSizeBase = 13;
 const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
@@ -4003,15 +3999,12 @@ const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 const zoomBase = 1.2
 const zoomMax = 0.5
 const zoomSpeed = 0.2
-let zoom=1, zoomTarget, zoomMult;
-//docs
-let docPanel = new DocPanel();
-// let zoom = p.draw.zoom; //initial global zoom - half implemented, need to adjust track cropping, runs slow on mobile
+let zoom=1, zoomTarget
 
-let timeTravel = new TimeTravel();
-
-let flash = new Flash();
-let sessionLogger = new SessionLogger(timeTravelDaysURL, dev);
+let docPanel = new DocPanel(); //handles info (?) screen
+let timeTravel = new TimeTravel(); //session browsing
+let flash = new Flash(); //on-screen messaging
+let sessionLogger = new SessionLogger(timeTravelDaysURL, dev);  // handles all record keeping
 let name = new Name();
 let viewMode = new ViewMode();
 let resetButton = new ResetButton();
@@ -4019,29 +4012,15 @@ let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
 sessionLogger.updateYesterRank();
-
-
-// set session parameters, seeded with daily session name, unless special case
-let setter = new SessionSetter(sessionLogger.versionBase);
-setter.set(sessionLogger.currentSesh)
-
+let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
+setter.set(sessionLogger.currentSesh) // set track ased on current session ID
 let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
-// control set up
-// const forceBrake = false;
-// const forceLeft = false;
-let inputState = new InputState;
+let inputState = new InputState;// input setup
 let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
-
-//track and lapCounter set up
-let track = new Track()
+let track = new Track() //track and lapCounter set up
 let lapCounter = new LapCounter(track.gates);
-
-// car set up
-let car = new Car();
-
-//ghost set up
-
-let ghost = new Ghost();
+let car = new Car();// car set up
+let ghost = new Ghost();//ghost set up
 
 fs.addListeners(inputState);
 
@@ -4057,37 +4036,3 @@ if (lonBorMode || p.track.name) {
 else {
     flash.flash("Welcome")
 }
-
-// flash.flash("test 1")
-// flash.flash("test 2")
-// flash.flash("test 3")
-
-// log(hiScores.times)
-
-// // flash.flash("Welcome to " + p.track.name)
-// document.addEventListener('touchstart', function (e) {
-
-//     // is not near edge of view, exit
-//     if (e.pageX > 100 && e.pageX < window.innerWidth - 100) return;
-//     // prevent swipe to navigate gesture
-//     e.preventDefault();
-
-// },{passive:false});
-
-// navigation.addEventListener('navigate', (e) => {
-//     // Prevent default behavior of leaving the screen
-//     e.preventDefault();
-//     flash.flash('Never Give Up');
-//     log('navigation')
-// })
-
-// window.onbeforeunload = function () {
-//     return "Noooooooo";
-// }
-
-// window.addEventListener('beforeunload', (event) => {
-//     // Cancel the event as stated by the standard.
-//     event.preventDefault();
-//     // Chrome requires returnValue to be set.
-//     event.returnValue = 'meow';
-// });
