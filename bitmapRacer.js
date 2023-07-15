@@ -2307,6 +2307,7 @@ class SessionLogger {
 }
 class SessionSetter {
     constructor(seedstr) {
+        // log("seed",seedstr)
         this.colours = ['red', 'gold', 'orange', 'greenyellow', 'cornflowerblue', 'hotpink', 'blueviolet']
         this.xflips = [false, true]
         this.yflips = [false, true]
@@ -2460,6 +2461,7 @@ class SessionSetter {
         this.track = this.randomElement(tracksWC);
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
+        // log("scale",this.scale)
     }
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
@@ -2585,10 +2587,10 @@ class SessionSetter {
 
         let maxPPM = 4096 / this.track.x / p.trackSetup.metresPerPix;
 
-        log("target PPM", PPM)
-        log("max PPM", maxPPM)
+        // log("target PPM", PPM)
+        // log("max PPM", maxPPM)
         if (PPM > maxPPM) {
-            log('targetPPM', PPM, 'limited to', maxPPM);
+            // log('targetPPM', PPM, 'limited to', maxPPM);
             // zoomMult = PPM / maxPPM;
             // log('zoomMult:', zoomMult)
             // PPM = Math.floor(maxPPM);
