@@ -1586,6 +1586,7 @@ class HiScoresWeb {
         this.n = 0;
         this.nMax = 5;
         // this.times;
+        this.yesterChamp='';
 
 
         this.nMaxLapCounts = showLapCount ? 10 : 5;
@@ -1596,8 +1597,10 @@ class HiScoresWeb {
 
         // this.version = p.version.n;
         this.version = sessionLogger.version;
+        this.yesterVersion=sessionLogger.yesterVersion
         // this.getTimes(this.version);
         this.getLaps(this.version, hiScores.times[0]);
+        this.setYesterChamp()
     }
 
     // getTimes(version) {
@@ -1646,6 +1649,20 @@ class HiScoresWeb {
 
         }
     }
+    setYesterChamp() {
+        fetch(apiURL + '/get_competingLaps?version=' + this.yesterVersion + '&time=0')
+                .then(response => response.json())
+                .then(data => {
+                    // this.lapCounts = data
+                    // this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
+                    // log("response:")
+                    // log('yesterLaps', data)
+                    this.yesterChamp=data[0][2]
+                    // log(this.yesterChamp)
+
+                });
+
+        }
 
 
 
@@ -1672,7 +1689,7 @@ class HiScoresWeb {
             });
     }
 
-    draw(ctx) {
+   draw(ctx) {
 
         // if (this.showLapCounts) {
         if (this.lapCounts.length > 0) {
@@ -1682,8 +1699,17 @@ class HiScoresWeb {
             ctx.textBaseline = "top";
             ctx.fillStyle = "white";
             for (let i = 0; i < this.nLapCounts; i++) {
+
+                if (this.yesterChamp==this.lapCounts[i][2]){
+                    this.champSym='*';
+                }
+                else{
+                    this.champSym='';
+                }
+
+
                 if (showLapCount == 1) {
-                    this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' '); // lap count
+                    this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' ') + ' '; // lap count
                     this.posStr = i + 1;
                 }
                 else {
@@ -1692,7 +1718,9 @@ class HiScoresWeb {
                 }
 
                 ctx.fillText(
-                    this.countStr + " " + // nLaps
+                    
+                    this.countStr + // nLaps
+                    this.champSym + // yesterWin asterisk
                     this.posStr + " " + //position
                     fs.pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                     fs.formatDuration(this.lapCounts[i][0])   //best lap time
@@ -4013,7 +4041,7 @@ let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
-sessionLogger.updateYesterRank();
+// sessionLogger.updateYesterRank();
 let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
 setter.set(sessionLogger.currentSesh) // set track ased on current session ID
 let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
