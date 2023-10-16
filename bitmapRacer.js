@@ -1283,33 +1283,58 @@ class LapCounter {
         this.yPos = (1 + 1.2 * fontSizeBase) * pixRat;
         this.fontFamily = fontFamily;
         this.void = false
-        this.voidText = '';
+
+
+        //multilap vars
+        if (!multilap){
+            multilapn=1;
+        }
+        log('mln =',multilapn)
+        this.lapn=0
     }
     voidLap() {
         // log('voiding')
         this.void = true;
-        this.voidText = "Void";
     }
     draw(ctx) {
         ctx.beginPath();
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
+        if (this.void){
+            ctx.fillStyle = "red";
+        }
+        else{
         ctx.fillStyle = "white";
+        }
         ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
+        if (this.lapn==0){
+            ctx.fillText(fs.formatDurationTenth(0), X / 2, this.yPos); 
+        }
+        else{
         ctx.fillText(fs.formatDurationTenth(this.lapTimePh), X / 2, this.yPos);
+        }
         // ctx.fillText(fs.formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
-
+        
+        if (this.void){
         ctx.beginPath();
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
         ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText(this.voidText, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
+        ctx.fillText('Void', X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
+        }
+        else if (multilap){
+            ctx.beginPath();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillStyle = "white";
+            ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
+            ctx.fillText('Lap ' +this.lapn+'/'+multilapn, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
+        }
 
     }
-
     lapComplete() {
         // log('Complete')
         // this.lapTimes.push(this.lapTime)
@@ -1330,22 +1355,32 @@ class LapCounter {
         sessionLogger.checkLive();
     }
     gateCrossed(n) {
-        // log("gate", n, "next", this.nextCheck, "final", this.finalCheck)
-        if (n == 0) {
-            // log('lapcomplete:', this.nextCheck == this.finalCheck, !this.void)
-            if ((this.nextCheck == this.finalCheck) & !this.void) {
-                this.lapComplete()
-            }
-            else {
+        if (n == 0) { 
+        // start/finish line crossed
+            // if (this.void & (this.nextCheck == this.finalCheck)){
+            if (this.void){
                 this.lastLap = 0;
                 hiScores.badLap();
-            }
-            if ((this.nextCheck == this.finalCheck) & this.void) {
                 sessionLogger.stats.voids++;
                 sessionLogger.setLocalStats();
+                this.reset()
             }
-            this.reset()
+            else if (this.nextCheck == this.finalCheck) {
+                if(this.lapn == multilapn){ // lap complete
+                    this.lapComplete() ;
+                    this.reset();
+                }
+                else {  //next lap 
+                    this.lapn++;
+                    this.nextCheck=1;
+                }
+            }
+            else {
+                // bad lap
+                this.reset()
+            }
         }
+       
         else if (n == this.nextCheck) {
             // log('forward next')
             this.nextCheck++;
@@ -1357,7 +1392,7 @@ class LapCounter {
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 1;
         this.void = false;
-        this.voidText = '';
+        this.lapn=1;
 
         ghost.started = true;
         ghost.newLap();
@@ -1368,8 +1403,9 @@ class LapCounter {
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 0;
         this.void = false;
-        this.voidText = '';
+        this.lapn=0;
         sessionLogger.setCountDown();
+
 
         // ghost.started = true;
         // ghost.newLap();
@@ -1709,7 +1745,7 @@ class HiScoresWeb {
 
 
                 if (showLapCount == 1) {
-                    this.countStr = fs.pad((this.lapCounts[i][1]).toString(), 5, ' ') + ' '; // lap count
+                    this.countStr = this.lapCounts[i][1].toString() + ' '; // lap count
                     this.posStr = i + 1;
                 }
                 else {
@@ -1718,9 +1754,8 @@ class HiScoresWeb {
                 }
 
                 ctx.fillText(
-                    
-                    this.countStr + // nLaps
                     this.champSym + // yesterWin asterisk
+                    this.countStr + // nLaps
                     this.posStr + " " + //position
                     fs.pad(this.lapCounts[i][2], 3, ' ') + " " +//name
                     fs.formatDuration(this.lapCounts[i][0])   //best lap time
@@ -1956,7 +1991,7 @@ class SessionLogger {
         this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
         this.qText = '';
-        this.nLaps2Qualify = 10;
+        this.nLaps2Qualify = 3;
         if (timeTravelDaysURL != 0) { // tt url arg overides session browser
             this.timeTravelDays = timeTravelDaysURL;
         }
@@ -1980,8 +2015,16 @@ class SessionLogger {
         if (lonBorMode) {
             this.version = '03-dev-LB' + lonBor
         }
-
         this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
+
+        if (multilap) {
+            this.version = this.version+'-ml_'+multilapn
+            this.yesterVersion = this.yesterVersion + '-ml_' + multilapn
+        }
+
+
+
+
         this.currentRank = 0;
         this.currentBestLap = 0;
         this.currentnLaps = 0;
@@ -2290,7 +2333,7 @@ class SessionLogger {
             this.qText = 'Qualified!';
         }
         else {
-            this.qText = 'Laps to go: ' + (this.nLaps2Qualify - this.currentnLaps);
+            this.qText = 'Races to Q: ' + (this.nLaps2Qualify - this.currentnLaps);
         }
         ctx.beginPath();
         ctx.textAlign = "right";
@@ -3249,6 +3292,18 @@ let fs = function () {
         ctx.lineTo(x1[0], x1[1]);
         ctx.stroke();
     }
+    function drawMultiLapDebug() {
+        ctx.fillStyle = "white"
+        ctx.textAlign = "left"
+        ctx.font = 10 * pixRat + 'px ' + fontFamily;
+        let x0 = 100
+
+        let debugTxt1='lap '+lapCounter.lapn+'/'+multilapn
+        ctx.fillText(debugTxt1, 5, x0 + 10, 500)
+        let debugTxt2 = 'check ' + lapCounter.nextCheck + '/' + lapCounter.finalCheck
+        ctx.fillText(debugTxt2, 5, x0 + 20, 500)
+
+    }
     function drawDebug() {
         // xw0 = Math.round(car.wheels[0].xa / scl);
         // yw0 = Math.round(car.wheels[0].ya / scl);
@@ -3503,6 +3558,9 @@ let fs = function () {
         return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
     }
     function formatDuration(duration) {
+        if (duration==0){
+            return "--.---"
+        }
         var seconds = Math.abs(Math.floor(duration / 1000)),
             h = (seconds - seconds % 3600) / 3600,
             m = (seconds - seconds % 60) / 60 % 60,
@@ -3512,6 +3570,10 @@ let fs = function () {
         return pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
     }
     function formatDurationTenth(duration) {
+        if (duration==0){
+            return '-:--.-'
+        }
+        else{
         var seconds = Math.abs(Math.floor(duration / 1000)),
             h = (seconds - seconds % 3600) / 3600,
             m = (seconds - seconds % 60) / 60 % 60,
@@ -3520,6 +3582,7 @@ let fs = function () {
             ts = Math.floor(ms / 100);
         // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
         return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
+        }
     }
     function intersects(a, b, c, d, p, q, r, s) {
         // returns true if the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
@@ -3654,6 +3717,7 @@ let fs = function () {
         submitName: submitName,
         drawDebug: drawDebug,
         drawSpeedo: drawSpeedo,
+        drawMultiLapDebug:drawMultiLapDebug,
     }
 }();
 function anim() {
@@ -3759,6 +3823,9 @@ function anim() {
         fs.drawHUD();
         car.drawHUD(ctx);
     }
+
+    // fs.drawMultiLapDebug();
+
     hiScores.draw(ctx);
     hiScoresWeb.draw(ctx);
     sessionLogger.draw(ctx);
@@ -3785,8 +3852,11 @@ function urlArgHandler() {
     lonBorMode = urlParams.has('lb')
     lonBor = parseInt(urlParams.get('lb'));
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb');
+    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
     qdev = urlParams.has('qdev')
+    multilap = urlParams.get('ml')>1
+    multilapn = urlParams.get('ml')
+
 }
 class TimeTravel {
     constructor() {
@@ -3846,12 +3916,6 @@ class TimeTravel {
         }
         ctx.fillText(">", this.xR + this.w / 2, this.yPos);
 
-        // ctx.beginPath();
-        // ctx.textAlign = "center";
-        // ctx.textBaseline = "bottom";
-        // ctx.fillStyle = "white";
-        // ctx.font = 15 * pixRat + 'px ' + fontFamily;
-        // ctx.fillText(this.voidText, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
     }
     contains0(ex, ey) {
         return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
@@ -3989,9 +4053,10 @@ class DocPanel {
 }
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev,multilap,multilapn
 
 urlArgHandler();
+// log('multilap',multilap,multilapn)
 
 // import parameter object, input data for car
 import { p } from './params.js'
