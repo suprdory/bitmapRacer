@@ -524,6 +524,9 @@ class Car {
             // this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
         }
         else {
+            // this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
+            //     this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
+
             this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
                 this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
 
@@ -573,10 +576,10 @@ class Car {
                 this.wheels[3].brake = Math.max(0, this.wheels[3].brake - this.brakeRate / 2 * dt);
                 
                 // reverse thrust
-                this.wheels[0].torque = Math.max(-this.torqueMax / 2 * (1 - this.fade), this.wheels[0].torque - this.torqueRate / 2 * dt);
-                this.wheels[1].torque = Math.max(-this.torqueMax / 2 * (1 - this.fade), this.wheels[1].torque - this.torqueRate / 2 * dt);
-                this.wheels[2].torque = Math.max(-this.torqueMax / 2 * (this.fade), this.wheels[2].torque - this.torqueRate / 2 * dt);
-                this.wheels[3].torque = Math.max(-this.torqueMax / 2 * (this.fade), this.wheels[3].torque - this.torqueRate / 2 * dt);
+                this.wheels[0].torque = Math.max(-this.torqueMax / 4 * (1 - this.fade), this.wheels[0].torque - this.torqueRate / 2 * dt);
+                this.wheels[1].torque = Math.max(-this.torqueMax / 4 * (1 - this.fade), this.wheels[1].torque - this.torqueRate / 2 * dt);
+                this.wheels[2].torque = Math.max(-this.torqueMax / 4 * (this.fade), this.wheels[2].torque - this.torqueRate / 2 * dt);
+                this.wheels[3].torque = Math.max(-this.torqueMax / 4 * (this.fade), this.wheels[3].torque - this.torqueRate / 2 * dt);
             }
 
         }
@@ -873,13 +876,19 @@ class Car {
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / this.stiffness;
             // log(wh.load)
-            if (this.ulon < 1) {
+            
+            // //previous Fcorn
+            // wh.n.Fcorn.latLast = wh.n.Fcorn.lat; 
+            // wh.n.Fcorn.lonLast = wh.n.Fcorn.lon;
+
+            if (this.ulon < .1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * this.stiffness * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * this.stiffness * .1;
                 // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
             }
-            else if (Math.abs(slipAngle) < skidThresh) {
+            else 
+            if (Math.abs(slipAngle) < skidThresh) {
                 wh.skidFac = 1;
                 // let maximp = dt * this.m * this.ulat
                 wh.n.Fcorn.lat = -slipAngle * cosTh * this.stiffness;
@@ -892,7 +901,17 @@ class Car {
                 wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
                 // log("corn: skid")
             }
-
+            // // test for Fcorn oscillation and attenuate
+            // if (wh.n.Fcorn.lat * wh.n.Fcorn.latLast == 0){
+            //     log("Fcorn.lat Osc")
+            //     // wh.n.Fcorn.lat=0;
+            //     wh.n.Fcorn.lat = wh.n.Fcorn.lat*0.3;
+            // }
+            // if (wh.n.Fcorn.lon * wh.n.Fcorn.lonLast == 0) {
+            //     log("Fcorn.lon Osc")
+            //     // wh.n.Fcorn.lon = 0;
+            //     wh.n.Fcorn.lon = wh.n.Fcorn.lon*0.3;
+            // }
 
             // let alpha0 = 8; // should pass as car param, slip angle in degs at Max lat force, Fmax
             // let alpha = 180 / Math.PI * Math.atan2(wh.n.u.latWheel / wh.n.u.lonWheel); // slipangle in degs
@@ -3845,11 +3864,11 @@ function anim() {
         leftBtn.draw(ctx);
         rightBtn.draw(ctx);
     }
-    // if (carDev) {
+    if (carDev) {
         fs.drawDebug();
         fs.drawHUD();
         car.drawHUD(ctx);
-    // }
+    }
 
     // fs.drawMultiLapDebug();
 
