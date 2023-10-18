@@ -160,7 +160,7 @@ class Track {
                 else if (hx >= 70 & hx <= 150) { // green
                     sfcType = 'grass';
                 }
-                else if ((hx > 330 | hx < 50) & lx < 75 & lx >10) { //dark red/yellow i.e. brown
+                else if ((hx > 330 | hx < 50) & lx < 75 & lx > 10) { //dark red/yellow i.e. brown
                     sfcType = 'mud';
                 }
                 else {
@@ -421,7 +421,6 @@ class Car {
             this.wheels[i].ya = this.y;
         }
     }
-
     draw(ctx, xc, yc) {
         let x;
 
@@ -539,7 +538,7 @@ class Car {
             this.wheels[2].torque = Math.min(this.torqueMax / 2 * (this.fade), this.wheels[2].torque + this.torqueRate / 2 * dt);
             this.wheels[3].torque = Math.min(this.torqueMax / 2 * (this.fade), this.wheels[3].torque + this.torqueRate / 2 * dt);
         }
-        else {
+        else if (!inputState.down) {
             this.wheels[0].torque = Math.max(0, this.wheels[0].torque - this.torqueRate / 2 * dt);
             this.wheels[1].torque = Math.max(0, this.wheels[1].torque - this.torqueRate / 2 * dt);
             this.wheels[2].torque = Math.max(0, this.wheels[2].torque - this.torqueRate / 2 * dt);
@@ -551,11 +550,35 @@ class Car {
             // this.wheels[1].torque = 0;
             // this.wheels[2].torque = 0;
             // this.wheels[3].torque = 0;
-            // 4 wheel braking
-            this.wheels[0].brake = Math.min(this.brakeMax / 2 * (1 - this.brakeFade), this.wheels[0].brake + this.brakeRate / 2 * dt);
-            this.wheels[1].brake = Math.min(this.brakeMax / 2 * (1 - this.brakeFade), this.wheels[1].brake + this.brakeRate / 2 * dt);
-            this.wheels[2].brake = Math.min(this.brakeMax / 2 * (this.brakeFade), this.wheels[2].brake + this.brakeRate / 2 * dt);
-            this.wheels[3].brake = Math.min(this.brakeMax / 2 * (this.brakeFade), this.wheels[3].brake + this.brakeRate / 2 * dt);
+            if (this.ulon > 0.1){
+                // relax throttle
+                this.wheels[0].torque = Math.max(0, this.wheels[0].torque - this.torqueRate / 2 * dt);
+                this.wheels[1].torque = Math.max(0, this.wheels[1].torque - this.torqueRate / 2 * dt);
+                this.wheels[2].torque = Math.max(0, this.wheels[2].torque - this.torqueRate / 2 * dt);
+                this.wheels[3].torque = Math.max(0, this.wheels[3].torque - this.torqueRate / 2 * dt);
+
+                // 4 wheel braking
+                this.wheels[0].brake = Math.min(this.brakeMax / 2 * (1 - this.brakeFade), this.wheels[0].brake + this.brakeRate / 2 * dt);
+                this.wheels[1].brake = Math.min(this.brakeMax / 2 * (1 - this.brakeFade), this.wheels[1].brake + this.brakeRate / 2 * dt);
+                this.wheels[2].brake = Math.min(this.brakeMax / 2 * (this.brakeFade), this.wheels[2].brake + this.brakeRate / 2 * dt);
+                this.wheels[3].brake = Math.min(this.brakeMax / 2 * (this.brakeFade), this.wheels[3].brake + this.brakeRate / 2 * dt);
+            
+            
+            }
+            if (this.ulon <= 0.1) {
+                
+                this.wheels[0].brake = Math.max(0, this.wheels[0].brake - this.brakeRate / 2 * dt);
+                this.wheels[1].brake = Math.max(0, this.wheels[1].brake - this.brakeRate / 2 * dt);
+                this.wheels[2].brake = Math.max(0, this.wheels[2].brake - this.brakeRate / 2 * dt);
+                this.wheels[3].brake = Math.max(0, this.wheels[3].brake - this.brakeRate / 2 * dt);
+                
+                // reverse thrust
+                this.wheels[0].torque = Math.max(-this.torqueMax / 2 * (1 - this.fade), this.wheels[0].torque - this.torqueRate / 2 * dt);
+                this.wheels[1].torque = Math.max(-this.torqueMax / 2 * (1 - this.fade), this.wheels[1].torque - this.torqueRate / 2 * dt);
+                this.wheels[2].torque = Math.max(-this.torqueMax / 2 * (this.fade), this.wheels[2].torque - this.torqueRate / 2 * dt);
+                this.wheels[3].torque = Math.max(-this.torqueMax / 2 * (this.fade), this.wheels[3].torque - this.torqueRate / 2 * dt);
+            }
+
         }
         else {
             this.wheels[0].brake = Math.max(0, this.wheels[0].brake - this.brakeRate / 2 * dt);
@@ -850,7 +873,7 @@ class Car {
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / this.stiffness;
             // log(wh.load)
-            if (this.U < 1) {
+            if (this.ulon < 1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * this.stiffness * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * this.stiffness * .1;
@@ -1286,11 +1309,11 @@ class LapCounter {
 
 
         //multilap vars
-        if (!multilap){
-            multilapn=1;
+        if (!multilap) {
+            multilapn = 1;
         }
-        log('mln =',multilapn)
-        this.lapn=0
+        log('mln =', multilapn)
+        this.lapn = 0
     }
     voidLap() {
         // log('voiding')
@@ -1300,38 +1323,38 @@ class LapCounter {
         ctx.beginPath();
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        if (this.void){
+        if (this.void) {
             ctx.fillStyle = "red";
         }
-        else{
-        ctx.fillStyle = "white";
+        else {
+            ctx.fillStyle = "white";
         }
         ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
-        if (this.lapn==0){
-            ctx.fillText(fs.formatDurationTenth(0), X / 2, this.yPos); 
+        if (this.lapn == 0) {
+            ctx.fillText(fs.formatDurationTenth(0), X / 2, this.yPos);
         }
-        else{
-        ctx.fillText(fs.formatDurationTenth(this.lapTimePh), X / 2, this.yPos);
+        else {
+            ctx.fillText(fs.formatDurationTenth(this.lapTimePh), X / 2, this.yPos);
         }
         // ctx.fillText(fs.formatDurationTenth(this.lapTime), X / 2, 20 + this.yPos * pixRat);
         // ctx.fillText("Best: " + formatDuration(this.bestLap), this.xPos - 100 * pixRat, this.yPos * pixRat)
         // ctx.fillText("Last: " + formatDuration(this.lastLap), this.xPos + 100 * pixRat, this.yPos * pixRat)
-        
-        if (this.void){
-        ctx.beginPath();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "bottom";
-        ctx.fillStyle = "white";
-        ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
-        ctx.fillText('Void', X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
-        }
-        else if (multilap){
+
+        if (this.void) {
             ctx.beginPath();
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
             ctx.fillStyle = "white";
             ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
-            ctx.fillText('Lap ' +this.lapn+'/'+multilapn, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
+            ctx.fillText('Void', X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
+        }
+        else if (multilap) {
+            ctx.beginPath();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillStyle = "white";
+            ctx.font = fontSizeBase * pixRat + 'px ' + this.fontFamily;
+            ctx.fillText('Lap ' + this.lapn + '/' + multilapn, X / 2, Y - Y / 3 * isTouch - 5 * pixRat);
         }
 
     }
@@ -1355,10 +1378,10 @@ class LapCounter {
         sessionLogger.checkLive();
     }
     gateCrossed(n) {
-        if (n == 0) { 
-        // start/finish line crossed
+        if (n == 0) {
+            // start/finish line crossed
             // if (this.void & (this.nextCheck == this.finalCheck)){
-            if (this.void){
+            if (this.void) {
                 this.lastLap = 0;
                 hiScores.badLap();
                 sessionLogger.stats.voids++;
@@ -1366,13 +1389,13 @@ class LapCounter {
                 this.reset()
             }
             else if (this.nextCheck == this.finalCheck) {
-                if(this.lapn == multilapn){ // lap complete
-                    this.lapComplete() ;
+                if (this.lapn == multilapn) { // lap complete
+                    this.lapComplete();
                     this.reset();
                 }
                 else {  //next lap 
                     this.lapn++;
-                    this.nextCheck=1;
+                    this.nextCheck = 1;
                 }
             }
             else {
@@ -1380,7 +1403,7 @@ class LapCounter {
                 this.reset()
             }
         }
-       
+
         else if (n == this.nextCheck) {
             // log('forward next')
             this.nextCheck++;
@@ -1392,7 +1415,7 @@ class LapCounter {
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 1;
         this.void = false;
-        this.lapn=1;
+        this.lapn = 1;
 
         ghost.started = true;
         ghost.newLap();
@@ -1403,7 +1426,7 @@ class LapCounter {
         this.n0 = n - (1 - this.bez);
         this.nextCheck = 0;
         this.void = false;
-        this.lapn=0;
+        this.lapn = 0;
         sessionLogger.setCountDown();
 
 
@@ -1622,7 +1645,7 @@ class HiScoresWeb {
         this.n = 0;
         this.nMax = 5;
         // this.times;
-        this.yesterChamp='';
+        this.yesterChamp = '';
 
 
         this.nMaxLapCounts = showLapCount ? 10 : 5;
@@ -1633,7 +1656,7 @@ class HiScoresWeb {
 
         // this.version = p.version.n;
         this.version = sessionLogger.version;
-        this.yesterVersion=sessionLogger.yesterVersion
+        this.yesterVersion = sessionLogger.yesterVersion
         // this.getTimes(this.version);
         this.getLaps(this.version, hiScores.times[0]);
         this.setYesterChamp()
@@ -1687,18 +1710,18 @@ class HiScoresWeb {
     }
     setYesterChamp() {
         fetch(apiURL + '/get_competingLaps?version=' + this.yesterVersion + '&time=0')
-                .then(response => response.json())
-                .then(data => {
-                    // this.lapCounts = data
-                    // this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-                    // log("response:")
-                    // log('yesterLaps', data)
-                    this.yesterChamp=data[0][2]
-                    // log(this.yesterChamp)
+            .then(response => response.json())
+            .then(data => {
+                // this.lapCounts = data
+                // this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
+                // log("response:")
+                // log('yesterLaps', data)
+                this.yesterChamp = data[0][2]
+                // log(this.yesterChamp)
 
-                });
+            });
 
-        }
+    }
 
 
 
@@ -1725,7 +1748,7 @@ class HiScoresWeb {
             });
     }
 
-   draw(ctx) {
+    draw(ctx) {
 
         // if (this.showLapCounts) {
         if (this.lapCounts.length > 0) {
@@ -1736,11 +1759,11 @@ class HiScoresWeb {
             ctx.fillStyle = "white";
             for (let i = 0; i < this.nLapCounts; i++) {
 
-                if (this.yesterChamp==this.lapCounts[i][2]){
-                    this.champSym='*';
+                if (this.yesterChamp == this.lapCounts[i][2]) {
+                    this.champSym = '*';
                 }
-                else{
-                    this.champSym='';
+                else {
+                    this.champSym = '';
                 }
 
 
@@ -2012,7 +2035,7 @@ class SessionLogger {
         }
         else {
             this.version = this.versionBase;
-            this.yesterVersion=this.yesterBase;
+            this.yesterVersion = this.yesterBase;
         }
         if (multilap) {
             this.version = this.version + '-ml_' + multilapn;
@@ -2043,7 +2066,7 @@ class SessionLogger {
         // log("yesterstreak:", this.yesterStreak,
         //     "yesterqual:", this.yesterQual,
         //     "current streak:", this.outStreak,);
-        this.stats=this.getLocalStats();
+        this.stats = this.getLocalStats();
 
         this.checkLive()
     }
@@ -2067,7 +2090,7 @@ class SessionLogger {
         // log("gettingStats")
         let stats0 = { 'laps': 0, 'voids': 0, 'resets': 0 }
         if (localStorage.getItem('versionTimes')) {
-          
+
             let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
             let versionTimes = versionTimesList.filter(
                 obj => { return obj.version == this.version })
@@ -2075,13 +2098,13 @@ class SessionLogger {
             if (versionTimes.length > 0) {
                 // log("gettingStats:")
                 // log('versionTimes[0]:', versionTimes)
-                if (versionTimes[0].nLapsStat !== undefined){// stats exist
+                if (versionTimes[0].nLapsStat !== undefined) {// stats exist
                     log('stats exist')
-                   return { 'laps': versionTimes[0].nLapsStat, 'voids': versionTimes[0].nVoidsStat, 'resets': versionTimes[0].nResetsStat }
+                    return { 'laps': versionTimes[0].nLapsStat, 'voids': versionTimes[0].nVoidsStat, 'resets': versionTimes[0].nResetsStat }
                 }
                 return (stats0)
             }
-            else { return( stats0); }
+            else { return (stats0); }
         }
         else { return (stats0); }
     }
@@ -2366,13 +2389,13 @@ class SessionLogger {
             ctx.fillStyle = "dimGrey";
         }
         ctx.fillText("Q-Streak: " + (this.inStreak + this.qualified), X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 2 * this.fontsize)
-    
+
         ctx.fillStyle = "white";
         ctx.textAlign = "left";
-        ctx.fillText("L:" + this.stats.laps+" V:"+this.stats.voids+" R:"+this.stats.resets, 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
-    
-    
-    
+        ctx.fillText("L:" + this.stats.laps + " V:" + this.stats.voids + " R:" + this.stats.resets, 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat)
+
+
+
     }
 }
 class SessionSetter {
@@ -2395,9 +2418,9 @@ class SessionSetter {
         this.seed = this.cyrb128(seedstr)[2]
         this.rand = this.mulberry32(this.seed);
     }
-    set(sesh){
+    set(sesh) {
         this.randGenOG(); //required here to maintain rand call count for historical track sessions
-        
+
         if (sesh >= 19401 & sesh <= 19433) {
             this.randGenOG();
         }
@@ -2421,7 +2444,7 @@ class SessionSetter {
             log('RandOG')
             this.randGen();
         }
-        if (sesh >= 19544 & sesh <=19545) {
+        if (sesh >= 19544 & sesh <= 19545) {
             log('RandBC')
             this.randBC();
         }
@@ -2444,39 +2467,39 @@ class SessionSetter {
         }
         this.apply(p);
     }
-    randSel(){
-        this.trackTypeRand=this.rand()*100;
-        if (this.trackTypeRand<10){
+    randSel() {
+        this.trackTypeRand = this.rand() * 100;
+        if (this.trackTypeRand < 10) {
             this.randGen()
         }
-        else if (this.trackTypeRand<55){
+        else if (this.trackTypeRand < 55) {
             this.randCounty();
         }
-        else{
+        else {
             this.randBorough();
         }
-        
+
         // log(this.trackTypeRand)
     }
     randGen() {
 
         this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         // this.mult=2.0
-        this.scale = { ppm: 4+3 * this.mult, mpp: 0.4 / this.mult };
+        this.scale = { ppm: 4 + 3 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.car = p.cars[0]
-        this.trackSelRand=this.rand()
+        this.trackSelRand = this.rand()
         // this.trackSelRand=0.97;
-        if (this.trackSelRand < 0.3){
+        if (this.trackSelRand < 0.3) {
             this.track = tracksOG[0]
-            this.trackImgName = this.track.fnames[0] 
+            this.trackImgName = this.track.fnames[0]
         }
-        else if (this.trackSelRand <0.6){
+        else if (this.trackSelRand < 0.6) {
             this.track = tracksOG[1]
-            this.trackImgName = this.track.fnames[0]   
+            this.trackImgName = this.track.fnames[0]
         }
         else if (this.trackSelRand < 0.75) {
             this.track = tracksOG[2]
@@ -2490,25 +2513,25 @@ class SessionSetter {
     randGen1OG() {
 
         this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
-        this.scale = { ppm: 4+3 * this.mult, mpp: 0.4 / this.mult };
+        this.scale = { ppm: 4 + 3 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.car = p.cars[0]
         this.track = tracksOG[0]
-        this.trackImgName = this.track.fnames[0] 
+        this.trackImgName = this.track.fnames[0]
     }
     randBC() {
         this.mult = this.randomElement([0.4, 0.6, 0.8, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
-        this.scale = { ppm: 4+3 * this.mult, mpp: 0.4 / this.mult };
+        this.scale = { ppm: 4 + 3 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = this.randomElement(this.yflips);
         this.xflip = this.randomElement(this.xflips);
         this.reverse = this.randomElement(this.reverses);
         this.colour = this.randomElement(this.colours);
         this.car = p.cars[0]
         this.track = tracksOG[3]
-        this.trackImgName = this.track.fnames[0] 
+        this.trackImgName = this.track.fnames[0]
     }
     randCounty() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
@@ -2766,7 +2789,7 @@ class Ghost {
         this.ch = this.fontsize + 15 * pixRat;
         this.cw = pixRat * 100;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 0 * pixRat - this.ch-this.fontsize;
+        this.cy0 = Y - isTouch * Y / 3 - 0 * pixRat - this.ch - this.fontsize;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
@@ -3099,7 +3122,7 @@ class Ghost {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat-this.fontsize)
+        ctx.fillText('Ghost:' + this.dispText, + 4 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize)
     }
     contains(ex, ey) {
         // log(ex,ey)
@@ -3297,10 +3320,15 @@ let fs = function () {
         ctx.font = 10 * pixRat + 'px ' + fontFamily;
         let x0 = 100
 
-        let debugTxt1='lap '+lapCounter.lapn+'/'+multilapn
+        // let debugTxt1 = 'lap ' + lapCounter.lapn + '/' + multilapn
+        // ctx.fillText(debugTxt1, 5, x0 + 10, 500)
+        // let debugTxt2 = 'check ' + lapCounter.nextCheck + '/' + lapCounter.finalCheck
+        // ctx.fillText(debugTxt2, 5, x0 + 20, 500)
+
+        let debugTxt1 = 'ulon ' + Math.round(car.ulon*10)/10
         ctx.fillText(debugTxt1, 5, x0 + 10, 500)
-        let debugTxt2 = 'check ' + lapCounter.nextCheck + '/' + lapCounter.finalCheck
-        ctx.fillText(debugTxt2, 5, x0 + 20, 500)
+        // let debugTxt2 = 'check ' + lapCounter.nextCheck + '/' + lapCounter.finalCheck
+        // ctx.fillText(debugTxt2, 5, x0 + 20, 500)
 
     }
     function drawDebug() {
@@ -3366,13 +3394,13 @@ let fs = function () {
         //     Math.round(car.wheels[0].s),
         //     Math.round(car.wheels[0].l)
         // ], 100, 100)
-        let x0=100
-        ctx.fillText(debugTxt1, 5, x0+10, 500)
+        let x0 = 100
+        ctx.fillText(debugTxt1, 5, x0 + 10, 500)
         ctx.fillText(debugTxt2, 5, x0 + 20, 500)
-        ctx.fillText(debugTxt3, 5, x0+30, 500)
-        ctx.fillText(debugTxt4, 5, x0+40, 500)
-        ctx.fillText(debugTxt5, 5, x0+50, 500)
-        ctx.fillText(debugTxt6, 5, x0+60, 500)
+        ctx.fillText(debugTxt3, 5, x0 + 30, 500)
+        ctx.fillText(debugTxt4, 5, x0 + 40, 500)
+        ctx.fillText(debugTxt5, 5, x0 + 50, 500)
+        ctx.fillText(debugTxt6, 5, x0 + 60, 500)
         ctx.fillText(debugTxt7, 5, x0 + 70, 500)
         // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
         // ctx.fillText(nX + " " + nY, 100, 140);
@@ -3557,7 +3585,7 @@ let fs = function () {
         return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
     }
     function formatDuration(duration) {
-        if (duration==0){
+        if (duration == 0) {
             return "--.---"
         }
         var seconds = Math.abs(Math.floor(duration / 1000)),
@@ -3569,18 +3597,18 @@ let fs = function () {
         return pad(s.toString(), 2) + '.' + pad(ms.toString(), 3);
     }
     function formatDurationTenth(duration) {
-        if (duration==0){
+        if (duration == 0) {
             return '-:--.-'
         }
-        else{
-        var seconds = Math.abs(Math.floor(duration / 1000)),
-            h = (seconds - seconds % 3600) / 3600,
-            m = (seconds - seconds % 60) / 60 % 60,
-            s = seconds % 60,
-            ms = duration % 1000,
-            ts = Math.floor(ms / 100);
-        // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
-        return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
+        else {
+            var seconds = Math.abs(Math.floor(duration / 1000)),
+                h = (seconds - seconds % 3600) / 3600,
+                m = (seconds - seconds % 60) / 60 % 60,
+                s = seconds % 60,
+                ms = duration % 1000,
+                ts = Math.floor(ms / 100);
+            // return (duration < 0 ? '-' : '') + h + ':' + pad(m.toString(), 2) + ':' + pad(s.toString(), 2) +'.' + pad(ms.toString(),3);
+            return pad(m.toString(), 1) + ':' + pad(s.toString(), 2) + '.' + ts.toString();
         }
     }
     function intersects(a, b, c, d, p, q, r, s) {
@@ -3675,7 +3703,7 @@ let fs = function () {
     }
     function drawSpeedo() {
         let x0 = 10 * pixRat;
-        let y0 = Y - isTouch * Y / 3 - 20 * pixRat - fontSizeBase*pixRat;
+        let y0 = Y - isTouch * Y / 3 - 20 * pixRat - fontSizeBase * pixRat;
         let rad = 25 * pixRat;
         let th0 = Math.PI * 45 / 180;
         let th = car.U / car.maxUth * (Math.PI * 2 - 2 * th0) - Math.PI / 2 + th0;
@@ -3716,7 +3744,7 @@ let fs = function () {
         submitName: submitName,
         drawDebug: drawDebug,
         drawSpeedo: drawSpeedo,
-        drawMultiLapDebug:drawMultiLapDebug,
+        drawMultiLapDebug: drawMultiLapDebug,
     }
 }();
 function anim() {
@@ -3767,8 +3795,8 @@ function anim() {
         dynLookAhead = Math.min(lookAhead * p.car.gamma, Lmax) //desired look ahead distance
 
         // calc screen centre coords
-        xct = X / 2 - PPM  * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
-        yct = Y / 2 - PPM  * (car.y + car.uy * dynLookAhead) - yOff
+        xct = X / 2 - PPM * (car.x + car.ux * dynLookAhead)  //centre target, pan to this, screen pixel units
+        yct = Y / 2 - PPM * (car.y + car.uy * dynLookAhead) - yOff
         xc = xc + (xct - xc) * panSpeed //pan from old centre to target at pan speed 
         yc = yc + (yct - yc) * panSpeed
 
@@ -3817,11 +3845,11 @@ function anim() {
         leftBtn.draw(ctx);
         rightBtn.draw(ctx);
     }
-    if (carDev) {
+    // if (carDev) {
         fs.drawDebug();
         fs.drawHUD();
         car.drawHUD(ctx);
-    }
+    // }
 
     // fs.drawMultiLapDebug();
 
@@ -3832,7 +3860,6 @@ function anim() {
     viewMode.draw(ctx);
     resetButton.draw();
     docPanel.draw();
-    // drawInfo(ctx);
     flash.draw(ctx);
     // fs.drawHUD();
     fs.drawSpeedo();
@@ -3853,7 +3880,7 @@ function urlArgHandler() {
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
     qdev = urlParams.has('qdev')
-    multilap = urlParams.get('ml')>1
+    multilap = urlParams.get('ml') > 1
     multilapn = urlParams.get('ml')
 
 }
@@ -4052,7 +4079,7 @@ class DocPanel {
 }
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev,multilap,multilapn
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev, multilap, multilapn
 
 urlArgHandler();
 // log('multilap',multilap,multilapn)
@@ -4093,7 +4120,7 @@ const panSpeed = p.draw.panSpeed * 60 / Fps.fps; // fraction to target per frame
 const zoomBase = 1.2
 const zoomMax = 0.5
 const zoomSpeed = 0.2
-let zoom=1, zoomTarget
+let zoom = 1, zoomTarget
 
 let docPanel = new DocPanel(); //handles info (?) screen
 let timeTravel = new TimeTravel(); //session browsing
