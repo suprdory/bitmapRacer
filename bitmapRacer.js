@@ -2005,24 +2005,23 @@ class SessionLogger {
         // log(this.currentSesh, this.timeTravelDays)
         this.yesterSesh = this.currentSesh - 1;
         this.versionBase = sessionPrefix + '-' + this.currentSesh;
+        this.yesterBase = sessionPrefix + '-' + this.yesterSesh;
         if (dev) {
-            this.version = this.versionBase;
             this.version = this.versionBase + '-' + 'dev';
+            this.yesterVersion = this.yesterBase + '-' + 'dev';
         }
         else {
             this.version = this.versionBase;
+            this.yesterVersion=this.yesterBase;
         }
-        if (lonBorMode) {
-            this.version = '03-dev-LB' + lonBor
-        }
-        this.yesterVersion = sessionPrefix + '-' + this.yesterSesh;
-
         if (multilap) {
-            this.version = this.version+'-ml_'+multilapn
-            this.yesterVersion = this.yesterVersion + '-ml_' + multilapn
+            this.version = this.version + '-ml_' + multilapn;
+            this.yesterVersion = this.yesterVersion + '-ml_' + multilapn;
         }
 
-
+        if (lonBorMode) {
+            this.version = '03-dev-LB' + lonBor;
+        }
 
 
         this.currentRank = 0;
