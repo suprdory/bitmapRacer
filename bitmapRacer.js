@@ -553,7 +553,7 @@ class Car {
             // this.wheels[1].torque = 0;
             // this.wheels[2].torque = 0;
             // this.wheels[3].torque = 0;
-            if (this.ulon > 0.1){
+            if (this.ulon > 0.1) {
                 // relax throttle
                 this.wheels[0].torque = Math.max(0, this.wheels[0].torque - this.torqueRate / 2 * dt);
                 this.wheels[1].torque = Math.max(0, this.wheels[1].torque - this.torqueRate / 2 * dt);
@@ -565,16 +565,16 @@ class Car {
                 this.wheels[1].brake = Math.min(this.brakeMax / 2 * (1 - this.brakeFade), this.wheels[1].brake + this.brakeRate / 2 * dt);
                 this.wheels[2].brake = Math.min(this.brakeMax / 2 * (this.brakeFade), this.wheels[2].brake + this.brakeRate / 2 * dt);
                 this.wheels[3].brake = Math.min(this.brakeMax / 2 * (this.brakeFade), this.wheels[3].brake + this.brakeRate / 2 * dt);
-            
-            
+
+
             }
             if (this.ulon <= 0.1) {
-                
+
                 this.wheels[0].brake = Math.max(0, this.wheels[0].brake - this.brakeRate / 2 * dt);
                 this.wheels[1].brake = Math.max(0, this.wheels[1].brake - this.brakeRate / 2 * dt);
                 this.wheels[2].brake = Math.max(0, this.wheels[2].brake - this.brakeRate / 2 * dt);
                 this.wheels[3].brake = Math.max(0, this.wheels[3].brake - this.brakeRate / 2 * dt);
-                
+
                 // reverse thrust
                 this.wheels[0].torque = Math.max(-this.torqueMax / 4 * (1 - this.fade), this.wheels[0].torque - this.torqueRate / 2 * dt);
                 this.wheels[1].torque = Math.max(-this.torqueMax / 4 * (1 - this.fade), this.wheels[1].torque - this.torqueRate / 2 * dt);
@@ -876,7 +876,7 @@ class Car {
             let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             let skidThresh = maxF / this.stiffness;
             // log(wh.load)
-            
+
             // //previous Fcorn
             // wh.n.Fcorn.latLast = wh.n.Fcorn.lat; 
             // wh.n.Fcorn.lonLast = wh.n.Fcorn.lon;
@@ -887,20 +887,20 @@ class Car {
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * this.stiffness * .1;
                 // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
             }
-            else 
-            if (Math.abs(slipAngle) < skidThresh) {
-                wh.skidFac = 1;
-                // let maximp = dt * this.m * this.ulat
-                wh.n.Fcorn.lat = -slipAngle * cosTh * this.stiffness;
-                wh.n.Fcorn.lon = slipAngle * sinTh * this.stiffness;
-                // log("corn: tract")
-            }
-            else {
-                wh.skidFac = 2;
-                wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * maxF;
-                wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
-                // log("corn: skid")
-            }
+            else
+                if (Math.abs(slipAngle) < skidThresh) {
+                    wh.skidFac = 1;
+                    // let maximp = dt * this.m * this.ulat
+                    wh.n.Fcorn.lat = -slipAngle * cosTh * this.stiffness;
+                    wh.n.Fcorn.lon = slipAngle * sinTh * this.stiffness;
+                    // log("corn: tract")
+                }
+                else {
+                    wh.skidFac = 2;
+                    wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * maxF;
+                    wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
+                    // log("corn: skid")
+                }
             // // test for Fcorn oscillation and attenuate
             // if (wh.n.Fcorn.lat * wh.n.Fcorn.latLast == 0){
             //     log("Fcorn.lat Osc")
@@ -1378,13 +1378,10 @@ class LapCounter {
 
     }
     lapComplete() {
-        // log('Complete')
-        // this.lapTimes.push(this.lapTime)
         this.completeLapTimePh = Math.round((n - (1 - this.bez) - this.n0) * 1000 / Fps.fps);
         this.lastLap = this.completeLapTimePh;
         if ((this.lastLap < this.bestLap) || this.bestLap == 0) {
             this.bestLap = this.lapTime;
-            // ghost.saveLap();
         }
         ghost.completeLap(this.lastLap)
         hiScores.newLap(this.lastLap);
@@ -1521,8 +1518,8 @@ class HiScores {
         // this.version = p.version.n;
         this.version = sessionLogger.version;
         this.nLaps = 0;
-        this.nQual = 10;
-        this.qText = '';
+        // this.nQual = 10;
+        // this.qText = '';
         if (localStorage.getItem('versionTimes')) {
             // log('localStorage contains versionTimes')
             this.versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
@@ -1599,21 +1596,35 @@ class HiScores {
 
         if (timeTravel.ttDays == 0) {
             if (this.times[0] == 0) {
-                flash.flash("First Lap")
-                // ghost.saveLap();
+                if (multilap) {
+                    flash.flash("First Time");
+                }
+                else {
+                    flash.flash("First Lap");
+                }
 
                 sessionLogger.currentBestLap = t;
                 sessionLogger.updateRank();
             }
             else if (t < this.times[0]) {
-                // ghost.saveLap();
-                flash.flash("Best Lap!")
+                if (multilap) {
+                flash.flash("Best Time!")
+                }
+                else {
+                    flash.flash("Best Lap");
+                }
                 sessionLogger.currentBestLap = t;
                 sessionLogger.updateRank();
             }
-            else if (this.times[this.n - 1] != 0 & t < this.times[this.n - 1]) {
-                flash.flash("Good Lap")
+            else if (t < Math.max(...this.times)) {
+                if (multilap) {
+                    flash.flash("Good Time!")
+                }
+                else {
+                    flash.flash("Good Lap");
+                }
             }
+
             if (t < this.times[this.n - 1] || this.times[this.n - 1] == 0) {
 
                 this.times[this.n - 1] = t;
@@ -2471,9 +2482,13 @@ class SessionSetter {
             log('Rand1OG')
             this.randGen1OG();
         }
-        if (sesh >= 19553) {
+        if (sesh >= 19553 & sesh <= 19652) {
             log('RandCountry')
             this.randCountry();
+        }
+        if (sesh >= 19653) {
+            log('RandCountry+nLaps')
+            this.randCountrynLaps();
         }
         if (trackDev) {
             // this.setDev();
@@ -2575,6 +2590,21 @@ class SessionSetter {
         this.car = p.cars[0]
         // log("scale",this.scale)
     }
+    randCountrynLaps() {
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = false;
+        this.xflip = false;
+        this.colour = this.randomElement(this.colours);
+        this.reverse = this.randomElement([true, false]);
+        this.track = this.randomElement(tracksWC);
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+        this.randomizeMultiLap();
+
+    }
+
+
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
@@ -2588,6 +2618,26 @@ class SessionSetter {
     }
     randomElement(array) {
         return array[Math.floor(this.rand() * array.length)];
+    }
+    randomizeMultiLap() {
+        if (!multilapUrl) {
+            let rnd = this.rand()
+            if (rnd < 0.6) {
+                multilapn = 1;
+            }
+            else if (rnd < 0.8) {
+                multilapn = 2;
+            }
+            else if (rnd < 0.95) {
+                multilapn = 3;
+            }
+            else {
+                multilapn = 5;
+            }
+            multilap = multilapn > 1
+            log("random ml", rnd, multilapn, multilap)
+
+        }
     }
     setDev() {
         this.scale = { ppm: 8, mpp: 0.35 };
@@ -3344,7 +3394,7 @@ let fs = function () {
         // let debugTxt2 = 'check ' + lapCounter.nextCheck + '/' + lapCounter.finalCheck
         // ctx.fillText(debugTxt2, 5, x0 + 20, 500)
 
-        let debugTxt1 = 'ulon ' + Math.round(car.ulon*10)/10
+        let debugTxt1 = 'ulon ' + Math.round(car.ulon * 10) / 10
         ctx.fillText(debugTxt1, 5, x0 + 10, 500)
         // let debugTxt2 = 'check ' + lapCounter.nextCheck + '/' + lapCounter.finalCheck
         // ctx.fillText(debugTxt2, 5, x0 + 20, 500)
@@ -3899,8 +3949,10 @@ function urlArgHandler() {
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
     qdev = urlParams.has('qdev')
-    multilap = urlParams.get('ml') > 1
-    multilapn = urlParams.get('ml')
+
+    multilapUrl = urlParams.get('ml');// if false, sessionSetter can overwrite below multiLap params
+    multilap = urlParams.get('ml') > 1;
+    multilapn = urlParams.get('ml');
 
 }
 class TimeTravel {
@@ -4098,7 +4150,7 @@ class DocPanel {
 }
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev, multilap, multilapn
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev, multilapUrl, multilap, multilapn
 
 urlArgHandler();
 // log('multilap',multilap,multilapn)
@@ -4151,9 +4203,9 @@ let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 sessionLogger.updateRank();
-// sessionLogger.updateYesterRank();
+
 let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
-setter.set(sessionLogger.currentSesh) // set track ased on current session ID
+setter.set(sessionLogger.currentSesh) // set track based on current session ID
 let dt = p.car.gamma / Fps.fps; //time step, updated by FPS class after fps check/match
 let inputState = new InputState;// input setup
 let accBtn, brkBtn, leftBtn, rightBtn; // touch control buttons
@@ -4176,3 +4228,8 @@ if (lonBorMode || p.track.name) {
 else {
     flash.flash("Welcome")
 }
+if (multilap) {
+    flash.flash(multilapn + "-lap Race")
+}
+
+// log(hiScores.times,Math.max(...hiScores.times) )
