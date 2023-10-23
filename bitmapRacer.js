@@ -1611,14 +1611,14 @@ class HiScores {
                 flash.flash("Best Time!")
                 }
                 else {
-                    flash.flash("Best Lap");
+                    flash.flash("Best Lap!");
                 }
                 sessionLogger.currentBestLap = t;
                 sessionLogger.updateRank();
             }
             else if (t < Math.max(...this.times)) {
                 if (multilap) {
-                    flash.flash("Good Time!")
+                    flash.flash("Good Time")
                 }
                 else {
                     flash.flash("Good Lap");
