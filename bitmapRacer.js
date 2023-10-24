@@ -2067,7 +2067,7 @@ class SessionLogger {
             this.version = this.versionBase;
             this.yesterVersion = this.yesterBase;
         }
-        if (multilap) {
+        if (multilapUrl) {
             this.version = this.version + '-ml_' + multilapn;
             this.yesterVersion = this.yesterVersion + '-ml_' + multilapn;
         }
