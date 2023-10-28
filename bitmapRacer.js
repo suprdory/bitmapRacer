@@ -1591,9 +1591,7 @@ class HiScores {
     newLap(t) {
         this.nLaps++;
         // sessionLogger.currentnLaps++;
-
         this.last = t;
-
         if (timeTravel.ttDays == 0) {
             if (this.times[0] == 0) {
                 if (multilap) {
@@ -1602,9 +1600,7 @@ class HiScores {
                 else {
                     flash.flash("First Lap");
                 }
-
                 sessionLogger.currentBestLap = t;
-                sessionLogger.updateRank();
             }
             else if (t < this.times[0]) {
                 if (multilap) {
@@ -1614,7 +1610,6 @@ class HiScores {
                     flash.flash("Best Lap!");
                 }
                 sessionLogger.currentBestLap = t;
-                sessionLogger.updateRank();
             }
             else if (t < Math.max(...this.times)) {
                 if (multilap) {
@@ -1661,7 +1656,6 @@ class HiScores {
 
             }
         }
-
         sessionLogger.newLap(t);
     }
 }
@@ -1692,74 +1686,46 @@ class HiScoresWeb {
         this.setYesterChamp()
     }
 
-    // getTimes(version) {
-    //     fetch(apiURL + '/get_times?version=' + version)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             this.times = data
-    //             this.n = Math.min(this.nMax, data.length);
-    //             // log("response:")
-    //             // log(data)
-    //         });
-    // }
-    // getLaps(version, name) {
-    //     fetch(apiURL + '/get_nlaps?version=' + version + '&name=' + name)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             this.lapCounts = data
-    //             this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-    //             // log("response:")
-    //             // log(data)
-
-    //         });
-    // }
     getLaps(version, time) {
-        if (showLapCount == 1) {
-            fetch(apiURL + '/get_nlaps?version=' + version + '&time=' + time)
+            fetch(apiURL + '/get_laps?version=' + version + '&time=' + time)
                 .then(response => response.json())
                 .then(data => {
-                    this.lapCounts = data
-                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-                    // log("response:")
-                    // log('nLaps', data)
+                    log('getLaps()', data)
+                    // if (false){
+                    if (this.showLapCount) {
+                        this.lapCounts = data.laps;
+                        this.nLapCounts = Math.min(this.nMaxLapCounts, data.laps.length);
+                    }
+                    else{
+                        this.lapCounts = data.comp_laps;
+                        this.nLapCounts = Math.min(this.nMaxLapCounts, data.comp_laps.length);
+                    }
+                    sessionLogger.setRank(data.rank)
 
                 });
-        }
-        else {
-            fetch(apiURL + '/get_competingLaps?version=' + version + '&time=' + time)
-                .then(response => response.json())
-                .then(data => {
-                    this.lapCounts = data
-                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-                    // log("response:")
-                    // log('competingLaps', data)
-
-                });
-
-        }
     }
     setYesterChamp() {
-        fetch(apiURL + '/get_competingLaps?version=' + this.yesterVersion + '&time=0')
+        fetch(apiURL + '/get_laps?version=' + this.yesterVersion + '&time=0')
             .then(response => response.json())
             .then(data => {
-                // this.lapCounts = data
-                // this.nLapCounts = Math.min(this.nMaxLapCounts, data.length);
-                // log("response:")
-                // log('yesterLaps', data)
-                this.yesterChamp = data[0][2]
-                // log(this.yesterChamp)
+                // log('setYesterChamp()', data)
+                if (data.laps.length>0){
+                this.yesterChamp = data.laps[0][2]}
+                else {
+                    this.yesterChamp=''
+                }
+                log("yesterChamp:",this.yesterChamp)
 
             });
 
     }
 
-
-
-    postLap(version, name, time) {
+    postLap(version, name, time,bestTime) {
         let formData = new FormData();
         formData.append('name', name);
         formData.append('version', version);
         formData.append('time', time);
+        formData.append('bestTime', bestTime);
         // log(formData)
 
         fetch(apiURL + '/post_lap', {
@@ -1769,9 +1735,18 @@ class HiScoresWeb {
             .then(response => response.json())
             .then(data => {
                 // this.getTimes(this.version);
-                this.getLaps(this.version, hiScores.times[0]);
-                sessionLogger.updateRank();
-                // console.log(data);
+                // this.getLaps(this.version, hiScores.times[0]);
+                // sessionLogger.updateRank();
+                console.log("postLap:",data);
+                if (this.showLapCount) {
+                    this.lapCounts = data.laps;
+                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.laps.length);
+                }
+                else {
+                    this.lapCounts = data.comp_laps;
+                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.comp_laps.length);
+                }
+                sessionLogger.setRank(data.rank)
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -1796,14 +1771,12 @@ class HiScoresWeb {
                     this.champSym = '';
                 }
 
-
+                this.posStr = (this.lapCounts[i][3]).toString()
                 if (showLapCount == 1) {
                     this.countStr = this.lapCounts[i][1].toString() + ' '; // lap count
-                    this.posStr = i + 1;
                 }
                 else {
                     this.countStr = '';
-                    this.posStr = (this.lapCounts[i][3]).toString()
                 }
 
                 ctx.fillText(
@@ -1822,14 +1795,9 @@ class HiScoresWeb {
 
     newLap(t) {
         if (timeTravel.ttDays == 0) {
-            this.postLap(this.version, name.name, t);
+            this.postLap(this.version, name.name, t,Math.min(t,hiScores.times[0]));
         }
-        // if (this.lapCounts){
-        // if (t < this.lapCounts[0][0]) {
-        //     log(this.lapCounts)
-        // }}
 
-        // this.getTimes(this.version);
     }
 }
 class Name {
@@ -2341,44 +2309,40 @@ class SessionLogger {
         }
         // log("qtest: yStreak", this.yesterStreak, "outStreak:", this.outStreak, "cQual:", this.qualified)
     }
-    updateRank() {
-        fetch(apiURL + '/get_rank?version=' + this.version + '&time=' + this.currentBestLap)
-            .then(response => response.json())
-            .then(data => {
-                this.currentRank = data
-                // log('current rank:' + data)
-            });
+    setRank(rankData){
+        this.currentRank = rankData
+        log('setRank():' + rankData)
     }
-    updateYesterRank() {
-        if (localStorage.getItem('versionTimes')) {
-            // log('localStorage contains versionTimes')
-            let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
-            let versionTimes = versionTimesList.filter(obj => { return obj.version == this.yesterVersion })
-            if (versionTimes.length > 0) {
-                // log('correct version loaded')
-                // log(versionTimes)
-                // this.times = versionTimes[0].times;
-                // this.nLaps = versionTimes[0].nLaps;
-                // sessionLogger.currentnLaps = this.nLaps;
-                this.yesterBestLap = versionTimes[0].times[0];
-            }
-            else {
-                this.yesterBestLap = 0;
-            }
-        }
-        else {
-            this.yesterBestLap = 0;
-        }
+    // updateYesterRank() {
+    //     if (localStorage.getItem('versionTimes')) {
+    //         // log('localStorage contains versionTimes')
+    //         let versionTimesList = JSON.parse(localStorage.getItem('versionTimes'));
+    //         let versionTimes = versionTimesList.filter(obj => { return obj.version == this.yesterVersion })
+    //         if (versionTimes.length > 0) {
+    //             // log('correct version loaded')
+    //             // log(versionTimes)
+    //             // this.times = versionTimes[0].times;
+    //             // this.nLaps = versionTimes[0].nLaps;
+    //             // sessionLogger.currentnLaps = this.nLaps;
+    //             this.yesterBestLap = versionTimes[0].times[0];
+    //         }
+    //         else {
+    //             this.yesterBestLap = 0;
+    //         }
+    //     }
+    //     else {
+    //         this.yesterBestLap = 0;
+    //     }
 
-        // log("yesterlog", this.yesterVersion, this.yesterBestLap, this.yesterQual)
-        fetch(apiURL + '/get_rank?version=' + this.yesterVersion + '&time=' + this.yesterBestLap)
-            .then(response => response.json())
-            .then(data => {
-                this.yesterRank = data
-                // log('yester rank:' + data)
-                this.setLocalRank(this.yesterVersion, data)
-            });
-    }
+    //     // log("yesterlog", this.yesterVersion, this.yesterBestLap, this.yesterQual)
+    //     fetch(apiURL + '/get_rank?version=' + this.yesterVersion + '&time=' + this.yesterBestLap)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             this.yesterRank = data
+    //             log('updateYesterRank():' + data)
+    //             this.setLocalRank(this.yesterVersion, data)
+    //         });
+    // }
     draw(ctx) {
 
         if (this.currentnLaps >= this.nLaps2Qualify) {
@@ -4202,7 +4166,7 @@ let viewMode = new ViewMode();
 let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
-sessionLogger.updateRank();
+
 
 let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
 setter.set(sessionLogger.currentSesh) // set track based on current session ID
