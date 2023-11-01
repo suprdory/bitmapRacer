@@ -1794,7 +1794,7 @@ class HiScoresWeb {
     }
 
     newLap(t) {
-        if (timeTravel.ttDays == 0) {
+        if ((dayxmode)&(timeTravel.ttDays == 0)) {
             this.postLap(this.version, name.name, t,Math.min(t,hiScores.times[0]));
         }
 
@@ -2019,10 +2019,19 @@ class SessionLogger {
         else {
             this.timeTravelDays = timeTravel.ttDays;
         }
+        if (dayxmode){//day selct mode in url arg
 
-        let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
-
-        this.currentSesh = Math.floor(currentTime); //integer, days since 1970
+            this.currentTime = 19400 + parseInt(dayxURL)+0.5
+            this.currentSesh = Math.floor(19400+parseInt(dayxURL)); //integer, days since 1970
+            // limit to current day - no peeking!
+            if (this.currentSesh > Math.floor(Date.now() / (1000 * 60 * 60 * 24))){
+                this.currentSesh = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+            }
+        }
+        else{
+            this.currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
+            this.currentSesh = Math.floor(this.currentTime); //integer, days since 1970
+        }
         // log(this.currentSesh, this.timeTravelDays)
         this.yesterSesh = this.currentSesh - 1;
         this.versionBase = sessionPrefix + '-' + this.currentSesh;
@@ -2050,7 +2059,7 @@ class SessionLogger {
         this.currentnLaps = 0;
         this.qualified = this.getLocalQual(this.version);
 
-        let timeTillNext = (1 - (currentTime - this.currentSesh)) * 60 * 60 * 24
+        let timeTillNext = (1 - (this.currentTime - this.currentSesh)) * 60 * 60 * 24
         this.timeTillNextString = fs.secsToString(timeTillNext);
         // console.log("current sesh:", this.currentSesh, this.timeTillNextString);
         this.yesterStreak = this.getLocalStreak(this.yesterVersion);
@@ -2072,7 +2081,7 @@ class SessionLogger {
         let currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
         let currentSeshNow = Math.floor(currentTime); //integer, days since 1970
         // log('live', currentSeshNow == this.currentSesh)
-        if (currentSeshNow != this.currentSesh) {
+        if ((currentSeshNow != this.currentSesh) & !dayxmode) {
             location.reload()
         }
     }
@@ -2356,11 +2365,11 @@ class SessionLogger {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        if (timeTravel.ttDays != 0) {
+        if ((dayxmode)||timeTravel.ttDays != 0) {
             ctx.fillStyle = "dimGrey";
         }
         ctx.fillText(this.qText, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize);
-        if (timeTravel.ttDays != 0) {
+        if ((dayxmode) || timeTravel.ttDays != 0) {
             ctx.fillStyle = "dimGrey";
         }
         ctx.fillText(this.timeTillNextString + " remaining", X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - 3 * this.fontsize)
@@ -2450,9 +2459,13 @@ class SessionSetter {
             log('RandCountry')
             this.randCountry();
         }
-        if (sesh >= 19653) {
+        if (sesh >= 19653 & sesh <=19662) {
             log('RandCountry+nLaps')
             this.randCountrynLaps();
+        }
+        if (sesh >= 19663) {
+            log('RandCountry2+nLaps')
+            this.randCountry2nLaps();
         }
         if (trackDev) {
             // this.setDev();
@@ -2555,6 +2568,7 @@ class SessionSetter {
         // log("scale",this.scale)
     }
     randCountrynLaps() {
+        // first batch of countries
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = false;
@@ -2562,6 +2576,20 @@ class SessionSetter {
         this.colour = this.randomElement(this.colours);
         this.reverse = this.randomElement([true, false]);
         this.track = this.randomElement(tracksWC);
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+        this.randomizeMultiLap();
+
+    }
+    randCountry2nLaps() {
+        //second and final batch of countries
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = false;
+        this.xflip = false;
+        this.colour = this.randomElement(this.colours);
+        this.reverse = this.randomElement([true, false]);
+        this.track = this.randomElement(tracksWC2);
         this.trackImgName = this.track.fnames[0]
         this.car = p.cars[0]
         this.randomizeMultiLap();
@@ -2866,11 +2894,11 @@ class Ghost {
 
         // log('ghost new lap, t=',t)
         // log(t, this.savedLap.time)
-        if ((timeTravel.ttDays == 0) & (t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
+        if ((!dayxmode)&(timeTravel.ttDays == 0) & (t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
             this.saveGhost(t);
         }
         // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
-        if ((timeTravel.ttDays == 0) & !trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+        if ((!dayxmode)&(timeTravel.ttDays == 0) & !trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
             this.postGhost(t);
         }
 
@@ -3911,7 +3939,15 @@ function urlArgHandler() {
     lonBorMode = urlParams.has('lb')
     lonBor = parseInt(urlParams.get('lb'));
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
-    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
+    dayxmode = urlParams.has('d') // choose day since 19400
+    if (dayxmode){
+        dayxURL = parseInt(urlParams.get('d'))
+    }
+    else{
+        dayxURL = null;
+    }
+   
+    dev =  urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
     qdev = urlParams.has('qdev')
 
     multilapUrl = urlParams.get('ml');// if false, sessionSetter can overwrite below multiLap params
@@ -4114,7 +4150,8 @@ class DocPanel {
 }
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, lonBorMode, qdev, multilapUrl, multilap, multilapn
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, 
+lonBorMode, qdev, multilapUrl, multilap, multilapn,dayxURL,dayxmode
 
 urlArgHandler();
 // log('multilap',multilap,multilapn)
@@ -4125,6 +4162,7 @@ import { tracksLB } from './trackParmsLB.js'
 import { tracksEC } from './trackParmsEC.js'
 import { tracksOG } from './trackParmsOG.js'
 import { tracksWC } from './trackParmsWC.js'
+import { tracksWC2 } from './trackParmsWC2.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS(); // frames per second handler
@@ -4192,8 +4230,9 @@ if (lonBorMode || p.track.name) {
 else {
     flash.flash("Welcome")
 }
+if (dev || dayxmode){
+    flash.flash("Day " +  (sessionLogger.currentSesh-19400).toString())
+}
 if (multilap) {
     flash.flash(multilapn + "-lap Race")
 }
-
-// log(hiScores.times,Math.max(...hiScores.times) )
