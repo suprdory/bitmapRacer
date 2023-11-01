@@ -1794,7 +1794,7 @@ class HiScoresWeb {
     }
 
     newLap(t) {
-        if ((dayxmode)&(timeTravel.ttDays == 0)) {
+        if ((!dayxmode)&(timeTravel.ttDays == 0)) {
             this.postLap(this.version, name.name, t,Math.min(t,hiScores.times[0]));
         }
 
