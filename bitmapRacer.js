@@ -1924,7 +1924,7 @@ class ViewMode {
         this.vState++;
         if (this.vState > 2) {
             this.vState = 0;
-        
+        }
         if (this.vState == 2) {
             // when switching to fixed, change screen centre manually for smoothness
             // log('manual sc')
@@ -1950,11 +1950,11 @@ class ViewMode {
         if (this.vState == 2) {
             this.text = 'Fix';
         }
-
+    }
     }
 
 
-}
+
 class Flash {
     constructor() {
         this.x = X / 2;
