@@ -1952,9 +1952,6 @@ class ViewMode {
         }
     }
     }
-
-
-
 class Flash {
     constructor() {
         this.x = X / 2;
@@ -2599,8 +2596,6 @@ class SessionSetter {
         this.randomizeMultiLap();
 
     }
-
-
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
