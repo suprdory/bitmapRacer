@@ -597,7 +597,6 @@ class Car {
         }
     }
 
-
     mech() {
         if (this.mechV == 2) {
             this.mechV2();
@@ -1331,7 +1330,7 @@ class LapCounter {
         if (!multilap) {
             multilapn = 1;
         }
-        log('mln =', multilapn)
+        // log('mln =', multilapn)
         this.lapn = 0
     }
     voidLap() {
@@ -1690,7 +1689,7 @@ class HiScoresWeb {
             fetch(apiURL + '/get_laps?version=' + version + '&time=' + time)
                 .then(response => response.json())
                 .then(data => {
-                    log('getLaps()', data)
+                    // log('getLaps()', data)
                     // if (false){
                     if (this.showLapCount) {
                         this.lapCounts = data.laps;
@@ -1714,7 +1713,7 @@ class HiScoresWeb {
                 else {
                     this.yesterChamp=''
                 }
-                log("yesterChamp:",this.yesterChamp)
+                // log("yesterChamp:",this.yesterChamp)
 
             });
 
@@ -2320,7 +2319,7 @@ class SessionLogger {
     }
     setRank(rankData){
         this.currentRank = rankData
-        log('setRank():' + rankData)
+        // log('setRank():' + rankData)
     }
     // updateYesterRank() {
     //     if (localStorage.getItem('versionTimes')) {
@@ -2574,6 +2573,8 @@ class SessionSetter {
         this.yflip = false;
         this.xflip = false;
         this.colour = this.randomElement(this.colours);
+        // this.colour=evaluate_cmap(this.rand(),'tab10',false)
+
         this.reverse = this.randomElement([true, false]);
         this.track = this.randomElement(tracksWC);
         this.trackImgName = this.track.fnames[0]
@@ -2587,7 +2588,10 @@ class SessionSetter {
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
         this.yflip = false;
         this.xflip = false;
-        this.colour = this.randomElement(this.colours);
+        // this.colour = this.randomElement(this.colours);
+        // this.colour=[255,255,0]
+        this.colour=evaluate_cmap(this.rand(),'jet',false)
+
         this.reverse = this.randomElement([true, false]);
         this.track = this.randomElement(tracksWC2);
         this.trackImgName = this.track.fnames[0]
@@ -2627,7 +2631,7 @@ class SessionSetter {
                 multilapn = 5;
             }
             multilap = multilapn > 1
-            log("random ml", rnd, multilapn, multilap)
+            // log("random ml", rnd, multilapn, multilap)
 
         }
     }
@@ -2725,7 +2729,15 @@ class SessionSetter {
         p.track = this.track;
         p.track.fname = this.trackImgName;
         p.car = this.car;
-        p.car.colour = this.colour;
+        
+        if (typeof this.colour === 'string'){
+            p.car.colour = this.colour;
+        }
+        else{
+            let colString = "rgb("+this.colour[0].toString()+","+this.colour[1].toString()+","+this.colour[2].toString()+")"
+            p.car.colour=colString
+        }
+        log("p.car.colour",p.car.colour)
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
@@ -4152,6 +4164,8 @@ class DocPanel {
 let log = console.log;
 let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, 
 lonBorMode, qdev, multilapUrl, multilap, multilapn,dayxURL,dayxmode
+
+
 
 urlArgHandler();
 // log('multilap',multilap,multilapn)
