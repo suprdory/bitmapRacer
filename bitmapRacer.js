@@ -30,6 +30,7 @@ class Track {
         this.imageData; // extracted on img load;
         this.sfc_mu; // derived after img load by image2trackDat();
         this.sfc_drag; // derived after img load by image2trackDat();
+        this.sfc_void; // derived after image load by image2trackDat();
         this.sfcTypes = p.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
@@ -84,7 +85,7 @@ class Track {
             return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
         }
         else {
-            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw]];
+            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw],this.sfc_void[xw][yw]];
             // return [0.01,1] // for debugging
         }
     }
@@ -139,10 +140,12 @@ class Track {
 
         this.sfc_mu = Array(Xi);
         this.sfc_drag = Array(Xi);
+        this.sfc_void = Array(Xi);
 
         for (let i = 0; i < Xi; i++) {
             let mu_col = Array(Yi);
             let drag_col = Array(Yi);
+            let void_col = Array(Yi);
             for (let j = 0; j < Yi; j++) {
                 let sfcType;
                 let hx = h[i][j];
@@ -166,14 +169,14 @@ class Track {
                 else {
                     sfcType = 'unknown';
                 }
-
                 // console.log(sfcType)
                 mu_col[j] = this.sfcTypes[sfcType]['mu']
                 drag_col[j] = this.sfcTypes[sfcType]['drag']
-
-                this.sfc_mu[i] = mu_col;
-                this.sfc_drag[i] = drag_col;
+                void_col[j] = !(sfcType=='tarmac' || sfcType=='grass')
             }
+            this.sfc_mu[i] = mu_col;
+            this.sfc_drag[i] = drag_col;
+            this.sfc_void[i] = void_col;
         }
     }
     getImageData() {
@@ -392,12 +395,12 @@ class Car {
         this.wheels.forEach(function (wheel) {
             // wheel.sfc_mu=track.get_mu(wheel.xa,wheel.ya);
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
-            [wheel.sfc_drag, wheel.sfc_mu] = track.get_sfc_params(wheel.xa, wheel.ya)
+            [wheel.sfc_drag, wheel.sfc_mu,wheel.sfc_void] = track.get_sfc_params(wheel.xa, wheel.ya)
         })
     }
     checkVoid() {
         //void condition - both front wheels in the rough
-        if (this.wheels[0].sfc_drag >= 0.2 & this.wheels[1].sfc_drag >= 0.2) {
+        if (this.wheels[0].sfc_void & this.wheels[1].sfc_void) {
             lapCounter.voidLap();
         }
     }
@@ -2660,7 +2663,7 @@ class SessionSetter {
         this.car = p.cars[0];
     }
     setCarDev() {
-        // this.scale = { ppm: 8, mpp: 0.35 };
+        this.scale = { ppm: 20, mpp: 0.5 };
         // this.yflip = false;
         // this.xflip = false;
         // this.reverse = false
@@ -2670,7 +2673,7 @@ class SessionSetter {
         this.colour = 'grey';
         // this.track = p.tracks[0];
         // this.trackImgName = this.track.fnames[0]
-        // this.car = p.cars[1];
+        this.car = p.cars[1];
         // this.track.startX = 135;
         // this.track.startY = 450;
     }
@@ -4163,7 +4166,7 @@ lonBorMode, qdev, multilapUrl, multilap, multilapn,dayxURL,dayxmode
 
 
 urlArgHandler();
-// log('multilap',multilap,multilapn)
+log('carDev',carDev)
 
 // import parameter object, input data for car
 import { p } from './params.js'
