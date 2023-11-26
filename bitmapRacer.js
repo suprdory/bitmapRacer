@@ -2462,10 +2462,15 @@ class SessionSetter {
             log('RandCountry+nLaps')
             this.randCountrynLaps();
         }
-        if (sesh >= 19663) {
+        if (sesh >= 19663 & sesh <=19687) {
             log('RandCountry2+nLaps')
             this.randCountry2nLaps();
         }
+        if (sesh >= 19688) {
+            log('RandUniTrack')
+            this.randUniTrack();
+        }
+
         if (trackDev) {
             // this.setDev();
         }
@@ -2598,6 +2603,22 @@ class SessionSetter {
         this.car = p.cars[0]
         this.randomizeMultiLap();
 
+    }
+    randUniTrack(){
+        // unified set of Countries, Countries, and Boroughs
+        this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
+        this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+        this.yflip = false;
+        this.xflip = false;
+        // this.colour = this.randomElement(this.colours);
+        // this.colour=[255,255,0]
+        this.colour = evaluate_cmap(this.rand(), 'jet', false)
+
+        this.reverse = this.randomElement([true, false]);
+        this.track = this.randomElement(tracksUni);
+        this.trackImgName = this.track.fnames[0]
+        this.car = p.cars[0]
+        this.randomizeMultiLap();
     }
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
@@ -4175,6 +4196,7 @@ import { tracksEC } from './trackParmsEC.js'
 import { tracksOG } from './trackParmsOG.js'
 import { tracksWC } from './trackParmsWC.js'
 import { tracksWC2 } from './trackParmsWC2.js'
+import { tracksUni } from './trackParmsUni.js'
 const sessionPrefix = p.version.n
 
 let Fps = new FPS(); // frames per second handler
