@@ -6,7 +6,7 @@ export let p = {
         "lookAhead": 0.5,
         "panSpeed": 0.15,
         "HUDscl": 25,
-        "HUDforceScl": 1,
+        "HUDforceScl": .2,
     },
     "version": {
         "n": "flip01",
@@ -64,8 +64,8 @@ export let p = {
             "mass": 200,
             "momIfac": 1.53846, // moment of intertia over mass
             "steeringRate": 0.1,
-            "steeringMaxBase": 45 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 5, // U scl of steering lock limiting
+            "steeringMaxBase": 25 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 2, // U scl of steering lock limiting
             "steeringCentreRate": 1,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
@@ -98,30 +98,30 @@ export let p = {
             "wheelAspect": 2.0,
             "mass": 300.0,
             "momIfac": .5, // moment of intertia ratio to that of point masses at wheels
-            "steeringRate": .5,
+            "steeringRate": .2,
             "steeringMaxBase": 25 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 3, // U scl of steering lock limiting
-            "steeringCentreRate": 10,
-            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=agaoinst motion)
+            "steeringUscl": 2, // U scl of steering lock limiting
+            "steeringCentreRate": 2,
+            "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=against motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
             "brakeFade": 1.0,
             "downforceFade":0.1,
-            "thrustRate": 4000,// thrust and brake is N, N/s for whole car, not per wheel.
-            "thrustMax": 1000,
+            "thrustRate": 300,// thrust and brake is N, N/s for whole car, not per wheel.
+            "thrustMax": 500,
             "brakeRate": 8000,
             "brakeMax": 2000,
             "colour": 'gold',
             "mechV": 3,
-            "gamma": 4, // time multiplier
+            "gamma": 10, // time multiplier
             "phys": {
-                "alpha0": 8, // max force slip angle
+                "alpha0": 10, // max force slip angle
                 "hAero": 0.8, //aerodynamic height
-                "CA": 0.5, //Air resistance
+                "CA": 1.0, //Air resistance
                 "CL": 1.0, //lift coefficient (downforce),frac of air drag acting downwards
                 "CD": 200.0, // Surface Drag resistance
-                "Crr": 0.1, // Rolling resistance
-                "mu": 1.0, // coeff of friction for lateral forces
-                "stiffness": 0, // Newtons (lateral friction) per Radian (slip angle)
+                "Crr": 0.005, // Rolling resistance
+                "mu": 0.6, // coeff of friction for lateral forces
+                "stiffness": 10, // Newtons (lateral friction) per Radian (slip angle)
             },
         },
     ],

@@ -297,7 +297,7 @@ class Car {
 
         // circular motion exp
         this.thetaFixed = null;
-        this.U0 = 0;
+        this.U0 = 3;
         this.radius = 5;
         this.omega = this.U0 / this.radius;
         this.Fcirc = this.m * this.radius * this.omega ** 2;
@@ -325,7 +325,8 @@ class Car {
 
         this.theta = this.thetaStart;
 
-
+        this.ulon=0;
+        this.ulat=0;
         this.thetaDot = 0.0;//heading angle deriv
         this.ux = this.U * Math.sin(this.theta); // x vel
         this.uy = this.U * Math.cos(this.theta); // y vel
@@ -530,8 +531,11 @@ class Car {
             // this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
             //     this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
 
-            this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
-                this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
+            this.wheels[0].theta = Math.max(
+                -this.steeringMax, 
+                Math.min(
+                    this.steeringMax,
+    this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
 
             this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta
@@ -619,10 +623,12 @@ class Car {
         // log(this.airDrag)
         this.n.Fair.lon = -this.airDrag * Math.cos(-this.headOff);
         this.n.Fair.lat = -this.airDrag * Math.sin(-this.headOff);
+        // this.n.Fair.lon =0
+        // this.n.Fair.lat = 0
 
         this.n.Fres.lon += this.n.Fair.lon;
         this.n.Fres.lat += this.n.Fair.lat;
-
+        // this.wheels[0].theta
 
         for (let i = 0; i < 4; i++) {
 
@@ -654,7 +660,8 @@ class Car {
             //accelerating
             wh.n.Fthrust.lon = cosTh * Math.min(Fmax, wh.torque);
             wh.n.Fthrust.lat = sinTh * Math.min(Fmax, wh.torque);
-
+            // wh.n.Fthrust.lat = 0;
+            // wh.n.Fthrust.lon =0;
             // braking
             if (Math.abs(wh.n.u.lonWheel) < .1) {
                 wh.n.Fbrake.lon = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * cosTh;
@@ -664,67 +671,50 @@ class Car {
                 wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.brake) * cosTh;
                 wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.brake) * sinTh;
             }
+            // wh.n.Fbrake.lon =0
+            // wh.n.Fbrake.lat = 0
             // rolling resistance
-            if (Math.abs(wh.n.u.lonWheel) < .1) {
-                wh.n.Frollres.lon = -wh.n.u.lonWheel * this.rollK * cosTh;
-                wh.n.Frollres.lat = -wh.n.u.lonWheel * this.rollK * sinTh;
-            }
-            else {
-                wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * this.rollK * cosTh;
-                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK * sinTh;
-            }
+            // if (Math.abs(wh.n.u.lonWheel) < .1) {
+            // wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * this.rollK * cosTh;
+            // wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK * sinTh;
+            // }
+            // else {
+            wh.n.Frollres.lon = -wh.n.u.lonWheel * this.rollK * cosTh;
+            wh.n.Frollres.lat = -wh.n.u.lonWheel * this.rollK * sinTh;
+            // wh.n.Frollres.lat = 0;
+            // wh.n.Frollres.lon = 0;
+            // }
             //surface drag
             wh.n.Fdrag.lon = -wh.n.u.lonWheel * wh.sfc_drag * this.CD;
             wh.n.Fdrag.lat = -wh.n.u.latWheel * wh.sfc_drag * this.CD;
-            // wh.n.Fdrag.lon = 0;
             // wh.n.Fdrag.lat = 0;
-
-            // // lateral friction (orig)
-            // let maxF = this.mu * wh.sfc_mu * wh.load;
-            // // log(wh.load)
-            // let slipAngle = Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
-            // let skidThresh = maxF / this.stiffness;
-            // // log(wh.load)
-            // if (this.U < 1) {
-            //     wh.skidFac = 0;
-            //     wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * this.stiffness * .1;
-            //     wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * this.stiffness * .1;
-            //     // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
-            // }
-            // else if (Math.abs(slipAngle) < skidThresh) {
-            //     wh.skidFac = 1;
-            //     // let maximp = dt * this.m * this.ulat
-            //     wh.n.Fcorn.lat = -slipAngle * cosTh * this.stiffness;
-            //     wh.n.Fcorn.lon = slipAngle * sinTh * this.stiffness;
-            //     // log("corn: tract")
-            // }
-            // else {
-            //     wh.skidFac = 2;
-            //     wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * maxF;
-            //     wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * maxF;
-            //     // log("corn: skid")
-            // }
-
-
-            // wh.n.Fcorn.lat = this.Fcirc / 4;
-            // wh.n.Fcorn.lon = 0;
-            // this.thetaDot = this.omega;
+            // wh.n.Fdrag.lon = 0;
 
             let alpha0 = this.alpha0; // should pass as car param, slip angle in degs at Max lat force, Fmax
-            let alpha = 180 / Math.PI * Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel); // slipangle in degs
+            
+            if (Math.abs(wh.n.u.lonWheel) > 0) {
+            // slip angle in degs
+            wh.n.Fcorn.alpha = 180 / Math.PI * Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel); 
+            }
+            else{
+                wh.n.Fcorn.alpha = 0
+            }
 
             let cs = Fmax / alpha0; //cornering stiffness in N/deg. Varies with load.
-            // log('alpha',alpha)
-            if (this.U < .5) {
+
+            if (this.U < 1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * cs * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * cs * .1;
                 // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
             }
-            else if (Math.abs(alpha) < alpha0) {
-                wh.skidFac = 1;
-                wh.n.Fcorn.lat = -alpha * cs * cosTh;
-                wh.n.Fcorn.lon = alpha * cs * sinTh;
+            else 
+            if (Math.abs(wh.n.Fcorn.alpha) < alpha0) 
+            {
+            wh.skidFac = 1;
+
+                wh.n.Fcorn.lat = -wh.n.Fcorn.alpha * cs * cosTh;
+                wh.n.Fcorn.lon = wh.n.Fcorn.alpha * cs * sinTh;
             }
             else {
                 wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * Fmax;
@@ -732,16 +722,13 @@ class Car {
                 wh.skidFac = 2;
             }
 
-            if (i == 1) {
-                // log(Math.round(Fmax * 1000) / 1000,Math.round(wh.n.Fcorn.lat * 1000) / 1000, Math.round(wh.n.Fcorn.lon * 1000) / 1000)
-            }
-            // if(i<2){
-            // log(sinTh)
-            // //trial 0 cornering force
-            // wh.n.Fcorn.lat = 0;
+            // central force circular motion
             // wh.n.Fcorn.lon = 0;
-            // }
+            // wh.n.Fcorn.lat = this.m * this.ulon**2  / (this.l / Math.sin(this.wheels[0].theta))/4;
+            // wh.skidFac=0
 
+
+            // calc wheel resultants, add to car total resultants
             wh.n.Fres.lon = wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon;
             wh.n.Fres.lat = wh.n.Fthrust.lat + wh.n.Fbrake.lat + wh.n.Frollres.lat + wh.n.Fdrag.lat + wh.n.Fcorn.lat;
 
@@ -793,9 +780,11 @@ class Car {
         this.thetaU = Math.atan2(this.ux, this.uy);
         this.x = this.x + this.ux * dt;
         this.y = this.y + this.uy * dt;
-        // if (this.n.Mres) {
-        this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
 
+        this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
+        
+        // thetaDot circular motion
+        // this.thetaDot = this.ulon * Math.sin(this.wheels[0].theta)/this.l
 
         this.theta = this.theta + this.thetaDot * dt;
         this.rotMat = fs.calcRotMat(this.theta);
@@ -1002,7 +991,7 @@ class Wheel {
         this.ya = y; // y pos
 
         // this.void = false; // wheel is voided by touching high friction surface (i.e. dirt), maybe generalize
-
+        this.skidFac=0;
         this.n = {};
         this.n.Fthrust = {};
         this.n.Fthrust.lat = 0;
@@ -1017,6 +1006,7 @@ class Wheel {
         this.n.Fdrag.lat = 0;
         this.n.Fdrag.lon = 0;
         this.n.Fcorn = {};
+        this.n.Fcorn.alpha = 0;
         this.n.Fcorn.lat = 0;
         this.n.Fcorn.lon = 0;
         this.n.Fres = {};
@@ -3429,7 +3419,7 @@ let fs = function () {
         // xw1 = Math.round(car.wheels[1].xa / scl);
         // yw1 = Math.round(car.wheels[1].ya / scl);
 
-        let debugTxt1 =
+        let debugTxt1 = 'Air '+
             car.n.Fair.lon.toFixed(2) + " "
         // car.downForceFront.toFixed(1) + " " +
         // car.downForceRear.toFixed(1) + " "
@@ -3439,32 +3429,56 @@ let fs = function () {
         //     car.wheels[2].load.toFixed(1) + " " +
         //     car.wheels[3].load.toFixed(1) + " "
         let debugTxt2 =
+            'Thr ' +
             car.wheels[0].n.Fthrust.lon.toFixed(2) + " " +
             car.wheels[1].n.Fthrust.lon.toFixed(2) + " " +
             car.wheels[2].n.Fthrust.lon.toFixed(2) + " " +
             car.wheels[3].n.Fthrust.lon.toFixed(2)
         let debugTxt3 =
+            'Brk ' +
             car.wheels[0].n.Fbrake.lon.toFixed(2) + " " +
             car.wheels[1].n.Fbrake.lon.toFixed(2) + " " +
             car.wheels[2].n.Fbrake.lon.toFixed(2) + " " +
             car.wheels[3].n.Fbrake.lon.toFixed(2)
         let debugTxt4 =
+            'RRs ' +
             car.wheels[0].n.Frollres.lon.toFixed(2) + " " +
             car.wheels[1].n.Frollres.lon.toFixed(2) + " " +
             car.wheels[2].n.Frollres.lon.toFixed(2) + " " +
             car.wheels[3].n.Frollres.lon.toFixed(2)
         let debugTxt5 =
+            'Drg ' +
             car.wheels[0].n.Fdrag.lon.toFixed(2) + " " +
             car.wheels[1].n.Fdrag.lon.toFixed(2) + " " +
             car.wheels[2].n.Fdrag.lon.toFixed(2) + " " +
             car.wheels[3].n.Fdrag.lon.toFixed(2)
+        let debugTxt55 =
+            'Alp ' +
+            car.wheels[0].n.Fcorn.alpha.toFixed(2) + " " +
+            car.wheels[1].n.Fcorn.alpha.toFixed(2) + " " +
+            car.wheels[2].n.Fcorn.alpha.toFixed(2) + " " +
+            car.wheels[3].n.Fcorn.alpha.toFixed(2)
+        let debugTxt56 =
+            'Tht ' +
+            car.wheels[0].theta.toFixed(2) + " " +
+            car.wheels[1].theta.toFixed(2) + " " +
+            car.wheels[2].theta.toFixed(2) + " " +
+            car.wheels[3].theta.toFixed(2)  
         let debugTxt6 =
-            car.wheels[0].n.Fcorn.lon.toFixed(2) + " " +
-            car.wheels[1].n.Fcorn.lon.toFixed(2) + " " +
-            car.wheels[2].n.Fcorn.lon.toFixed(2) + " " +
-            car.wheels[3].n.Fcorn.lon.toFixed(2)
+            'Crn ' +
+            car.wheels[0].n.Fcorn.lat.toFixed(0) + " " +
+            car.wheels[1].n.Fcorn.lat.toFixed(0) + " " +
+            car.wheels[2].n.Fcorn.lat.toFixed(0) + " " +
+            car.wheels[3].n.Fcorn.lat.toFixed(0)
+        let debugTxt65 =
+            'Skd ' +
+            car.wheels[0].skidFac.toFixed(1) + " " +
+            car.wheels[1].skidFac.toFixed(1) + " " +
+            car.wheels[2].skidFac.toFixed(1) + " " +
+            car.wheels[3].skidFac.toFixed(1)    
         let debugTxt7 =
-            car.n.Fres.lon.toFixed(2) + " "
+            'Res ' +
+            car.n.Fres.lon.toFixed(2) + " "+car.n.Fres.lat.toFixed(2)
 
 
         // wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon
@@ -3492,8 +3506,12 @@ let fs = function () {
         ctx.fillText(debugTxt3, 5, x0 + 30, 500)
         ctx.fillText(debugTxt4, 5, x0 + 40, 500)
         ctx.fillText(debugTxt5, 5, x0 + 50, 500)
-        ctx.fillText(debugTxt6, 5, x0 + 60, 500)
-        ctx.fillText(debugTxt7, 5, x0 + 70, 500)
+        ctx.fillText(debugTxt55, 5, x0 + 60, 500)
+        ctx.fillText(debugTxt56, 5, x0 + 70, 500)
+        ctx.fillText(debugTxt6, 5, x0 + 80, 500)
+
+        ctx.fillText(debugTxt65, 5, x0 + 90, 500)
+        ctx.fillText(debugTxt7, 5, x0 + 100, 500)
         // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
         // ctx.fillText(nX + " " + nY, 100, 140);
         // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
