@@ -6,7 +6,7 @@ export let p = {
         "lookAhead": 0.5,
         "panSpeed": 0.15,
         "HUDscl": 25,
-        "HUDforceScl": .2,
+        "HUDforceScl": 2,
     },
     "version": {
         "n": "flip01",
@@ -14,16 +14,25 @@ export let p = {
     "run": {
         "nMax": 10000000,
     },
+    // "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
+    //     // "outOfBounds": { "mu": 1.0, "drag": 0.2 },
+    //     "outOfBounds": { "mu": 0.8, "drag": 0.003 },
+    //     "tarmac": { "mu": 0.8, "drag": 0.001 },
+    //     // "tarmac": { "mu": 0.0, "drag": 0.000 },
+    //     "grass": { "mu": 0.3, "drag": 0.02 },
+    //     "mud": { "mu": 0.2, "drag": 0.3 },
+    //     "ice": { "mu": 0.05, "drag": 0.001 },
+    //     "unknown": { "mu": 0.8, "drag": 0.003 },      
+    // },
     "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
-        // "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-        "outOfBounds": { "mu": 0.8, "drag": 0.003 },
-        "tarmac": { "mu": 0.8, "drag": 0.001 },
-        // "tarmac": { "mu": 0.0, "drag": 0.000 },
-        "grass": { "mu": 0.3, "drag": 0.02 },
-        "mud": { "mu": 0.2, "drag": 0.3 },
-        "ice": { "mu": 0.05, "drag": 0.001 },
-        "unknown": { "mu": 0.8, "drag": 0.003 },
+        "outOfBounds": { "mu": 1.0, "drag": 0.000 },
+        "tarmac": { "mu": 1.0, "drag": 0.000 },
+        "grass": { "mu": 1.0, "drag": 0.00 },
+        "mud": { "mu": 1.0, "drag": 1.0 },
+        "ice": { "mu": 1.0, "drag": 0.000 },
+        "unknown": { "mu": 1.0, "drag": 0.000 },
     },
+
     "carDesigns":
     {
         'moss': {
@@ -90,38 +99,37 @@ export let p = {
         },
         {
             "design": 'wings',
-            "width": 2,
-            "frontLength": 1,
-            "rearLength": 2,
-            "height": .3,
-            "wheelWidth": 0.5,
+            "width": .2,
+            "frontLength": .15,
+            "rearLength": .15,
+            "height": .0,
+            "wheelWidth": 0.05,
             "wheelAspect": 2.0,
-            "mass": 300.0,
+            "mass": 5.0,
             "momIfac": .5, // moment of intertia ratio to that of point masses at wheels
-            "steeringRate": .2,
+            "steeringRate": .5,
             "steeringMaxBase": 25 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 2, // U scl of steering lock limiting
-            "steeringCentreRate": 2,
+            "steeringUscl": 10, // U scl of steering lock limiting
+            "steeringCentreRate": 10,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=against motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
-            "brakeFade": 1.0,
-            "downforceFade":0.1,
-            "thrustRate": 300,// thrust and brake is N, N/s for whole car, not per wheel.
-            "thrustMax": 500,
-            "brakeRate": 8000,
-            "brakeMax": 2000,
+            "brakeFade": 0.5,
+            "downforceFade":0.5,
+            "thrustRate": 100,// thrust and brake is N, N/s for whole car, not per wheel.
+            "thrustMax": 50,
+            "brakeRate": 100,
+            "brakeMax": 50,
             "colour": 'gold',
             "mechV": 3,
-            "gamma": 10, // time multiplier
+            "gamma": 1, // time multiplier
             "phys": {
-                "alpha0": 10, // max force slip angle
-                "hAero": 0.8, //aerodynamic height
-                "CA": 1.0, //Air resistance
-                "CL": 1.0, //lift coefficient (downforce),frac of air drag acting downwards
-                "CD": 200.0, // Surface Drag resistance
-                "Crr": 0.005, // Rolling resistance
-                "mu": 0.6, // coeff of friction for lateral forces
-                "stiffness": 10, // Newtons (lateral friction) per Radian (slip angle)
+                "alpha0": 5, // max force slip angle
+                "hAero": 0.08, //aerodynamic height
+                "CA": 50.0, //Air resistance constant
+                "CL": 0.0, //lift coefficient (downforce), frac of air drag acting downwards
+                "CD": 10.0, // Max Surface Drag resistance
+                "Crr": 0.5, // Rolling resistance - N / kg / wheel
+                "mu": 1.0, // coeff of friction for sfc forces  
             },
         },
     ],

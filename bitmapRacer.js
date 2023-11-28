@@ -2,6 +2,7 @@ class Track {
     constructor() {
 
         this.trackPPM = 1 / p.trackSetup.metresPerPix; // track image pixels per metre
+        log('trackSize=', 1000 * p.trackSetup.metresPerPix)
         this.trackScl = PPM / this.trackPPM; //screen pix/track pix ratio, use to scale buffered track display and data from initial image
         this.flipX = p.trackSetup.flipX;
         this.flipY = p.trackSetup.flipY;
@@ -268,7 +269,7 @@ class Car {
         this.Crr = p.car.phys.Crr; // rolling resistance
         this.CA = p.car.phys.CA; //air drag coefficient
         this.CL = p.car.phys.CL; //lift coefficient (downforce)
-        this.g = 9.8;//grav const
+        this.g = 10.0;//grav const
         this.hAero = p.car.phys.hAero; //aerodynamic height
         this.fadeDownforce = p.car.downforceFade;
         this.alpha0 = p.car.phys.alpha0;
@@ -297,7 +298,7 @@ class Car {
 
         // circular motion exp
         this.thetaFixed = null;
-        this.U0 = 3;
+        this.U0 = 0;
         this.radius = 5;
         this.omega = this.U0 / this.radius;
         this.Fcirc = this.m * this.radius * this.omega ** 2;
@@ -619,7 +620,7 @@ class Car {
         this.n.Mres = 0;
 
         //forces directly on car - air resistance
-        this.airDrag = this.airDragK * this.U ** 2;
+        this.airDrag = this.airDragK* this.U ** 2;
         // log(this.airDrag)
         this.n.Fair.lon = -this.airDrag * Math.cos(-this.headOff);
         this.n.Fair.lat = -this.airDrag * Math.sin(-this.headOff);
@@ -634,7 +635,7 @@ class Car {
 
             let wh = this.wheels[i];
 
-            // max Force from wheel (excluding  sfc drag), occurs at and above alpha0 in cornering
+            // max Force from wheel (excluding  sfc drag), occurs at and above alpha0 in cornering, limits thrust and brake
             let Fmax = this.mu * wh.sfc_mu * wh.load;
 
             let cosTh = Math.cos(wh.theta);
@@ -658,14 +659,17 @@ class Car {
             wh.n.u.latWheel = wh.uAperp; //wheel speed purp to wheel direction
 
             //accelerating
-            wh.n.Fthrust.lon = cosTh * Math.min(Fmax, wh.torque);
-            wh.n.Fthrust.lat = sinTh * Math.min(Fmax, wh.torque);
+            wh.n.Fthrust.lon = cosTh * Math.sign(wh.torque)*Math.min(Fmax, Math.abs(wh.torque));
+            wh.n.Fthrust.lat = sinTh * Math.sign(wh.torque) * Math.min(Fmax, Math.abs(wh.torque));
             // wh.n.Fthrust.lat = 0;
             // wh.n.Fthrust.lon =0;
+
+
             // braking
-            if (Math.abs(wh.n.u.lonWheel) < .1) {
-                wh.n.Fbrake.lon = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * cosTh;
-                wh.n.Fbrake.lat = -wh.n.u.lon / .1 * wh.brake * wh.sfc_mu * sinTh;
+            let BRKthresh=0.1
+            if (Math.abs(wh.n.u.lonWheel) < BRKthresh) {
+                wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.n.u.lonWheel / BRKthresh* wh.brake) * cosTh;
+                wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.n.u.lonWheel / BRKthresh *wh.brake) * sinTh;
             }
             else {
                 wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, wh.brake) * cosTh;
@@ -673,17 +677,21 @@ class Car {
             }
             // wh.n.Fbrake.lon =0
             // wh.n.Fbrake.lat = 0
+
+
             // rolling resistance
-            // if (Math.abs(wh.n.u.lonWheel) < .1) {
-            // wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * this.rollK * cosTh;
-            // wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * this.rollK * sinTh;
-            // }
-            // else {
-            wh.n.Frollres.lon = -wh.n.u.lonWheel * this.rollK * cosTh;
-            wh.n.Frollres.lat = -wh.n.u.lonWheel * this.rollK * sinTh;
+            let RRthresh=1.0
+            if (Math.abs(wh.n.u.lonWheel) < RRthresh) {
+                wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, Math.abs(wh.n.u.lonWheel / RRthresh * this.rollK)) * cosTh;
+                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, Math.abs(wh.n.u.lonWheel / RRthresh * this.rollK)) * sinTh;
+            }
+            else {
+                wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, this.rollK) * cosTh;
+                wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(Fmax, this.rollK) * sinTh;
             // wh.n.Frollres.lat = 0;
             // wh.n.Frollres.lon = 0;
-            // }
+            }
+
             //surface drag
             wh.n.Fdrag.lon = -wh.n.u.lonWheel * wh.sfc_drag * this.CD;
             wh.n.Fdrag.lat = -wh.n.u.latWheel * wh.sfc_drag * this.CD;
@@ -692,17 +700,17 @@ class Car {
 
             let alpha0 = this.alpha0; // should pass as car param, slip angle in degs at Max lat force, Fmax
             
-            if (Math.abs(wh.n.u.lonWheel) > 0) {
+            // if (Math.abs(wh.n.u.lonWheel) > 0) {
             // slip angle in degs
             wh.n.Fcorn.alpha = 180 / Math.PI * Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel); 
-            }
-            else{
-                wh.n.Fcorn.alpha = 0
-            }
+            // }
+            // else{
+            //     wh.n.Fcorn.alpha = 0
+            // }
 
             let cs = Fmax / alpha0; //cornering stiffness in N/deg. Varies with load.
 
-            if (this.U < 1) {
+            if (this.U < .1) {
                 wh.skidFac = 0;
                 wh.n.Fcorn.lat = -wh.n.u.latWheel * cosTh * cs * .1;
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * cs * .1;
@@ -710,11 +718,10 @@ class Car {
             }
             else 
             if (Math.abs(wh.n.Fcorn.alpha) < alpha0) 
-            {
-            wh.skidFac = 1;
-
-                wh.n.Fcorn.lat = -wh.n.Fcorn.alpha * cs * cosTh;
-                wh.n.Fcorn.lon = wh.n.Fcorn.alpha * cs * sinTh;
+            {                
+                wh.n.Fcorn.lat = Math.sign(wh.n.u.lonWheel) * -wh.n.Fcorn.alpha * cs * cosTh;
+                wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
+                wh.skidFac = 1;
             }
             else {
                 wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * Fmax;
@@ -947,8 +954,8 @@ class Car {
         this.ulon = this.ulon + this.alon * dt;
         this.ulat = this.ulat + this.alat * dt;
 
-        this.loadFront = this.m * (this.rearLength - this.height * this.alon) / (this.l);
-        this.loadRear = this.m * (this.frontLength + this.height * this.alon) / (this.l);
+        this.loadFront = this.g*this.m * (this.rearLength - this.height * this.alon) / (this.l);
+        this.loadRear = this.g *this.m * (this.frontLength + this.height * this.alon) / (this.l);
         this.loadFrontRight = this.loadFront * (this.w / 2 + this.height * this.alat) / (this.w);
         this.loadFrontLeft = this.loadFront * (this.w / 2 - this.height * this.alat) / (this.w);
         this.loadRearRight = this.loadRear * (this.w / 2 + this.height * this.alat) / (this.w);
@@ -2750,7 +2757,7 @@ class SessionSetter {
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
-        let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relatic to car0
+        let carScale = (p.car.frontLength + p.car.rearLength) / 3; //car length relative to car0
         p.trackSetup.metresPerPix = 1 * this.scale.mpp * p.track.trackScale * carScale;
         p.draw.pixPerMetre = this.scale.ppm / carScale;
         // log('trackScale',p.track.trackScale)
@@ -3476,6 +3483,12 @@ let fs = function () {
             car.wheels[1].skidFac.toFixed(1) + " " +
             car.wheels[2].skidFac.toFixed(1) + " " +
             car.wheels[3].skidFac.toFixed(1)    
+        let debugTxt68 =
+            'Ld ' +
+            car.wheels[0].load.toFixed(1) + " " +
+            car.wheels[1].load.toFixed(1) + " " +
+            car.wheels[2].load.toFixed(1) + " " +
+            car.wheels[3].load.toFixed(1)       
         let debugTxt7 =
             'Res ' +
             car.n.Fres.lon.toFixed(2) + " "+car.n.Fres.lat.toFixed(2)
@@ -3509,9 +3522,9 @@ let fs = function () {
         ctx.fillText(debugTxt55, 5, x0 + 60, 500)
         ctx.fillText(debugTxt56, 5, x0 + 70, 500)
         ctx.fillText(debugTxt6, 5, x0 + 80, 500)
-
         ctx.fillText(debugTxt65, 5, x0 + 90, 500)
-        ctx.fillText(debugTxt7, 5, x0 + 100, 500)
+        ctx.fillText(debugTxt68, 5, x0 + 100, 500)
+        ctx.fillText(debugTxt7, 5, x0 + 110, 500)
         // ctx.fillText(touchControl.xax + " " + touchControl.yax, 100, 120)
         // ctx.fillText(nX + " " + nY, 100, 140);
         // ctx.fillText("theta " + Math.round(car.theta * 360 / (Math.PI * 2)), 100, 160)
