@@ -26,9 +26,9 @@ export let p = {
     // },
     "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
         "outOfBounds": { "mu": 1.0, "drag": 0.000 },
-        "tarmac": { "mu": 1.0, "drag": 0.000 },
-        "grass": { "mu": 1.0, "drag": 0.00 },
-        "mud": { "mu": 1.0, "drag": 1.0 },
+        "tarmac": { "mu": 0.20, "drag": 0.000 },
+        "grass": { "mu": 0.2, "drag": 0.00 },
+        "mud": { "mu": 0.7, "drag": 1.0 },
         "ice": { "mu": 1.0, "drag": 0.000 },
         "unknown": { "mu": 1.0, "drag": 0.000 },
     },
@@ -107,27 +107,27 @@ export let p = {
             "wheelAspect": 2.0,
             "mass": 5.0,
             "momIfac": .5, // moment of intertia ratio to that of point masses at wheels
-            "steeringRate": .5,
-            "steeringMaxBase": 25 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": 10, // U scl of steering lock limiting
+            "steeringRate": .2,
+            "steeringMaxBase": 15 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 2, // U scl of steering lock limiting
             "steeringCentreRate": 10,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=against motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
             "brakeFade": 0.5,
             "downforceFade":0.5,
-            "thrustRate": 100,// thrust and brake is N, N/s for whole car, not per wheel.
-            "thrustMax": 50,
-            "brakeRate": 100,
+            "thrustRate": 50,// thrust and brake is N, N/s for whole car, not per wheel.
+            "thrustMax": 20,
+            "brakeRate": 20,
             "brakeMax": 50,
             "colour": 'gold',
             "mechV": 3,
-            "gamma": 1, // time multiplier
+            "gamma": 2, // time multiplier
             "phys": {
                 "alpha0": 5, // max force slip angle
                 "hAero": 0.08, //aerodynamic height
                 "CA": 50.0, //Air resistance constant
                 "CL": 0.0, //lift coefficient (downforce), frac of air drag acting downwards
-                "CD": 10.0, // Max Surface Drag resistance
+                "CD": 5.0, // Max Surface Drag resistance
                 "Crr": 0.5, // Rolling resistance - N / kg / wheel
                 "mu": 1.0, // coeff of friction for sfc forces  
             },
