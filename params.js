@@ -6,7 +6,7 @@ export let p = {
         "lookAhead": 0.5,
         "panSpeed": 0.15,
         "HUDscl": 25,
-        "HUDforceScl": 1,
+        "HUDforceScl": 50,
     },
     "version": {
         "n": "flip01",
@@ -14,16 +14,7 @@ export let p = {
     "run": {
         "nMax": 10000000,
     },
-    "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
-        // "outOfBounds": { "mu": 1.0, "drag": 0.2 },
-        "outOfBounds": { "mu": 0.8, "drag": 0.003 },
-        "tarmac": { "mu": 0.8, "drag": 0.001 },
-        // "tarmac": { "mu": 0.0, "drag": 0.000 },
-        "grass": { "mu": 0.3, "drag": 0.02 },
-        "mud": { "mu": 0.2, "drag": 0.3 },
-        "ice": { "mu": 0.05, "drag": 0.001 },
-        "unknown": { "mu": 0.8, "drag": 0.003 },
-    },
+
     "carDesigns":
     {
         'moss': {
@@ -87,38 +78,47 @@ export let p = {
                 "mu": 1.2, // Max lateral friction multiplier, above 1.0 gives "superweight" force.
                 "stiffness": 200, // Newtons (lateral friction) per Radian (slip angle)
             },
+            "sfcTypes": { //mu = coeff fric multiplier, drag=resistive force coeff
+                "outOfBounds": { "mu": 0.8, "drag": 0.003 },
+                "tarmac": { "mu": 0.8, "drag": 0.001 },
+                "grass": { "mu": 0.3, "drag": 0.02 },
+                "mud": { "mu": 0.2, "drag": 0.3 },
+                "ice": { "mu": 0.05, "drag": 0.001 },
+                "unknown": { "mu": 0.8, "drag": 0.003 },
+            },
         },
  {
             "design": 'wings',
+            "mechV": 3,
             "width": .06,
-            "frontLength": .02,
-            "rearLength": .05,
-            "height": .0,
+            "frontLength": .035,
+            "rearLength": .035,
+            "height": .00,
             "wheelWidth": 0.015,
             "wheelAspect": 2.0,
             "mass": 0.5,
-            "momIfac": .5, // moment of intertia ratio to that of point masses at wheels
-            "steeringRate": 1,
-            "steeringMaxBase": 15 * Math.PI / 180, //steering lock at 0 speed.
-            "steeringUscl": .5, // U scl of steering lock limiting
-            "steeringCentreRate": 10,
+            "momIfac": .3, // moment of inertia ratio to that of point masses at wheels
+            "steeringRate": 2,
+            "steeringMaxBase": 35 * Math.PI / 180, //steering lock at 0 speed.
+            "steeringUscl": 0.20, // U scl of steering lock limiting (half-lock speed)
+            "steeringCentreRate": 20,
             "steeringFollow": 0, //steering relaxation target (0=car,1=motion,-1=against motion)
             "fade": 0.5, // fraction of power to rear wheels, i.e. 0 is FWD, 1 is RWD, 0.5 is 4WD
             "brakeFade": 0.5,
             "downforceFade":0.5,
-            "thrustRate": 5,// thrust and brake is N, N/s for whole car, not per wheel.
-            "thrustMax": 2.5,
+            "thrustRate": 4,// thrust and brake is N, N/s for whole car, not per wheel.
+            "thrustMax": 1.6,
             "brakeRate": 2,
             "brakeMax": 5,
             "colour": 'gold',
-            "mechV": 3,
-            "gamma": 1, // time multiplier
+           
+            "gamma": 1.0, // time multiplier
             "phys": {
                 "alpha0": 30, // max force slip angle
-                "hAero": 0.08, //aerodynamic height
+                "hAero": 0.02, //aerodynamic height
                 "CA": 50.0, //Air resistance constant
-                "CL": 0.0, //lift coefficient (downforce), frac of air drag acting downwards
-                "CD": .8, // Max Surface Drag resistance
+                "CL": 1.0, //lift coefficient (downforce), frac of air drag acting downwards
+                "CD": 0.8, // Max Surface Drag resistance
                 "Crr": 0.3, // Rolling resistance - N / kg / wheel
                 "mu": 1.0, // coeff of friction for sfc forces  
             },

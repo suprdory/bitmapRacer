@@ -31,11 +31,7 @@ class Track {
         this.sfc_mu; // derived after img load by image2trackDat();
         this.sfc_drag; // derived after img load by image2trackDat();
         this.sfc_void; // derived after image load by image2trackDat();
-        this.sfcTypes = p.sfcTypes;
-        if (p.car.mechV==3){//mech3 cars have their own sfcTypes
-            // log("mech3 sfctypes",p.car.mechV)
-            this.sfcTypes = p.car.sfcTypes;
-        }
+        this.sfcTypes = p.car.sfcTypes;
         this.img = new Image();
         this.img.onload = () => {
             // console.log("track object img loaded")
@@ -528,16 +524,18 @@ class Car {
             this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta;
             this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
-            // this.wheels[1].theta = Math.max(-this.steeringMax, this.wheels[1].theta - this.steeringRate * dt);
-            // this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
         }
         else {
             // this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
             //     this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
-
+            let theta_m1 = this.wheels[0].theta
             this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
                 this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
-
+            if (theta_m1 * this.wheels[0].theta < 0){
+                log("Steer reset")
+                this.wheels[0].theta=0
+            }
+            // this.wheels[0].theta=0  
             this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
             this.wheels[1].theta = this.wheels[0].theta
             this.wheels[1].rotMat = fs.calcRotMat(this.wheels[1].theta)
@@ -712,9 +710,13 @@ mechV3() {
             else 
             if (Math.abs(wh.n.Fcorn.alpha) < alpha0) 
             {                
-                wh.n.Fcorn.lat = Math.sign(wh.n.u.lonWheel) * -wh.n.Fcorn.alpha * cs * cosTh;
+                wh.n.Fcorn.lat = -Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * cosTh;
                 wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
                 wh.skidFac = 1;
+                // wh.n.Fcorn.lat = -Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs ;
+                // wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
+                // wh.skidFac = 1;
+
             }
             else {
                 wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * wh.Fmax;
