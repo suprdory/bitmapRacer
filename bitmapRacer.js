@@ -2613,13 +2613,25 @@ class SessionSetter {
         // this.colour = this.randomElement(this.colours);
         // this.colour=[255,255,0]
         this.colour = evaluate_cmap(this.rand(), 'jet', false)
-
         this.reverse = this.randomElement([true, false]);
         this.track = this.randomElement(tracksUni);
+
         this.trackImgName = this.track.fnames[0]
+     
+        if (adventDay>=1 & adventDay<=25){
+            this.trackImgName = "xmas" + this.trackImgName
+            let colours = [[255, 0, 0], [255, 120, 120], [255, 255, 255], [116, 214, 128], [55, 139, 41]]
+            this.colour = colours[adventDay % 5]
+        }
+
+        log("Colour",this.color)
+        log('trackImgName', this.trackImgName)
         this.car = p.cars[0]
         this.randomizeMultiLap();
+
     }
+
+
     randBorough() {
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
@@ -4184,8 +4196,6 @@ let log = console.log;
 let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, 
 lonBorMode, qdev, multilapUrl, multilap, multilapn,dayxURL,dayxmode
 
-
-
 urlArgHandler();
 log('carDev',carDev)
 
@@ -4239,6 +4249,7 @@ let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 
+let adventDay = sessionLogger.currentSesh - 19691
 
 let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
 setter.set(sessionLogger.currentSesh) // set track based on current session ID
@@ -4258,7 +4269,15 @@ let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
 
-if (lonBorMode || p.track.name) {
+
+if (adventDay > 0 & adventDay <25){
+    flash.flash("Advent Racer - Day " + adventDay.toString())
+}
+if (adventDay == 25) {
+    flash.flash("Merry Christmas!")
+}
+
+if (p.track.name) {
     flash.flash("Welcome to " + p.track.name)
 }
 else {
