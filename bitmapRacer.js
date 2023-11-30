@@ -2617,10 +2617,8 @@ class SessionSetter {
         if (adventDay>=1 & adventDay<=25){
             this.trackImgName = "xmas" + this.trackImgName
             let colours = [[255, 0, 0], [255, 120, 120], [255, 255, 255], [116, 214, 128], [55, 139, 41]]
-            this.colour = colours[adventDay % 5]
+            this.colour = colours[13*adventDay % 5]
         }
-
-
 
         log("Colour",this.color)
         log('trackImgName', this.trackImgName)
