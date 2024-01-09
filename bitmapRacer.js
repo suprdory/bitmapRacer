@@ -2463,7 +2463,7 @@ class SessionSetter {
             this.randCountry2nLaps();
         }
         if (sesh >= 19688) {
-            log('RandUniTrack')
+            // log('RandUniTrack')
             this.randUniTrack();
         }
 
@@ -2622,8 +2622,8 @@ class SessionSetter {
 
 
 
-        log("Colour",this.color)
-        log('trackImgName', this.trackImgName)
+        // log("Colour",this.color)
+        // log('trackImgName', this.trackImgName)
 
        
         if (this.sesh==19691){
@@ -2775,7 +2775,7 @@ class SessionSetter {
             let colString = "rgb("+this.colour[0].toString()+","+this.colour[1].toString()+","+this.colour[2].toString()+")"
             p.car.colour=colString
         }
-        log("p.car.colour",p.car.colour)
+        // log("p.car.colour",p.car.colour)
         p.trackSetup.reverse = this.reverse;
         p.trackSetup.flipX = this.xflip;
         p.trackSetup.flipY = this.yflip;
@@ -3284,16 +3284,16 @@ class FPS {
     }
     getLocal() {
         if (localStorage.getItem('fps')) {
-            // log("Local FPS retrieved:", localStorage.getItem('fps'))
+            log("Local FPS retrieved:", localStorage.getItem('fps'))
             return localStorage.getItem('fps');
         }
         else {
-            // log("No local FPS, setting default:", this.defaultFPS)
+            log("No local FPS, setting default:", this.defaultFPS)
             return this.defaultFPS;
         }
     }
     setLocal(fps) {
-        // log('local set:', fps)
+        // flash.flash('local set:', fps)
         localStorage.setItem('fps', fps)
     }
     calc() {
@@ -3308,6 +3308,7 @@ class FPS {
         this.maxfps = Math.max(1000 / this.fdtmean, this.maxfps);
     }
     match() {
+        flash.flash("Initial FPS: "+ this.fps.toString())
         //call from anim at matchTime
         this.fpsMatch = this.fpss.reduce((a, b) => {
             return Math.abs(b - this.maxfps) < Math.abs(a - this.maxfps) ? b : a;
