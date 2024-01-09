@@ -3318,7 +3318,7 @@ class FPS {
             this.setLocal(this.fpsMatch);
             flash.flash(this.fps + " Hz detected");
         }
-        // flash.flash(this.fps + " Hz detected");
+        flash.flash(this.fps + " Hz detected");
         dt = p.car.gamma / Fps.fps;
     }
 }
