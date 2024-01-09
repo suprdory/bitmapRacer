@@ -2916,9 +2916,9 @@ class Ghost {
         this.wheelAspect = p.car.wheelAspect;
 
 
-        this.colour = p.car.colour;
+        this.colour = 'white';
         this.colourWeb = 'black';
-        this.alpha = 0.4;
+        this.alpha = 0.45;
         this.webAlpha = 0.3;
 
         this.rotMat = fs.calcRotMat(0);
