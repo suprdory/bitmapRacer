@@ -3308,7 +3308,7 @@ class FPS {
         this.maxfps = Math.max(1000 / this.fdtmean, this.maxfps);
     }
     match() {
-        flash.flash("Initial FPS: "+ this.fps.toString())
+        // flash.flash("Initial FPS: "+ this.fps.toString())
         //call from anim at matchTime
         this.fpsMatch = this.fpss.reduce((a, b) => {
             return Math.abs(b - this.maxfps) < Math.abs(a - this.maxfps) ? b : a;
@@ -3320,7 +3320,7 @@ class FPS {
             this.setLocal(this.fpsMatch);
             flash.flash("New FPS detected: " + this.fps + " Hz");
         }
-        flash.flash(this.fps + " Hz mode");
+        // flash.flash(this.fps + " Hz mode");
         dt = p.car.gamma / Fps.fps;
     }
 }
