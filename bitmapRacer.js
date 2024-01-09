@@ -4259,7 +4259,7 @@ let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor,
 lonBorMode, qdev, multilapUrl, multilap, multilapn,dayxURL,dayxmode
 
 urlArgHandler();
-log('carDev',carDev)
+// log('carDev',carDev)
 
 // import parameter object, input data for car
 import { p } from './params.js'
