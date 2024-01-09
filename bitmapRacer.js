@@ -3313,13 +3313,14 @@ class FPS {
         this.fpsMatch = this.fpss.reduce((a, b) => {
             return Math.abs(b - this.maxfps) < Math.abs(a - this.maxfps) ? b : a;
         });
-        this.fps = this.fpsMatch;
+        
         // log('matched: ', this.fpsMatch);
         if (this.fpsMatch != this.fps) {
+            this.fps = this.fpsMatch;
             this.setLocal(this.fpsMatch);
-            flash.flash(this.fps + " Hz detected");
+            flash.flash("New FPS detected: " + this.fps + " Hz");
         }
-        flash.flash(this.fps + " Hz detected");
+        flash.flash(this.fps + " Hz mode");
         dt = p.car.gamma / Fps.fps;
     }
 }
