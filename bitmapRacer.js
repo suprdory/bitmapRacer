@@ -2918,7 +2918,7 @@ class Ghost {
 
         this.colour = 'white';
         this.colourWeb = 'black';
-        this.alpha = 0.55;
+        this.alpha = 0.6;
         this.webAlpha = 0.3;
 
         this.rotMat = fs.calcRotMat(0);
@@ -3995,10 +3995,10 @@ function anim() {
     lapCounter.checkGates(car.x * track.trackPPM, car.y * track.trackPPM);
     lapCounter.updateLapTime();
 
-    car.draw(ctx, xc, yc);
+
     ghost.draw(ctx, xc, yc);
     ghost.drawWeb(ctx, xc, yc);
-
+    car.draw(ctx, xc, yc);
 
     // draw unscaled scaled stuff
     ctx.setTransform(1, 0, 0, 1, 0, 0);
