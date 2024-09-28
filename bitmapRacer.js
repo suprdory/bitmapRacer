@@ -2916,10 +2916,12 @@ class Ghost {
         this.wheelAspect = p.car.wheelAspect;
 
 
-        this.colour = 'white';
-        this.colourWeb = 'black';
-        this.alpha = 0.6;
-        this.webAlpha = 0.3;
+        // this.colour = 'white';
+        // this.colourWeb = 'black';
+        this.colour = '#CCCCCC';
+        this.colourWeb = '#333333'
+        this.alpha = 1;
+        this.webAlpha = 1;
 
         this.rotMat = fs.calcRotMat(0);
 
@@ -2941,17 +2943,17 @@ class Ghost {
         }
     }
     completeLap(t) {
-
-        // log('ghost new lap, t=',t)
-        // log(t, this.savedLap.time)
+        // log('ghost pre',"t",t,"saved", this.savedLap.time,"web",this.webLap.time)
         if ((!dayxmode)&(timeTravel.ttDays == 0) & (t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
+            // log('Saving Local Ghost')
             this.saveGhost(t);
         }
         // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
         if ((!dayxmode)&(timeTravel.ttDays == 0) & !trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+            // log('Posting Web Ghost')
             this.postGhost(t);
         }
-
+        // log('ghost post',"t",t,"saved", this.savedLap.time,"web",this.webLap.time)
     }
     newLap() {
         this.n = 0;
@@ -2960,7 +2962,7 @@ class Ghost {
         this.recLap.th = [];
     }
     saveGhost(t) {
-        log('saving ghost')
+        log('saving ghost',t)
         this.savedLap.x = this.recLap.x.slice();
         this.savedLap.y = this.recLap.y.slice();
         this.savedLap.th = this.recLap.th.slice();
