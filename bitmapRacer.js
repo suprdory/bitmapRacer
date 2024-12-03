@@ -85,7 +85,7 @@ class Track {
             return [this.sfcTypes.outOfBounds.drag, this.sfcTypes.outOfBounds.mu];
         }
         else {
-            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw],this.sfc_void[xw][yw]];
+            return [this.sfc_drag[xw][yw], this.sfc_mu[xw][yw], this.sfc_void[xw][yw]];
             // return [0.01,1] // for debugging
         }
     }
@@ -172,7 +172,7 @@ class Track {
                 // console.log(sfcType)
                 mu_col[j] = this.sfcTypes[sfcType]['mu']
                 drag_col[j] = this.sfcTypes[sfcType]['drag']
-                void_col[j] = !(sfcType=='tarmac' || sfcType=='grass')
+                void_col[j] = !(sfcType == 'tarmac' || sfcType == 'grass')
             }
             this.sfc_mu[i] = mu_col;
             this.sfc_drag[i] = drag_col;
@@ -298,7 +298,7 @@ class Car {
         // circular motion exp
         this.thetaFixed = null;
         this.U0 = 0;
-        this.ulon=0;
+        this.ulon = 0;
         this.radius = 5;
         this.omega = this.U0 / this.radius;
         this.Fcirc = this.m * this.radius * this.omega ** 2;
@@ -396,7 +396,7 @@ class Car {
         this.wheels.forEach(function (wheel) {
             // wheel.sfc_mu=track.get_mu(wheel.xa,wheel.ya);
             // wheel.sfc_drag = track.get_drag(wheel.xa, wheel.ya);
-            [wheel.sfc_drag, wheel.sfc_mu,wheel.sfc_void] = track.get_sfc_params(wheel.xa, wheel.ya)
+            [wheel.sfc_drag, wheel.sfc_mu, wheel.sfc_void] = track.get_sfc_params(wheel.xa, wheel.ya)
         })
     }
     checkVoid() {
@@ -531,9 +531,9 @@ class Car {
             let theta_m1 = this.wheels[0].theta
             this.wheels[0].theta = Math.max(-this.steeringMax, Math.min(this.steeringMax,
                 this.wheels[0].theta + (-this.wheels[0].theta - this.steeringFollow * this.headOff) * this.U ** 0.5 * this.steeringCentreRate * dt));
-            if (theta_m1 * this.wheels[0].theta < 0){
+            if (theta_m1 * this.wheels[0].theta < 0) {
                 log("Steer reset")
-                this.wheels[0].theta=0
+                this.wheels[0].theta = 0
             }
             // this.wheels[0].theta=0  
             this.wheels[0].rotMat = fs.calcRotMat(this.wheels[0].theta)
@@ -611,14 +611,14 @@ class Car {
             this.mechV3();
         }
     }
-mechV3() {
+    mechV3() {
         // calc all forces in car rel coords before transforming to track from and applying.
         this.n.Fres.lon = 0;
         this.n.Fres.lat = 0;
         this.n.Mres = 0;
 
         //forces directly on car - air resistance
-        this.airDrag = this.airDragK* this.U ** 2;
+        this.airDrag = this.airDragK * this.U ** 2;
         // log(this.airDrag)
         this.n.Fair.lon = -this.airDrag * Math.cos(-this.headOff);
         this.n.Fair.lat = -this.airDrag * Math.sin(-this.headOff);
@@ -657,15 +657,15 @@ mechV3() {
             wh.n.u.latWheel = wh.uAperp; //wheel speed purp to wheel direction
 
             //accelerating
-            wh.n.Fthrust.lon = cosTh * Math.sign(wh.torque)*Math.min(wh.Fmax, Math.abs(wh.torque));
+            wh.n.Fthrust.lon = cosTh * Math.sign(wh.torque) * Math.min(wh.Fmax, Math.abs(wh.torque));
             wh.n.Fthrust.lat = sinTh * Math.sign(wh.torque) * Math.min(wh.Fmax, Math.abs(wh.torque));
 
 
             // braking
-            let BRKthresh=0.1
+            let BRKthresh = 0.1
             if (Math.abs(wh.n.u.lonWheel) < BRKthresh) {
-                wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, wh.n.u.lonWheel / BRKthresh* wh.brake) * cosTh;
-                wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, wh.n.u.lonWheel / BRKthresh *wh.brake) * sinTh;
+                wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, wh.n.u.lonWheel / BRKthresh * wh.brake) * cosTh;
+                wh.n.Fbrake.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, wh.n.u.lonWheel / BRKthresh * wh.brake) * sinTh;
             }
             else {
                 wh.n.Fbrake.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, wh.brake) * cosTh;
@@ -673,7 +673,7 @@ mechV3() {
             }
 
             // rolling resistance
-            let RRthresh=1.0
+            let RRthresh = 1.0
             if (Math.abs(wh.n.u.lonWheel) < RRthresh) {
                 wh.n.Frollres.lon = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, Math.abs(wh.n.u.lonWheel / RRthresh * this.rollK)) * cosTh;
                 wh.n.Frollres.lat = -Math.sign(wh.n.u.lonWheel) * Math.min(wh.Fmax, Math.abs(wh.n.u.lonWheel / RRthresh * this.rollK)) * sinTh;
@@ -690,10 +690,10 @@ mechV3() {
 
 
             let alpha0 = this.alpha0; // should pass as car param, slip angle in degs at Max lat force, Fmax
-            
+
             // if (Math.abs(wh.n.u.lonWheel) > 0) {
             // slip angle in degs
-            wh.n.Fcorn.alpha = 180 / Math.PI * Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel); 
+            wh.n.Fcorn.alpha = 180 / Math.PI * Math.atan(wh.n.u.latWheel / wh.n.u.lonWheel);
             // }
             // else{
             //     wh.n.Fcorn.alpha = 0
@@ -707,22 +707,21 @@ mechV3() {
                 wh.n.Fcorn.lon = wh.n.u.latWheel * sinTh * cs * .1;
                 // log('corn: slow', this.stiffness, wh.n.Fcorn.lon)
             }
-            else 
-            if (Math.abs(wh.n.Fcorn.alpha) < alpha0) 
-            {                
-                wh.n.Fcorn.lat = -Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * cosTh;
-                wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
-                wh.skidFac = 1;
-                // wh.n.Fcorn.lat = -Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs ;
-                // wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
-                // wh.skidFac = 1;
+            else
+                if (Math.abs(wh.n.Fcorn.alpha) < alpha0) {
+                    wh.n.Fcorn.lat = -Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * cosTh;
+                    wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
+                    wh.skidFac = 1;
+                    // wh.n.Fcorn.lat = -Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs ;
+                    // wh.n.Fcorn.lon = Math.sign(wh.n.u.lonWheel) * wh.n.Fcorn.alpha * cs * sinTh;
+                    // wh.skidFac = 1;
 
-            }
-            else {
-                wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * wh.Fmax;
-                wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * wh.Fmax;
-                wh.skidFac = 2;
-            }
+                }
+                else {
+                    wh.n.Fcorn.lat = -Math.sign(wh.n.u.latWheel) * cosTh * wh.Fmax;
+                    wh.n.Fcorn.lon = Math.sign(wh.n.u.latWheel) * sinTh * wh.Fmax;
+                    wh.skidFac = 2;
+                }
 
             // central force circular motion
             // wh.n.Fcorn.lon = 0;
@@ -788,7 +787,7 @@ mechV3() {
         // this.thetaDot = this.ulon * Math.sin(this.wheels[0].theta)/this.l // thetaDot circular motion
         this.thetaDot = this.thetaDot + this.n.Mres / this.momI * dt;
         this.theta = this.theta + this.thetaDot * dt;
-        
+
         this.rotMat = fs.calcRotMat(this.theta);
         this.headOff = (this.thetaU - this.theta) % (Math.PI * 2);
         if (this.headOff > Math.PI) { this.headOff = this.headOff - 2 * Math.PI }
@@ -1020,8 +1019,8 @@ class Wheel {
         this.n.u.lat = 0;
         this.n.u.lonWheel = 0;
         this.n.u.latWheel = 0;
-        this.Fmax=0;
-        this.skidFac=0;
+        this.Fmax = 0;
+        this.skidFac = 0;
 
         this.d = (x ** 2 + y ** 2) ** 0.5; // distance to car CoM
         this.phi = Math.atan2(x, y);
@@ -1601,7 +1600,7 @@ class HiScores {
             }
             else if (t < this.times[0]) {
                 if (multilap) {
-                flash.flash("Best Time!")
+                    flash.flash("Best Time!")
                 }
                 else {
                     flash.flash("Best Lap!");
@@ -1684,32 +1683,33 @@ class HiScoresWeb {
     }
 
     getLaps(version, time) {
-            fetch(apiURL + '/get_laps?version=' + version + '&time=' + time)
-                .then(response => response.json())
-                .then(data => {
-                    // log('getLaps()', data)
-                    // if (false){
-                    if (this.showLapCount) {
-                        this.lapCounts = data.laps;
-                        this.nLapCounts = Math.min(this.nMaxLapCounts, data.laps.length);
-                    }
-                    else{
-                        this.lapCounts = data.comp_laps;
-                        this.nLapCounts = Math.min(this.nMaxLapCounts, data.comp_laps.length);
-                    }
-                    sessionLogger.setRank(data.rank)
+        fetch(apiURL + '/get_laps?version=' + version + '&time=' + time)
+            .then(response => response.json())
+            .then(data => {
+                // log('getLaps()', data)
+                // if (false){
+                if (this.showLapCount) {
+                    this.lapCounts = data.laps;
+                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.laps.length);
+                }
+                else {
+                    this.lapCounts = data.comp_laps;
+                    this.nLapCounts = Math.min(this.nMaxLapCounts, data.comp_laps.length);
+                }
+                sessionLogger.setRank(data.rank)
 
-                });
+            });
     }
     setYesterChamp() {
         fetch(apiURL + '/get_laps?version=' + this.yesterVersion + '&time=0')
             .then(response => response.json())
             .then(data => {
                 // log('setYesterChamp()', data)
-                if (data.laps.length>0){
-                this.yesterChamp = data.laps[0][2]}
+                if (data.laps.length > 0) {
+                    this.yesterChamp = data.laps[0][2]
+                }
                 else {
-                    this.yesterChamp=''
+                    this.yesterChamp = ''
                 }
                 // log("yesterChamp:",this.yesterChamp)
 
@@ -1717,7 +1717,7 @@ class HiScoresWeb {
 
     }
 
-    postLap(version, name, time,bestTime) {
+    postLap(version, name, time, bestTime) {
         let formData = new FormData();
         formData.append('name', name);
         formData.append('version', version);
@@ -1734,7 +1734,7 @@ class HiScoresWeb {
                 // this.getTimes(this.version);
                 // this.getLaps(this.version, hiScores.times[0]);
                 // sessionLogger.updateRank();
-                console.log("postLap:",data);
+                console.log("postLap:", data);
                 if (this.showLapCount) {
                     this.lapCounts = data.laps;
                     this.nLapCounts = Math.min(this.nMaxLapCounts, data.laps.length);
@@ -1791,8 +1791,8 @@ class HiScoresWeb {
     }
 
     newLap(t) {
-        if ((!dayxmode)&(timeTravel.ttDays == 0)) {
-            this.postLap(this.version, name.name, t,Math.min(t,hiScores.times[0]));
+        if ((!dayxmode) & (timeTravel.ttDays == 0)) {
+            this.postLap(this.version, name.name, t, Math.min(t, hiScores.times[0]));
         }
 
     }
@@ -1949,7 +1949,7 @@ class ViewMode {
             this.text = 'Fix';
         }
     }
-    }
+}
 class Flash {
     constructor() {
         this.x = X / 2;
@@ -2013,16 +2013,16 @@ class SessionLogger {
         else {
             this.timeTravelDays = timeTravel.ttDays;
         }
-        if (dayxmode){//day selct mode in url arg
+        if (dayxmode) {//day selct mode in url arg
 
-            this.currentTime = 19400 + parseInt(dayxURL)+0.5
-            this.currentSesh = Math.floor(19400+parseInt(dayxURL)); //integer, days since 1970
+            this.currentTime = 19400 + parseInt(dayxURL) + 0.5
+            this.currentSesh = Math.floor(19400 + parseInt(dayxURL)); //integer, days since 1970
             // limit to current day - no peeking!
-            if (this.currentSesh > Math.floor(Date.now() / (1000 * 60 * 60 * 24))){
+            if (this.currentSesh > Math.floor(Date.now() / (1000 * 60 * 60 * 24))) {
                 this.currentSesh = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
             }
         }
-        else{
+        else {
             this.currentTime = Date.now() / (1000 * 60 * 60 * 24) + this.timeTravelDays //it offset for testing session changes
             this.currentSesh = Math.floor(this.currentTime); //integer, days since 1970
         }
@@ -2312,7 +2312,7 @@ class SessionLogger {
         }
         // log("qtest: yStreak", this.yesterStreak, "outStreak:", this.outStreak, "cQual:", this.qualified)
     }
-    setRank(rankData){
+    setRank(rankData) {
         this.currentRank = rankData
         // log('setRank():' + rankData)
     }
@@ -2359,7 +2359,7 @@ class SessionLogger {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        if ((dayxmode)||timeTravel.ttDays != 0) {
+        if ((dayxmode) || timeTravel.ttDays != 0) {
             ctx.fillStyle = "dimGrey";
         }
         ctx.fillText(this.qText, X - 5 * pixRat, Y - isTouch * Y / 3 - 5 * pixRat - this.fontsize);
@@ -2416,7 +2416,7 @@ class SessionSetter {
         this.rand = this.mulberry32(this.seed);
     }
     set(sesh) {
-        this.sesh=sesh
+        this.sesh = sesh
         this.randGenOG(); //required here to maintain rand call count for historical track sessions
 
         if (sesh >= 19401 & sesh <= 19433) {
@@ -2454,11 +2454,11 @@ class SessionSetter {
             log('RandCountry')
             this.randCountry();
         }
-        if (sesh >= 19653 & sesh <=19662) {
+        if (sesh >= 19653 & sesh <= 19662) {
             log('RandCountry+nLaps')
             this.randCountrynLaps();
         }
-        if (sesh >= 19663 & sesh <=19687) {
+        if (sesh >= 19663 & sesh <= 19687) {
             log('RandCountry2+nLaps')
             this.randCountry2nLaps();
         }
@@ -2591,7 +2591,7 @@ class SessionSetter {
         this.xflip = false;
         // this.colour = this.randomElement(this.colours);
         // this.colour=[255,255,0]
-        this.colour=evaluate_cmap(this.rand(),'jet',false)
+        this.colour = evaluate_cmap(this.rand(), 'jet', false)
 
         this.reverse = this.randomElement([true, false]);
         this.track = this.randomElement(tracksWC2);
@@ -2600,7 +2600,7 @@ class SessionSetter {
         this.randomizeMultiLap();
 
     }
-    randUniTrack(){
+    randUniTrack() {
         // unified set of Countries, Countries, and Boroughs
         this.mult = this.randomElement([0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0])
         this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
@@ -2613,11 +2613,11 @@ class SessionSetter {
         this.track = this.randomElement(tracksUni);
 
         this.trackImgName = this.track.fnames[0]
-     
-        if (adventDay>=1 & adventDay<=25){
+
+        if (adventDay >= 1 & adventDay <= 25) {
             this.trackImgName = "xmas" + this.trackImgName
             let colours = [[255, 0, 0], [255, 255, 255], [55, 139, 41]]
-            this.colour = colours[(1+adventDay) % 3]
+            this.colour = colours[(1 + adventDay) % 3]
         }
 
 
@@ -2625,12 +2625,12 @@ class SessionSetter {
         // log("Colour",this.color)
         // log('trackImgName', this.trackImgName)
 
-       
-        if (this.sesh==19691){
-            log("sesh:",this.sesh,'setting car')
-             this.car = p.cars[1]
+
+        if (this.sesh == 19691) {
+            log("sesh:", this.sesh, 'setting car')
+            this.car = p.cars[1]
         }
-        else{
+        else {
             this.car = p.cars[0]
         }
 
@@ -2767,13 +2767,13 @@ class SessionSetter {
         p.track = this.track;
         p.track.fname = this.trackImgName;
         p.car = this.car;
-        
-        if (typeof this.colour === 'string'){
+
+        if (typeof this.colour === 'string') {
             p.car.colour = this.colour;
         }
-        else{
-            let colString = "rgb("+this.colour[0].toString()+","+this.colour[1].toString()+","+this.colour[2].toString()+")"
-            p.car.colour=colString
+        else {
+            let colString = "rgb(" + this.colour[0].toString() + "," + this.colour[1].toString() + "," + this.colour[2].toString() + ")"
+            p.car.colour = colString
         }
         // log("p.car.colour",p.car.colour)
         p.trackSetup.reverse = this.reverse;
@@ -2944,12 +2944,12 @@ class Ghost {
     }
     completeLap(t) {
         // log('ghost pre',"t",t,"saved", this.savedLap.time,"web",this.webLap.time)
-        if ((!dayxmode)&(timeTravel.ttDays == 0) & (t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
+        if ((!dayxmode) & (timeTravel.ttDays == 0) & (t != 0) & ((t < this.savedLap.time) | (this.savedLap.time == 0))) {
             // log('Saving Local Ghost')
             this.saveGhost(t);
         }
         // log((t != 0), true & name.name!=null, this.webLap.time, t < this.webLap.time)
-        if ((!dayxmode)&(timeTravel.ttDays == 0) & !trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
+        if ((!dayxmode) & (timeTravel.ttDays == 0) & !trackDev & (t != 0) & name.name != null & ((t < this.webLap.time) | (this.webLap.time == 0))) {
             // log('Posting Web Ghost')
             this.postGhost(t);
         }
@@ -2962,7 +2962,7 @@ class Ghost {
         this.recLap.th = [];
     }
     saveGhost(t) {
-        log('saving ghost',t)
+        log('saving ghost', t)
         this.savedLap.x = this.recLap.x.slice();
         this.savedLap.y = this.recLap.y.slice();
         this.savedLap.th = this.recLap.th.slice();
@@ -3315,7 +3315,7 @@ class FPS {
         this.fpsMatch = this.fpss.reduce((a, b) => {
             return Math.abs(b - this.maxfps) < Math.abs(a - this.maxfps) ? b : a;
         });
-        
+
         // log('matched: ', this.fpsMatch);
         if (this.fpsMatch != this.fps) {
             this.fps = this.fpsMatch;
@@ -3446,10 +3446,10 @@ let fs = function () {
         // ctx.fillText(debugTxt2, 5, x0 + 20, 500)
 
     }
-   function toFixed(x,f){
-        let xf=x.toFixed(f);
-        if (x>0){
-            xf=' ' + xf
+    function toFixed(x, f) {
+        let xf = x.toFixed(f);
+        if (x > 0) {
+            xf = ' ' + xf
         }
         return xf
     }
@@ -3459,7 +3459,7 @@ let fs = function () {
         // xw1 = Math.round(car.wheels[1].xa / scl);
         // yw1 = Math.round(car.wheels[1].ya / scl);
 
-        let debugTxt1 = 'Air '+
+        let debugTxt1 = 'Air ' +
             car.n.Fair.lon.toFixed(2) + " "
         // car.downForceFront.toFixed(1) + " " +
         // car.downForceRear.toFixed(1) + " "
@@ -3470,11 +3470,11 @@ let fs = function () {
         //     car.wheels[3].load.toFixed(1) + " "
         let debugTxt15 =
             'Fmax ' +
-            toFixed(car.wheels[0].Fmax,2) + " " +
-             toFixed(car.wheels[1].Fmax,2) + " " +
-          toFixed(car.wheels[2].Fmax,2) + " " +
-            toFixed(car.wheels[3].Fmax,2) + " " 
-        
+            toFixed(car.wheels[0].Fmax, 2) + " " +
+            toFixed(car.wheels[1].Fmax, 2) + " " +
+            toFixed(car.wheels[2].Fmax, 2) + " " +
+            toFixed(car.wheels[3].Fmax, 2) + " "
+
         let debugTxt2 =
             'Thr ' +
             car.wheels[0].n.Fthrust.lon.toFixed(2) + " " +
@@ -3501,40 +3501,40 @@ let fs = function () {
             car.wheels[3].n.Fdrag.lon.toFixed(2)
         let debugTxt55 =
             'Alp ' +
-            toFixed(car.wheels[0].n.Fcorn.alpha,1) + " " +
-            toFixed(car.wheels[1].n.Fcorn.alpha,1) + " " +
-            toFixed(car.wheels[2].n.Fcorn.alpha,1) + " " +
-            toFixed(car.wheels[3].n.Fcorn.alpha,1) + " "
+            toFixed(car.wheels[0].n.Fcorn.alpha, 1) + " " +
+            toFixed(car.wheels[1].n.Fcorn.alpha, 1) + " " +
+            toFixed(car.wheels[2].n.Fcorn.alpha, 1) + " " +
+            toFixed(car.wheels[3].n.Fcorn.alpha, 1) + " "
         let debugTxt56 =
             'Tht ' +
             car.wheels[0].theta.toFixed(2) + " " +
             car.wheels[1].theta.toFixed(2) + " " +
             car.wheels[2].theta.toFixed(2) + " " +
-            car.wheels[3].theta.toFixed(2)  
+            car.wheels[3].theta.toFixed(2)
         let debugTxt6 =
             'Crn ' +
-            toFixed(car.wheels[0].n.Fcorn.lat,1) + " " +
-            toFixed(car.wheels[1].n.Fcorn.lat,1) + " " +
-            toFixed(car.wheels[2].n.Fcorn.lat,1) + " " +
-            toFixed(car.wheels[3].n.Fcorn.lat,1) + " "
+            toFixed(car.wheels[0].n.Fcorn.lat, 1) + " " +
+            toFixed(car.wheels[1].n.Fcorn.lat, 1) + " " +
+            toFixed(car.wheels[2].n.Fcorn.lat, 1) + " " +
+            toFixed(car.wheels[3].n.Fcorn.lat, 1) + " "
         let debugTxt65 =
             'Skd ' +
             car.wheels[0].skidFac.toFixed(1) + " " +
             car.wheels[1].skidFac.toFixed(1) + " " +
             car.wheels[2].skidFac.toFixed(1) + " " +
-            car.wheels[3].skidFac.toFixed(1)    
+            car.wheels[3].skidFac.toFixed(1)
         let debugTxt68 =
             'Ld ' +
             car.wheels[0].load.toFixed(1) + " " +
             car.wheels[1].load.toFixed(1) + " " +
             car.wheels[2].load.toFixed(1) + " " +
-            car.wheels[3].load.toFixed(1)       
+            car.wheels[3].load.toFixed(1)
         let debugTxt7 =
             'Res ' +
-            car.n.Fres.lon.toFixed(2) + " "+car.n.Fres.lat.toFixed(2)
+            car.n.Fres.lon.toFixed(2) + " " + car.n.Fres.lat.toFixed(2)
         let debugTxt8 =
-        'u ' +
-            toFixed(car.ulon,2)
+            'u ' +
+            toFixed(car.ulon, 2)
 
 
         // wh.n.Fthrust.lon + wh.n.Fbrake.lon + wh.n.Frollres.lon + wh.n.Fdrag.lon + wh.n.Fcorn.lon
@@ -3691,23 +3691,39 @@ let fs = function () {
         // }, { passive: false });
 
         if (isTouchDevice()) {
+
             canvas.addEventListener("touchstart", e => {
                 e.preventDefault();
-                touchControl.pointerDownHandler(
-                    e.changedTouches[0].clientX * pixRat,
-                    e.changedTouches[0].clientY * pixRat,
-                    e.changedTouches[0].identifier);
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    touchControl.pointerDownHandler(
+                        e.changedTouches[i].clientX * pixRat,
+                        e.changedTouches[i].clientY * pixRat,
+                        e.changedTouches[i].identifier);
+                }
             },
                 { passive: false }
             );
 
             canvas.addEventListener("touchend", e => {
                 e.preventDefault();
-                touchControl.pointerUpHandler(e.changedTouches[0].identifier);
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    touchControl.pointerUpHandler(e.changedTouches[i].identifier);
+                }
             },
                 { passive: false }
             );
+
+            canvas.addEventListener("touchcancel", e => {
+                e.preventDefault();
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    touchControl.pointerUpHandler(e.changedTouches[i].identifier);
+                }
+            },
+
+                { passive: false }
+            );
         }
+
         else {
             addEventListener("mousedown", e => {
                 // e.preventDefault();
@@ -4047,14 +4063,14 @@ function urlArgHandler() {
     lonBor = parseInt(urlParams.get('lb'));
     timeTravelDaysURL = urlParams.has('tt') ? parseInt(urlParams.get('tt')) : 0;
     dayxmode = urlParams.has('d') // choose day since 19400
-    if (dayxmode){
+    if (dayxmode) {
         dayxURL = parseInt(urlParams.get('d'))
     }
-    else{
+    else {
         dayxURL = null;
     }
-   
-    dev =  urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
+
+    dev = urlParams.has('tt') || urlParams.has('trackDev') || urlParams.has('carDev') || urlParams.has('lb') || urlParams.has('ml');
     qdev = urlParams.has('qdev')
 
     multilapUrl = urlParams.get('ml');// if false, sessionSetter can overwrite below multiLap params
@@ -4257,8 +4273,8 @@ class DocPanel {
 }
 
 let log = console.log;
-let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor, 
-lonBorMode, qdev, multilapUrl, multilap, multilapn,dayxURL,dayxmode
+let showLapCount, carDev, revDev, trackDev, timeTravelDaysURL, dev, lonBor,
+    lonBorMode, qdev, multilapUrl, multilap, multilapn, dayxURL, dayxmode
 
 urlArgHandler();
 // log('carDev',carDev)
@@ -4313,8 +4329,8 @@ let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 
-let adventDay = sessionLogger.currentSesh - 19691-366
-log("adventDay:",adventDay)
+let adventDay = sessionLogger.currentSesh - 19691 - 366
+log("adventDay:", adventDay)
 
 let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
 setter.set(sessionLogger.currentSesh) // set track based on current session ID
@@ -4335,7 +4351,7 @@ log(sessionLogger.version)
 anim();
 
 
-if (adventDay > 0 & adventDay <25){
+if (adventDay > 0 & adventDay < 25) {
     flash.flash("Advent Racer - Day " + adventDay.toString())
 }
 if (adventDay == 25) {
@@ -4348,8 +4364,8 @@ if (p.track.name) {
 else {
     flash.flash("Welcome")
 }
-if (dev || dayxmode){
-    flash.flash("Day " +  (sessionLogger.currentSesh-19400).toString())
+if (dev || dayxmode) {
+    flash.flash("Day " + (sessionLogger.currentSesh - 19400).toString())
 }
 if (multilap) {
     flash.flash(multilapn + "-lap Race")
