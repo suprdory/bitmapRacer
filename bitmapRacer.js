@@ -4313,7 +4313,8 @@ let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 
-let adventDay = sessionLogger.currentSesh - 19691
+let adventDay = sessionLogger.currentSesh - 19691-366
+log("adventDay:",adventDay)
 
 let setter = new SessionSetter(sessionLogger.versionBase);// init track setter
 setter.set(sessionLogger.currentSesh) // set track based on current session ID
