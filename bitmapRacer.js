@@ -3943,9 +3943,14 @@ function anim() {
         Fps.match();
     }
 
-    if (n == 1*Fps.fps){
+    if (n == 2*Fps.fps){
         fs.resize();
-        // flash.flash("resizing");
+        // flash.flash("2 Sec Resizing");
+    }
+
+    if (n % (5*Fps.fps)==0){
+        fs.resize();
+        // flash.flash("Every 5 Sec resizing");
     }
 
     // requestAnimationFrame(anim);
