@@ -3878,8 +3878,8 @@ let fs = function () {
         X = canvas.width;
         Y = canvas.height;
         halfMinDim = Math.min(X, Y) / 2;
-        xc = 0 // screen centre coords
-        yc = 0
+        // xc = 0 // screen centre coords
+        // yc = 0
         isTouch = fs.isTouchDevice();
         yOff = isTouch ? Y / 6 : 0; // Y offset if touch controls present
         // log('X',X,'Y',Y)
@@ -3945,7 +3945,7 @@ function anim() {
 
     if (n == 1*Fps.fps){
         fs.resize();
-        flash.flash("resizing");
+        // flash.flash("resizing");
     }
 
     // requestAnimationFrame(anim);
@@ -4310,7 +4310,10 @@ else {
 // screen set up
 let canvas, ctx, pixRat, isTouch, X, Y, xc, yc, xct, yct, yOff, halfMinDim, dynLookAhead, Lmax
 let PPM;// init drawing scale, screen pixels per metre - pre zoom
+xc=0
+yc=0
 fs.resize();
+
 
 // draw constants
 const fontFamily = 'monospace';
