@@ -3943,6 +3943,11 @@ function anim() {
         Fps.match();
     }
 
+    if (n == 1*Fps.fps){
+        fs.resize();
+        flash.flash("resizing");
+    }
+
     // requestAnimationFrame(anim);
 
     car.control(inputState);
@@ -4349,7 +4354,7 @@ let n = 0;
 let nMax = p.run.nMax;
 log(sessionLogger.version)
 anim();
-
+// fs.resize(); // resize canvas and set up drawing scale
 
 if (adventDay > 0 & adventDay < 25) {
     flash.flash("Advent Racer - Day " + adventDay.toString())
