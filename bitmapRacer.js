@@ -1239,12 +1239,12 @@ class TouchButton {
         ctx.beginPath()
         ctx.strokeStyle = "white";
         ctx.lineWidth = baseLW * pixRat;
-        ctx.rect(this.x0, this.y0, this.w, this.h)
+        ctx.rect(this.x0*X, this.y0*Y, this.w*X, this.h*Y)
         ctx.stroke();
         if (this.active) {
             ctx.beginPath()
             ctx.fillStyle = "hsla(0,0%,50%,0.5)";
-            ctx.rect(this.x0, this.y0, this.w, this.h)
+            ctx.rect(this.x0*X, this.y0*Y, this.w*X, this.h*Y)
             ctx.fill();
         }
         // ctx.fillStyle = uiTextColor;
@@ -1253,11 +1253,11 @@ class TouchButton {
         ctx.font = 20 * pixRat + 'px ' + this.fontFamily;
         ctx.textBaseline = "middle";
         ctx.fillStyle = "white";
-        ctx.fillText(this.txt, this.x0 + this.w / 2, this.y0 + this.h / 2)
+        ctx.fillText(this.txt, this.x0*X + this.w*X / 2, this.y0*Y + this.h*Y / 2)
 
     }
     contains(ex, ey) {
-        return ((ex > this.x0) & ex < (this.x0 + this.w) & (ey > this.y0) & (ey < (this.y0 + this.h)));
+        return ((ex > this.x0*X) & ex < (this.x0*X + this.w*X) & (ey > this.y0*Y) & (ey < (this.y0*Y + this.h*Y)));
     }
     pointerDownHandler(ex, ey, en) {
         if (this.contains(ex, ey)) {
@@ -3331,16 +3331,17 @@ class ResetButton {
         this.fontsize = fontSizeBase * pixRat;
         this.fontFamily = fontFamily;
 
-        this.x0 = X - this.w;
-        this.y0 = Y - isTouch * Y / 3 - this.h;
+        // this.x0 = X - this.w;
+        this.y0 = 1 - isTouch * 1 / 3 ;
         this.en = null;
         this.text = 'Reset'
 
         this.fontFamily = fontFamily;
-        this.ch = this.fontsize + 20 * pixRat;
+        this.dh = this.fontsize + 20 * pixRat;
         this.cw = pixRat * 100;
         this.cx0 = 0;
-        this.cy0 = Y - isTouch * Y / 3 - 65 * pixRat - this.ch - this.fontsize;
+        
+        // this.cy0 = 1 - isTouch * 1 / 3 - 65 * pixRat - this.ch - this.fontsize;
         // log(Y, isTouch,pixRat)
         this.en = null;
         this.active = false;
@@ -3348,7 +3349,7 @@ class ResetButton {
     draw() {
         // ctx.beginPath()
         // ctx.strokeStyle = "white";
-        // ctx.rect(this.cx0, this.cy0, this.cw, this.ch)
+        // ctx.rect(this.cx0, this.y0*Y - 100 * pixRat - this.fontsize, this.cw, this.dh)
         // ctx.stroke();
 
         ctx.beginPath();
@@ -3356,12 +3357,10 @@ class ResetButton {
         ctx.font = this.fontsize + 'px ' + this.fontFamily;
         ctx.textBaseline = "bottom";
         ctx.fillStyle = "white";
-        ctx.fillText(this.text, 35 * pixRat, Y - isTouch * Y / 3 - 75 * pixRat - this.fontsize)
+        ctx.fillText(this.text, 35 * pixRat, this.y0*Y - 75 * pixRat - this.fontsize)
     }
     contains(ex, ey) {
-        // log(ex,ey)
-        // log(this.cy0,this.cy0 + this.ch)
-        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.cy0) & (ey < (this.cy0 + this.ch)));
+        return ((ex > this.cx0) & ex < (this.cx0 + this.cw) & (ey > this.y0*Y - 100 * pixRat - this.fontsize) & (ey < (this.y0*Y - 100 * pixRat - this.fontsize + this.dh)));
     }
     pointerDownHandler(ex, ey, en) {
 
@@ -3745,10 +3744,14 @@ let fs = function () {
         );
 
         if (inputState.touch) {
-            accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
-            brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
-            leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
-            rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
+            // accBtn = new TouchButton(X * 2 / 3, Y * 4 / 6, X / 3, Y / 6, "up", "Acc", inputState);
+            // brkBtn = new TouchButton(X * 2 / 3, Y * 5 / 6, X / 3, Y / 6, "down", "Brake", inputState);
+            // leftBtn = new TouchButton(X * 0 / 3, Y * 4 / 6, X / 3, Y / 3, "left", "<", inputState);
+            // rightBtn = new TouchButton(X * 1 / 3, Y * 4 / 6, X / 3, Y / 3, "right", ">", inputState);
+            accBtn = new TouchButton(2 / 3, 4 / 6, 1 / 3, 1 / 6, "up", "Acc", inputState);
+            brkBtn = new TouchButton(2 / 3, 5 / 6, 1 / 3, 1 / 6, "down", "Brake", inputState);
+            leftBtn = new TouchButton(0 / 3, 4 / 6, 1 / 3, 1 / 3, "left", "<", inputState);
+            rightBtn = new TouchButton( 1 / 3, 4 / 6, 1 / 3, 1 / 3, "right", ">", inputState);
             addPointerListeners(accBtn);
             addPointerListeners(brkBtn);
             addPointerListeners(leftBtn);
