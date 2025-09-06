@@ -3013,8 +3013,8 @@ class SessionSetter {
     this.randomizeMultiLap();
   }
   randUniWGTrack() {
-    // set default zoom out by same factor as multi scale
-    zoomBase = zoomBase / 0.75
+    // set default zoom out by same factor as multi scale?
+    // zoomBase = zoomBase / 0.75
 
     // unified set of Countries, Countries, and Boroughs
     this.mult = 0.75 * this.randomElement([
