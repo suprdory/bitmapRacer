@@ -622,10 +622,10 @@ class Car {
         Math.min(
           this.steeringMax,
           this.wheels[0].theta +
-            (-this.wheels[0].theta - this.steeringFollow * this.headOff) *
-              this.U ** 0.5 *
-              this.steeringCentreRate *
-              dt
+          (-this.wheels[0].theta - this.steeringFollow * this.headOff) *
+          this.U ** 0.5 *
+          this.steeringCentreRate *
+          dt
         )
       );
       if (theta_m1 * this.wheels[0].theta < 0) {
@@ -959,7 +959,7 @@ class Car {
       Math.min(
         this.W,
         (this.m / this.l) *
-          (this.g * this.frontLength + this.height * this.alon)
+        (this.g * this.frontLength + this.height * this.alon)
       )
     );
     this.loadFront = this.W - this.loadRear;
@@ -1767,12 +1767,12 @@ class LapCounter {
     if (this.intersection) {
       this.direction =
         this.directionSign *
-          fs.crossProduct(
-            newPoint.x - oldPoint.x,
-            newPoint.y - oldPoint.y,
-            gate.right.x - gate.left.x,
-            gate.right.y - gate.left.y
-          ) >
+        fs.crossProduct(
+          newPoint.x - oldPoint.x,
+          newPoint.y - oldPoint.y,
+          gate.right.x - gate.left.x,
+          gate.right.y - gate.left.y
+        ) >
         0;
       // log("Gate ", nGate, " crossed.", this.direction);
       if (this.direction) {
@@ -2070,12 +2070,12 @@ class HiScoresWeb {
 
         ctx.fillText(
           this.champSym + // yesterWin asterisk
-            this.countStr + // nLaps
-            this.posStr +
-            " " + //position
-            fs.pad(this.lapCounts[i][2], 3, " ") +
-            " " + //name
-            fs.formatDuration(this.lapCounts[i][0]), //best lap time
+          this.countStr + // nLaps
+          this.posStr +
+          " " + //position
+          fs.pad(this.lapCounts[i][2], 3, " ") +
+          " " + //name
+          fs.formatDuration(this.lapCounts[i][0]), //best lap time
           X,
           this.y + (i + (i != 0) * 0.2) * this.dy //this.y + Y - isTouch * Y / 3 - (this.nLapCounts + 2 - i) * this.dy
         );
@@ -2579,13 +2579,13 @@ class SessionLogger {
     if (qdev) {
       flash.flash(
         "qtest " +
-          this.currentnLaps +
-          " " +
-          this.qualified +
-          " " +
-          this.inStreak +
-          " " +
-          this.outStreak
+        this.currentnLaps +
+        " " +
+        this.qualified +
+        " " +
+        this.inStreak +
+        " " +
+        this.outStreak
       );
     }
     if (this.currentnLaps == this.nLaps2Qualify) {
@@ -2638,13 +2638,13 @@ class SessionLogger {
       if (qdev) {
         flash.flash(
           "qset " +
-            this.currentnLaps +
-            " " +
-            this.qualified +
-            " " +
-            this.inStreak +
-            " " +
-            this.outStreak
+          this.currentnLaps +
+          " " +
+          this.qualified +
+          " " +
+          this.inStreak +
+          " " +
+          this.outStreak
         );
       }
     }
@@ -2742,11 +2742,11 @@ class SessionLogger {
     ctx.textAlign = "left";
     ctx.fillText(
       "L:" +
-        this.stats.laps +
-        " V:" +
-        this.stats.voids +
-        " R:" +
-        this.stats.resets,
+      this.stats.laps +
+      " V:" +
+      this.stats.voids +
+      " R:" +
+      this.stats.resets,
       4 * pixRat,
       Y - (isTouch * Y) / 3 - 5 * pixRat
     );
@@ -2827,9 +2827,13 @@ class SessionSetter {
       log("RandCountry2+nLaps");
       this.randCountry2nLaps();
     }
-    if (sesh >= 19688) {
+    if ((sesh >= 19688) & (sesh <= 20337)) {
       // log('RandUniTrack')
       this.randUniTrack();
+    }
+    if (sesh >= 20338) {
+      log('RandUniWGTrack')
+      this.randUniWGTrack();
     }
 
     if (trackDev) {
@@ -3008,7 +3012,49 @@ class SessionSetter {
 
     this.randomizeMultiLap();
   }
+  randUniWGTrack() {
+    // set default zoom out by same factor as multi scale
+    zoomBase = zoomBase / 0.75
 
+    // unified set of Countries, Countries, and Boroughs
+    this.mult = 0.75 * this.randomElement([
+      0.5, 0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0,
+    ]);
+    // this.mult=2*0.75
+    log("mult", this.mult)
+    this.scale = { ppm: 7 * this.mult, mpp: 0.4 / this.mult };
+    this.yflip = false;
+    this.xflip = false;
+    // this.colour = this.randomElement(this.colours);
+    // this.colour=[255,255,0]
+    this.colour = evaluate_cmap(this.rand(), "jet", false);
+    this.reverse = this.randomElement([true, false]);
+    this.track = this.randomElement(tracksUniWG);
+
+    this.trackImgName = this.track.fnames[0];
+
+    // if ((adventDay >= 1) & (adventDay <= 25)) {
+    //   this.trackImgName = "xmas" + this.trackImgName;
+    //   let colours = [
+    //     [255, 0, 0],
+    //     [255, 255, 255],
+    //     [55, 139, 41],
+    //   ];
+    //   this.colour = colours[(1 + adventDay) % 3];
+    // }
+
+    // log("Colour",this.color)
+    // log('trackImgName', this.trackImgName)
+
+    if (this.sesh == 19691) {
+      log("sesh:", this.sesh, "setting car");
+      this.car = p.cars[1];
+    } else {
+      this.car = p.cars[0];
+    }
+
+    this.randomizeMultiLap();
+  }
   randBorough() {
     this.mult = this.randomElement([
       0.7, 0.8, 0.9, 0.95, 1.0, 1.1, 1.25, 1.5, 2.0,
@@ -4138,7 +4184,7 @@ let fs = (function () {
       hudX + (barWidth * 3 + barWidthSpace * 2) / 2,
       Y - hudY - barHeight - barWidthSpace,
       ((-(barWidth * 3 + barWidthSpace * 2) / 2) * car.wheels[0].theta) /
-        car.steeringMax,
+      car.steeringMax,
       -barWidth
     );
     ctx.fill();
@@ -4172,8 +4218,8 @@ let fs = (function () {
       ? l === r
         ? (g - b) / s
         : l === g
-        ? 2 + (b - r) / s
-        : 4 + (r - g) / s
+          ? 2 + (b - r) / s
+          : 4 + (r - g) / s
       : 0;
     return [
       60 * h < 0 ? 60 * h + 360 : 60 * h,
@@ -4898,6 +4944,7 @@ import { tracksOG } from "./trackParmsOG.js";
 import { tracksWC } from "./trackParmsWC.js";
 import { tracksWC2 } from "./trackParmsWC2.js";
 import { tracksUni } from "./trackParmsUni.js";
+import { tracksUniWG } from "./trackParmsUniWG.js";
 const sessionPrefix = p.version.n;
 
 let Fps = new FPS(); // frames per second handler
@@ -4944,7 +4991,7 @@ const baseLW = p.draw.baseLW; // linewidth
 const lookAhead = p.draw.lookAhead; // seconds
 const panSpeed = (p.draw.panSpeed * 60) / Fps.fps; // fraction to target per frame
 
-const zoomBase = 1.2;
+let zoomBase = 1.2;
 const zoomMax = 0.5;
 const zoomSpeed = 0.2;
 let zoom = 1,
@@ -4960,7 +5007,7 @@ let resetButton = new ResetButton();
 let hiScores = new HiScores();
 let hiScoresWeb = new HiScoresWeb();
 
-let adventDay = sessionLogger.currentSesh - 19691 - 366;
+let adventDay = sessionLogger.currentSesh - 19691 - 366 - 365;
 log("adventDay:", adventDay);
 
 let setter = new SessionSetter(sessionLogger.versionBase); // init track setter
