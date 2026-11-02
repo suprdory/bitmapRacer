@@ -3027,7 +3027,7 @@ class SessionSetter {
     this.xflip = false;
     // this.colour = this.randomElement(this.colours);
     // this.colour=[255,255,0]
-    this.colour = evaluate_cmap(this.rand(), "jet", false);
+    this.colour = evaluate_cmap(this.rand() * 0.8+0.2, "jet", false);
     this.reverse = this.randomElement([true, false]);
     this.track = this.randomElement(tracksUniWG);
 
